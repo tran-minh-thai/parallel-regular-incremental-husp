@@ -1,0 +1,28 @@
+# Compiled output
+out/
+*.class
+*.jar
+
+# IDE files
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# Experiment outputs (generated, not versioned)
+results/
+test_output/
+
+# Large dataset files (download separately)
+datasets/*.txt
+!datasets/example_seq.txt
+!datasets/example_eui.txt
+!datasets/example2_seq.txt
+!datasets/example2_eui.txt
+!datasets/greedytest_seq.txt
+!datasets/greedytest_eui.txt
