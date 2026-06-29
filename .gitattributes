@@ -1,0 +1,12 @@
+# Shell scripts must keep LF endings; CRLF breaks bash on macOS/Linux.
+*.sh        text eol=lf
+
+# PowerShell is happy with either; keep CRLF on Windows checkouts.
+*.ps1       text eol=crlf
+
+# Java sources: let git normalize to LF in the index, native eol in the working tree.
+*.java      text
+*.xml       text
+*.md        text
+*.gitignore text
+*.gitattributes text

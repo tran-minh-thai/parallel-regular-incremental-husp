@@ -23,28 +23,27 @@ The framework also includes re-implementations of several competing baselines an
 ## Requirements
 
 - **Java 11** or later (uses `ForkJoinPool.commonPool`, `ConcurrentHashMap`)
-- No external libraries — pure standard-library Java
+- **Maven 3.6+** (build tool)
+- No external runtime libraries — pure standard-library Java
 
-Build and test with any Java 11+ JDK:
+Build:
 
 ```bash
-javac -d out $(find src -name "*.java")
+mvn compile
 ```
+
+Compiled classes are placed under `target/classes/`.
 
 ---
 
 ## Quick Start
 
-### Single-dataset run (terminal)
+### Single-dataset run
 
 ```bash
-# Compile
-javac -d out $(find src -name "*.java")
-
-# Run incremental experiment on the included example dataset
-java -cp out test.RunIncremental \
-     datasets/example_seq.txt datasets/example_eui.txt \
-     0.10 0.6 "0.5,0.5"
+mvn compile
+mvn exec:java -Dexec.mainClass=test.RunIncremental \
+              -Dexec.args="datasets/example_seq.txt datasets/example_eui.txt 0.10 0.6 0.5,0.5"
 ```
 
 Arguments: `<seqFile> <eutilFile> <minUtilRatio> <maxRegRatio> [batchRatios]`
@@ -56,17 +55,66 @@ Arguments: `<seqFile> <eutilFile> <minUtilRatio> <maxRegRatio> [batchRatios]`
 ### Correctness probe
 
 ```bash
-# Compare P-RIncHUSP recall against the RHusp oracle on SIGN
-java -cp out test.RecallProbe \
-     datasets/SIGN_seq.txt datasets/SIGN_eui.txt 0.03 0.30 4
+mvn exec:java -Dexec.mainClass=test.RecallProbe \
+              -Dexec.args="datasets/SIGN_seq.txt datasets/SIGN_eui.txt 0.03 0.30 4"
 ```
 
 ### Official experiment suite
 
 ```bash
-# Run the full parallel benchmark (outputs a CSV in results/)
-java -Xmx8g -cp out test.ExperimentOfficial
+# Forked JVM with -Xmx16g (configured in the `benchmark` profile).
+# Lower the heap with -DheapSize=8g if the host has less RAM.
+mvn -Pbenchmark exec:exec
 ```
+
+### Convenience wrappers (compile + run + tee-log)
+
+Both wrappers default to the full benchmark suite. Pass `-Experiment <name>`
+(Windows) or `-e <name>` (macOS/Linux) to pick a specific experiment instead.
+Log file: `results/run_log_<experiment>_<timestamp>.txt`.
+
+**Windows (PowerShell):**
+```powershell
+.\run_experiments.ps1                                # full suite, -Xmx16g -Xss4m
+.\run_experiments.ps1 -Experiment recall             # RecallProbe only
+.\run_experiments.ps1 -Experiment mu -HeapGb 8       # MuProbe with 8 GB heap
+.\run_experiments.ps1 -SkipBuild -DryRun             # show command without running
+```
+
+**macOS / Linux (bash):**
+```bash
+./run_experiments.sh                                 # full suite, -Xmx16g -Xss4m
+./run_experiments.sh -e recall                       # RecallProbe only
+./run_experiments.sh -e mu --heap 8g                 # MuProbe with 8 GB heap
+./run_experiments.sh --skip-build --dry-run          # show command without running
+./run_experiments.sh --no-caffeinate                 # macOS: don't keep Mac awake
+```
+
+> On **macOS**, the script auto-wraps `mvn` with `caffeinate -i` so the system
+> won't idle-sleep during multi-hour benchmark runs. Pass `--no-caffeinate`
+> to opt out. The banner prints `Sleep guard: on/off` so you can confirm.
+
+**Experiment choices** (same in both wrappers):
+
+| Name | Maven main class | What it does |
+|---|---|---|
+| `all` / `official` (default) | `test.ExperimentOfficial` | Full S1-S4 suite over `DatasetCatalog.officialSuite()`, writes CSV |
+| `test` | `test.ExperimentTest` | Runs each algorithm once and writes pattern `.txt` files |
+| `perf` | `test.PerfProbe` | Single-run performance probe |
+| `recall` | `test.RecallProbe` | Quick recall measurement vs. RHusp oracle |
+| `mu` | `test.MuProbe` | μ buffer-factor sensitivity diagnostic |
+| `oracle` | `test.OracleValidation` | Validate oracle vs. reference RHusp miner |
+
+**Tunable JVM resources** (defaults shown):
+
+| Param | PowerShell | bash | Default | Notes |
+|---|---|---|---|---|
+| Heap | `-HeapGb 16` | `--heap 16g` | 16 GB | KOSARAK needs >=16 GB; others fit in 8 |
+| Stack | `-StackMb 4` | `--stack 4m` | 4 MB | JVM default (~1 MB) can StackOverflow on FIFA |
+
+> The Java package `test` here is *runtime* code (the experiment harness), not
+> JUnit tests. It is kept on the main classpath under `src/main/java/test/`;
+> there is no `src/test/java/` directory.
 
 ---
 
@@ -86,7 +134,7 @@ Included in the repository: `example_seq.txt` / `example_eui.txt` (9 sequences, 
 
 Raw SPMF-format files can be converted to the QSDB format used here with:
 ```bash
-java -cp out SPMF_Converter
+mvn exec:java -Dexec.mainClass=SPMF_Converter
 ```
 
 ---
@@ -150,7 +198,9 @@ R = Regularity constraint, I = Incremental, P = Parallel.
 ## Project Structure
 
 ```
-src/
+pom.xml                Maven build descriptor (Java 11, no runtime deps)
+run_experiments.ps1    Windows wrapper: mvn compile + benchmark run + tee log
+src/main/java/
   algorithms/          Core algorithm + data structures
     AlgoPRIncHUSP.java         Proposed parallel algorithm
     AlgoRIncHUSP.java          RIncHusp baseline (incremental)

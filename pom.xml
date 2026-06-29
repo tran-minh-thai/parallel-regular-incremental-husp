@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.research.huspm</groupId>
+  <artifactId>p-rinchusp</artifactId>
+  <version>1.0.0</version>
+  <packaging>jar</packaging>
+
+  <name>P-RIncHUSP</name>
+  <description>
+    Parallel Regular Incremental High-Utility Sequential Pattern Mining.
+    Pure standard-library Java 11+; no external runtime dependencies.
+  </description>
+
+  <properties>
+    <maven.compiler.release>11</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+    <!-- Default main class. Override: -Dexec.mainClass=<FQN> -->
+    <exec.mainClass>test.ExperimentOfficial</exec.mainClass>
+
+    <!-- Default heap. Override: -DheapSize=16g -->
+    <heapSize>4g</heapSize>
+
+    <!-- Default per-thread stack size. The mining algorithms (PatternTree.expand,
+         AlgoRHUSPMiner.expand, AlgoPRIncHUSP.extend) recurse to a depth proportional
+         to the maximum sequence length. JVM default (~1 MB on 64-bit Windows) can
+         StackOverflow on FIFA (≤100 events/seq); 4 MB is comfortable for all included
+         datasets without meaningfully growing real memory (stacks are virtually reserved,
+         not committed). Override: -DstackSize=8m -->
+    <stackSize>4m</stackSize>
+
+    <!-- Default extra program args (after the main class). Override: -Dprog.args="..." -->
+    <prog.args></prog.args>
+  </properties>
+
+  <build>
+    <!-- Keep the runtime package `test` on the main classpath (it is the experiment
+         harness, NOT JUnit). We therefore do NOT use src/test/java. -->
+    <sourceDirectory>src/main/java</sourceDirectory>
+    <finalName>${project.artifactId}-${project.version}</finalName>
+
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.13.0</version>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.4.1</version>
+        <configuration>
+          <archive>
+            <manifest>
+              <mainClass>test.ExperimentOfficial</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+
+      <!-- DEFAULT: use exec:exec (FORKED JVM) — clean exit, no lingering-thread warnings.
+           Override mainClass / args / heap via -D properties on the command line.
+
+           Examples:
+             mvn exec:exec
+             mvn exec:exec -Dexec.mainClass=test.RunIncremental \
+                           -Dprog.args="datasets/example_seq.txt datasets/example_eui.txt 0.10 0.6 0.5,0.5"
+             mvn exec:exec -DheapSize=16g
+      -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.5.0</version>
+        <configuration>
+          <!-- For exec:java (rarely needed; exec:exec is recommended) -->
+          <mainClass>${exec.mainClass}</mainClass>
+          <!-- For exec:exec -->
+          <executable>java</executable>
+          <commandlineArgs>-Xmx${heapSize} -Xss${stackSize} -classpath %classpath ${exec.mainClass} ${prog.args}</commandlineArgs>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <!-- Shortcut for the full benchmark suite with a 16 GB heap.
+         Activate with:   mvn -Pbenchmark exec:exec  [-DheapSize=16g] -->
+    <profile>
+      <id>benchmark</id>
+      <properties>
+        <exec.mainClass>test.ExperimentOfficial</exec.mainClass>
+        <heapSize>16g</heapSize>
+      </properties>
+    </profile>
+  </profiles>
+
+</project>
