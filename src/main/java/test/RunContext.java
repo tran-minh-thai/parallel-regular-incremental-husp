@@ -257,7 +257,7 @@ public final class RunContext {
      *  v3: proposed maintain = content-driven parallel trie (lazy retired); S5 ablation = trie vs
      *  inverted-index. Older v1/v2 dirs are a different algorithm and must never be resumed into. */
     private static String signature(List<DatasetSpec> suite) {
-        StringBuilder sb = new StringBuilder("v3;algo=trie;");
+        StringBuilder sb = new StringBuilder("v3;algo=trie-fork;");
         for (DatasetSpec s : suite)
             sb.append(s.tag).append(':').append(s.minUtilRatio).append(':').append(s.maxRegRatio)
               .append(':').append(s.s1Only).append(';');

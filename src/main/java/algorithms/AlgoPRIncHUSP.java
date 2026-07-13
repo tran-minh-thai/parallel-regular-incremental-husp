@@ -7,6 +7,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinTask;
+import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
@@ -124,6 +126,17 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
      * </ul>
      */
     public boolean seedPruneByFinalN = false;
+
+    /**
+     * Fork-join work-stealing for the D_old seeding enumeration (the 94–97% cost). Root-level
+     * partitioning alone leaves threads idle under skewed subtree sizes (few productive branches on
+     * BIBLE, one giant branch on FIFA); forking large subtrees lets idle workers steal them. A subtree
+     * with a VUL smaller than {@link #seedGrain} occurrences runs SEQUENTIALLY (reusing depth-scratch,
+     * no per-node allocation) so forking overhead is confined to the expensive upper levels.
+     */
+    public boolean forkSeed = false;
+    /** Occurrence-count (VUL size) below which a subtree is enumerated sequentially instead of forked. */
+    public int seedGrain = 128;
 
     // ----- State persistent across batches -----
     private final QSeqDatabase data = new QSeqDatabase();
@@ -294,7 +307,75 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
     private void staticBuild() {
         enumDeucs = deucs; enumThreshold = bufferThreshold; enumMaxReg = seedMaxReg;
         enumUseIntraGap = false; enumCap = Integer.MAX_VALUE; enumCount.set(0);
-        enumerateRange(0, data.numSequences);
+        if (forkSeed && numThreads > 1) enumerateForked(0, data.numSequences);
+        else enumerateRange(0, data.numSequences);
+    }
+
+    /**
+     * Work-stealing variant of {@link #enumerateRange}: build the surviving root branches on the
+     * calling thread, then hand each to the pool as a {@link EnumTask}. Large subtrees fork their
+     * children (independent VULs) so idle workers steal them; small subtrees (VUL &lt; {@link #seedGrain})
+     * fall back to the sequential scratch-reusing {@link #enumerate}. Identical output to enumerateRange.
+     */
+    private void enumerateForked(int lo, int hi) {
+        VerticalUtilityList rootVul = syntheticRoot(lo, hi);
+        Workspace w = ws.get();
+        List<EnumTask> roots = new ArrayList<>();
+        for (Integer i : enumDeucs.SWU.keySet()) {
+            if (enumDeucs.swu(i) < enumThreshold) continue;
+            int item = i;
+            VerticalUtilityList v = new VerticalUtilityList(64);
+            buildInto(w, rootVul, item, false, v);
+            if (v.isEmpty() || v.peuUpperBound < enumThreshold) continue;
+            if ((enumUseIntraGap ? v.maxIntraGap : v.maxInnerPeriod) > enumMaxReg) continue;
+            roots.add(new EnumTask(new int[]{S_EXT}, new int[]{item}, v));
+        }
+        if (roots.isEmpty()) return;
+        pool().invoke(new RecursiveAction() {
+            protected void compute() { ForkJoinTask.invokeAll(roots); }
+        });
+    }
+
+    /** One enumeration subtree (its full path + own VUL). Large → fork children; small → sequential. */
+    private final class EnumTask extends RecursiveAction {
+        final int[] ext, item;
+        final VerticalUtilityList vul;
+        EnumTask(int[] ext, int[] item, VerticalUtilityList vul) { this.ext = ext; this.item = item; this.vul = vul; }
+
+        protected void compute() {
+            final int depth = item.length - 1;
+            final Workspace w = ws.get();
+            if (vul.size < seedGrain) {                    // small subtree: sequential (scratch reuse, no fork)
+                w.vul(depth);                              // ensure w.ext/w.item capacity up to depth
+                System.arraycopy(ext, 0, w.ext, 0, depth + 1);
+                System.arraycopy(item, 0, w.item, 0, depth + 1);
+                enumerate(w, vul, depth, item[depth]);
+                return;
+            }
+            exploredNodes.increment();                     // large subtree: record here, fork children
+            if (vul.totalUtility >= enumThreshold && vul.lastSeqId != -1) {
+                patsQueue.add(new Pat(ext, item, vul.totalUtility, vul.lastSeqId, vul.maxInnerPeriod));
+                if (enumCount.incrementAndGet() > enumCap) throw new CapExceeded();
+            }
+            List<EnumTask> kids = new ArrayList<>();
+            addChildren(w, kids, true);                    // i-extensions
+            addChildren(w, kids, false);                   // s-extensions
+            if (!kids.isEmpty()) invokeAll(kids);
+        }
+
+        /** Build child tasks for one extension type (mirrors enumerate/extend with independent VULs). */
+        private void addChildren(Workspace w, List<EnumTask> kids, boolean iExt) {
+            int lastItem = item[item.length - 1];
+            for (int z : localCandidates(w, lastItem, vul, iExt)) {
+                VerticalUtilityList child = new VerticalUtilityList(Math.max(16, vul.size));
+                buildInto(w, vul, z, iExt, child);
+                if (child.isEmpty() || child.peuUpperBound < enumThreshold) continue;
+                if ((enumUseIntraGap ? child.maxIntraGap : child.maxInnerPeriod) > enumMaxReg) continue;
+                int[] cext = java.util.Arrays.copyOf(ext, ext.length + 1);  cext[ext.length] = iExt ? I_EXT : S_EXT;
+                int[] citem = java.util.Arrays.copyOf(item, item.length + 1); citem[item.length] = z;
+                kids.add(new EnumTask(cext, citem, child));
+            }
+        }
     }
 
     /** Enumerate patterns with PEU bound >= {@link #enumThreshold} over sequences [lo,hi), parallel

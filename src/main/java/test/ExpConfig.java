@@ -95,11 +95,14 @@ public final class ExpConfig {
      * identical to the per-pattern re-match and to the sequential baseline (TrieVerify), deterministic
      * across T; measured faster than RIncHusp-Fix0.4 on ALL datasets (1.6–5.3× @ T=10, MaintainBench).
      * Lazy buffering is OFF: it showed no runtime gain on the M5 suite and is incompatible with the trie.
+     * The seeding enumeration (94–97% of runtime) uses fork-join work-stealing ({@code forkSeed}),
+     * which raised speedup from 1.45× to 4.27× on LEVIATHAN with identical output (SeedBench).
      */
     public static AlgoPRIncHUSP newProposed(int threads) {
         AlgoPRIncHUSP m = new AlgoPRIncHUSP();
         m.numThreads = threads;
         m.trieMaintain = true;                       // content-driven parallel maintain
+        m.forkSeed = true;                           // fork-join work-stealing on the seeding enumeration
         m.lazy = false;
         m.buffer.strategy = AdaptiveBuffer.Strategy.FIX;
         m.buffer.fixedMu = muMin;                    // seed AND maintain buffer at μ_min·minUtil (= Fix0.4 coverage)
