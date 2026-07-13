@@ -29,6 +29,9 @@ public class VerticalUtilityList {
     public long peuUpperBound = 0;    // Σ_sequence max(matchUtils+remUtils): PEU upper bound
     public int  lastSeqId = -1;       // most recent distinct sequence (for regularity)
     public int  maxInnerPeriod = 0;   // largest inner period (excluding the final period — see Pat.trueMaxPer)
+    public int  maxIntraGap = 0;      // largest gap between CONSECUTIVE occurrences only (no initial gap
+                                      // from seq 0) — the sound regularity prune for a window [lo,hi)
+                                      // enumeration where "distance from seq 0" is meaningless
 
     public VerticalUtilityList() { this(4); }
     public VerticalUtilityList(int capacity) {
@@ -51,7 +54,7 @@ public class VerticalUtilityList {
      * {@code max(matchUtils+remUtils)} for the PEU bound per sequence; regularity over the distinct seqIds.
      */
     public void finalizeAggregates() {
-        totalUtility = 0; peuUpperBound = 0; lastSeqId = -1; maxInnerPeriod = 0;
+        totalUtility = 0; peuUpperBound = 0; lastSeqId = -1; maxInnerPeriod = 0; maxIntraGap = 0;
         int i = 0;
         while (i < size) {
             int s = seqIds[i];
@@ -66,6 +69,7 @@ public class VerticalUtilityList {
             peuUpperBound += maxPeu;
             int gap = (lastSeqId == -1) ? (s + 1) : (s - lastSeqId);
             if (gap > maxInnerPeriod) maxInnerPeriod = gap;
+            if (lastSeqId != -1 && gap > maxIntraGap) maxIntraGap = gap;   // consecutive-occurrence gaps only
             lastSeqId = s;
         }
     }
@@ -74,7 +78,7 @@ public class VerticalUtilityList {
 
     /** Clear for reuse (keep arrays) — for the per-depth VUL scratch in staticBuild. */
     public void reset() {
-        size = 0; totalUtility = 0; peuUpperBound = 0; lastSeqId = -1; maxInnerPeriod = 0;
+        size = 0; totalUtility = 0; peuUpperBound = 0; lastSeqId = -1; maxInnerPeriod = 0; maxIntraGap = 0;
     }
 
     private void grow() {

@@ -1,0 +1,70 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using the metadata below."
+type: software
+title: "P-RIncHUSP: Parallel Regular Incremental High-Utility Sequential Pattern Mining"
+abstract: >
+  A Java implementation of P-RIncHUSP — a parallel, incremental framework for
+  mining Regular High-Utility Sequential Patterns (RHUSP) from a growing
+  quantitative sequence database. The framework extends the sequential incremental
+  baseline (RIncHusp) with prefix-partitioned parallel enumeration over a
+  ForkJoinPool, an adaptive per-batch buffer threshold, and correct max-measure
+  utility maintenance via multi-position Vertical Utility Lists.
+authors:
+  - family-names: "Tran"
+    given-names: "Minh Thai"
+    email: "minhthai.tran@icloud.com"
+keywords:
+  - high-utility sequential pattern mining
+  - regularity constraint
+  - incremental databases
+  - estimated-utility co-occurrence structure
+  - vertical utility-list
+  - parallel mining
+  - shared-memory
+  - ForkJoinPool
+license: MIT
+version: "1.0.0"
+date-released: "2026-06-25"
+repository-code: "https://github.com/"
+references:
+  - type: article
+    authors:
+      - family-names: "Ishita"
+        given-names: "Farida Siddiqi"
+      - family-names: "Ahmed"
+        given-names: "Chowdhury Farhan"
+      - family-names: "Leung"
+        given-names: "Carson Kai-Sang"
+    title: "New approaches for mining regular high utility sequential patterns"
+    journal: "Applied Intelligence"
+    year: 2022
+    doi: "10.1007/s10489-021-02285-3"
+  - type: conference-paper
+    authors:
+      - family-names: "Yin"
+        given-names: "Junfu"
+      - family-names: "Zheng"
+        given-names: "Zhigang"
+      - family-names: "Cao"
+        given-names: "Longbing"
+    title: "USpan: An Efficient Algorithm for Mining High Utility Sequential Patterns"
+    collection-title: "Proceedings of the 18th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining"
+    year: 2012
+    doi: "10.1145/2339530.2339636"
+  - type: article
+    authors:
+      - family-names: "Alkan"
+        given-names: "Oktay"
+      - family-names: "Demiriz"
+        given-names: "Ayhan"
+    title: "Efficient Mining of High Utility Sequential Patterns via an Event-Level List Structure"
+    journal: "IEEE Transactions on Cybernetics"
+    year: 2021
+    doi: "10.1109/TCYB.2020.3038019"
+  - type: article
+    authors:
+      - family-names: "Guo"
+        given-names: "Junpeng"
+    title: "Incremental High Utility Sequential Pattern Mining"
+    journal: "ACM Transactions on Intelligent Systems and Technology"
+    year: 2018

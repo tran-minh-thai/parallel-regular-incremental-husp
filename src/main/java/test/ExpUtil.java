@@ -45,11 +45,22 @@ public final class ExpUtil {
     /** initialBuild(batch0) then processBatch(batch1..k); return the current high-utility pattern set. */
     public static Map<String, long[]> run(IncrementalHUSPMiner m, List<List<List<int[]>>> b,
                                           double minUtilRatio, double maxRegRatio) {
+        return run(m, b, minUtilRatio, maxRegRatio, null);
+    }
+
+    /** As {@link #run}, but if {@code phaseOut} is non-null (length ≥ 2) fills [0]=seeding/build ms,
+     *  [1]=cumulative incremental (processBatch) ms — the per-phase cost decomposition (C11). */
+    public static Map<String, long[]> run(IncrementalHUSPMiner m, List<List<List<int[]>>> b,
+                                          double minUtilRatio, double maxRegRatio, long[] phaseOut) {
         try {
             int totalN = 0; for (List<List<int[]>> batch : b) totalN += batch.size();
             m.hintTotalSequences(totalN);              // ρ·N_final for sound regularity pruning at seeding time
+            long t0 = System.currentTimeMillis();
             m.initialBuild(b.get(0), minUtilRatio, maxRegRatio);
-            for (int i = 1; i < b.size(); i++) m.processBatch(b.get(i));
+            long buildMs = System.currentTimeMillis() - t0;
+            long incrMs = 0;
+            for (int i = 1; i < b.size(); i++) incrMs += m.processBatch(b.get(i));  // processBatch returns its ms
+            if (phaseOut != null && phaseOut.length >= 2) { phaseOut[0] = buildMs; phaseOut[1] = incrMs; }
             // copy the result BEFORE close() (which frees shared resources/pool)
             return new java.util.HashMap<>(m.getHighUtilityPatterns());
         } finally {

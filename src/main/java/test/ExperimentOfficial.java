@@ -27,12 +27,18 @@ import java.util.function.Supplier;
  * miner — not the same problem, not a fair comparison). Recall ground truth = RHusp remining the
  * full DB.
  *
- * <h3>Four scenarios</h3>
+ * <h3>Five scenarios</h3>
  * <ul>
  *   <li><b>S1 — Scalability:</b> P-RIncHUSP sweeps T∈{1,2,4,8,…} (distribution A). Speedup S(p)=T₁/Tₚ, Efficiency E=S/p.</li>
- *   <li><b>S2 — Comparison:</b> P-RIncHUSP(best T) vs Adaptive-seq(T₁) vs RIncHusp Fix(0.4)/Fix(0.9).</li>
+ *   <li><b>S2 — Comparison:</b> P-RIncHUSP(best T) vs P-RIncHUSP-seq(T₁) vs RIncHusp Fix(0.4)/Fix(0.9)
+ *       vs Remine-static (naive full re-mine each batch — light datasets only).</li>
  *   <li><b>S3 — Correctness invariance:</b> HS Found is IDENTICAL across all T (deterministic parallelism). Checked within S1.</li>
  *   <li><b>S4 — Distribution robustness:</b> 4 batch distributions A/B/C/D × (P-RIncHUSP vs RIncHusp Fix(0.4)).</li>
+ *   <li><b>S5 — Fine-batch streaming:</b> D_old 25% + 15×5% increments; P-RIncHUSP(content-driven trie)
+ *       vs the SAME miner with the per-pattern inverted-index maintain (isolates the maintain strategy,
+ *       identical HS) vs RIncHusp Fix(0.4).</li>
+ *   <li><b>S6 — δ-sensitivity sweep:</b> light datasets only (SIGN/LEVIATHAN/BIBLE); P-RIncHUSP(best T)
+ *       vs RIncHusp Fix(0.4) over δ ∈ base×{1,1.5,2,3} — runtime/#patterns/recall vs threshold.</li>
  * </ul>
  *
  * <h3>How to run</h3>
@@ -46,10 +52,15 @@ public class ExperimentOfficial {
     static BufferedWriter csv;
 
     static final String HEADER =
-        "dataset,scenario,distribution,algorithm,mu,minUtilRatio,maxRegRatio,threads,n_batches,iteration,runtime_ms,peak_mb,hs_count,shs_count,recall,status\n";
+        "dataset,scenario,distribution,algorithm,mu,minUtilRatio,maxRegRatio,threads,n_batches,iteration,runtime_ms,build_ms,incr_ms,peak_mb,hs_count,shs_count,recall,status\n";
+
+    /** Provenance + crash-resume state for the suite run (null in single-dataset mode). */
+    static RunContext ctx;
 
     public static void main(String[] args) throws IOException {
-        if (args.length >= 2) {
+        java.util.List<String> flags = java.util.Arrays.asList(args);
+        // Single-dataset mode: <seqFile> <eutilFile> [δ] [ρ] [outCsv] — first arg is a path, not a --flag.
+        if (args.length >= 2 && !args[0].startsWith("--")) {
             double d = args.length >= 3 ? Double.parseDouble(args[2]) : 0.002;
             double r = args.length >= 4 ? Double.parseDouble(args[3]) : 0.30;
             String tg = ExpUtil.datasetTag(args[0]);
@@ -59,20 +70,30 @@ public class ExperimentOfficial {
             System.out.println("CSV written: " + out);
             return;
         }
-        List<DatasetSpec> suite = DatasetCatalog.officialSuite();
-        new File("results").mkdirs();
-        String out = "results/official_suite_" + new java.text.SimpleDateFormat("yyyyMMdd_HHmmss")
-                .format(new java.util.Date()) + ".csv";
-        System.out.printf("### PARALLEL EXPERIMENT — %d datasets -> %s ###%n", suite.size(), out);
-        try (BufferedWriter w = openCsv(out)) {
-            csv = w;
-            for (DatasetSpec s : suite) {
-                try { benchmarkDataset(s.tag, s.seqFile, s.euiFile, s.minUtilRatio, s.maxRegRatio, s.s1Only); }
-                catch (Throwable e) { System.out.println("  ! Dataset error " + s.tag + ": " + e.getClass().getSimpleName()); }
-                finally { all = null; System.gc(); }
+        // Suite mode. Flags: --resume (continue newest matching unfinished run), --test (tiny testSuite).
+        boolean resume = flags.contains("--resume");
+        boolean testMode = flags.contains("--test");
+        List<DatasetSpec> suite = testMode ? DatasetCatalog.testSuite() : DatasetCatalog.officialSuite();
+
+        ctx = RunContext.start(suite, resume);
+        csv = ctx.csv;
+        System.out.printf("### PARALLEL EXPERIMENT — %d datasets | %s | dir=results/%s ###%n",
+                suite.size(), ctx.resumed ? "RESUME (skipping finished work)" : "fresh run", ctx.dir.getName());
+        for (DatasetSpec s : suite) {
+            if (ctx.isDatasetDone(s.tag)) {
+                System.out.printf("%n========== %s — SKIP (already finished in this run) ==========%n", s.tag);
+                continue;
             }
+            try {
+                benchmarkDataset(s.tag, s.seqFile, s.euiFile, s.minUtilRatio, s.maxRegRatio, s.s1Only);
+                ctx.recordDataset(s.tag);   // reached only if the dataset finished (no crash / uncaught error)
+            } catch (Throwable e) {
+                System.out.println("  ! Dataset error " + s.tag + ": " + e.getClass().getSimpleName());
+            } finally { all = null; System.gc(); }
         }
-        System.out.println("### DONE. CSV: " + out + " ###");
+        ctx.finish();     // write DONE marker + meta status=completed
+        ctx.close();
+        System.out.println("### DONE. dir: " + ctx.dir + " ###");
     }
 
     static BufferedWriter openCsv(String path) throws IOException {
@@ -90,6 +111,7 @@ public class ExperimentOfficial {
                                  double minUtilRatio, double maxRegRatio, boolean s1Only) throws IOException {
         tag = tg;
         all = ExpUtil.loadAll(seqFile, euiFile);
+        writeDatasetStats(tg, all);                    // characteristics table (once per dataset)
         final int cores = Runtime.getRuntime().availableProcessors();
         Set<String> oracle = oracleOrNull(minUtilRatio, maxRegRatio);
 
@@ -107,7 +129,7 @@ public class ExperimentOfficial {
             List<Integer> hsByT = new ArrayList<>();
             for (int i = 0; i < ts.length; i++) {
                 final int p = ts[i];
-                Agg a = benchmark("S1-scalability", "A-Uniform", "P-RIncHUSP", "adaptive",
+                Agg a = benchmark("S1-scalability", "A-Uniform", "P-RIncHUSP", "trie",
                         () -> ExpConfig.newProposed(p), p, bA, minUtilRatio, maxRegRatio, oracle);
                 med[i] = a.medianMs;
                 if (a.ok) hsByT.add(a.hs);
@@ -122,14 +144,19 @@ public class ExperimentOfficial {
         // ---------- S2: Compare proposed vs baseline (SKIP for S1-only datasets) ----------
         if (ExpConfig.runS2Compare && !s1Only) {
             System.out.println("-- S2 Comparison (distribution A, best T=" + cores + ") --");
-            benchmark("S2-compare", "A-Uniform", "P-RIncHUSP", "adaptive",
+            benchmark("S2-compare", "A-Uniform", "P-RIncHUSP", "trie",
                     () -> ExpConfig.newProposed(cores), cores, bA, minUtilRatio, maxRegRatio, oracle);
-            benchmark("S2-compare", "A-Uniform", "Adaptive-seq", "adaptive",
+            benchmark("S2-compare", "A-Uniform", "P-RIncHUSP-seq", "trie",
                     () -> ExpConfig.newProposed(1), 1, bA, minUtilRatio, maxRegRatio, oracle);
             benchmark("S2-compare", "A-Uniform", "RIncHusp-Fix0.4", "0.40",
                     () -> ExpConfig.newRIncHusp(ExpConfig.muMin), 1, bA, minUtilRatio, maxRegRatio, oracle);
             benchmark("S2-compare", "A-Uniform", "RIncHusp-Fix0.9", "0.90",
                     () -> ExpConfig.newRIncHusp(ExpConfig.muFixHigh), 1, bA, minUtilRatio, maxRegRatio, oracle);
+            // Naive re-mine baseline (light datasets only — re-mining a heavy DB every batch is prohibitive,
+            // which is exactly the cost the incremental methods avoid; see C2/C3 in the design notes).
+            if (ExpConfig.s6Datasets.contains(tag))
+                benchmark("S2-compare", "A-Uniform", "Remine-static", "static",
+                        () -> ExpConfig.newRemine(), 1, bA, minUtilRatio, maxRegRatio, oracle);
         }
 
         // ---------- S4: Robustness across 4 distributions ----------
@@ -138,12 +165,89 @@ public class ExperimentOfficial {
             for (int s = 0; s < ExpConfig.DIST_NAMES.length; s++) {
                 String dist = ExpConfig.DIST_NAMES[s];
                 List<List<List<int[]>>> b = ExpUtil.split(all, ExpConfig.DIST_RATIOS[s]);
-                benchmark("S4-distribution", dist, "P-RIncHUSP", "adaptive",
+                benchmark("S4-distribution", dist, "P-RIncHUSP", "trie",
                         () -> ExpConfig.newProposed(cores), cores, b, minUtilRatio, maxRegRatio, oracle);
                 benchmark("S4-distribution", dist, "RIncHusp-Fix0.4", "0.40",
                         () -> ExpConfig.newRIncHusp(ExpConfig.muMin), 1, b, minUtilRatio, maxRegRatio, oracle);
             }
         }
+
+        // ---------- S5: Fine-batch streaming — isolates the lazy gain ----------
+        // s1Only datasets skip S5 too, EXCEPT the explicit allowlist (SIGN — see ExpConfig.s5ExtraDatasets).
+        if (ExpConfig.runS5FineBatch && (!s1Only || ExpConfig.s5ExtraDatasets.contains(tag))) {
+            System.out.println("-- S5 Fine-batch streaming (D_old 25% + 15 x 5% increments, best T=" + cores + ") --");
+            List<List<List<int[]>>> bF = ExpUtil.split(all, ExpConfig.SCEN_FINE);
+            benchmark("S5-finebatch", "F-Fine16", "P-RIncHUSP", "trie",
+                    () -> ExpConfig.newProposed(cores), cores, bF, minUtilRatio, maxRegRatio, oracle);
+            benchmark("S5-finebatch", "F-Fine16", "P-RIncHUSP-invidx", "invidx",
+                    () -> ExpConfig.newProposedInvindex(cores), cores, bF, minUtilRatio, maxRegRatio, oracle);
+            benchmark("S5-finebatch", "F-Fine16", "RIncHusp-Fix0.4", "0.40",
+                    () -> ExpConfig.newRIncHusp(ExpConfig.muMin), 1, bF, minUtilRatio, maxRegRatio, oracle);
+        }
+
+        // ---------- S6: δ-sensitivity sweep (light datasets only; heavy ones would cost 20h+) ----------
+        if (ExpConfig.runS6DeltaSweep && ExpConfig.s6Datasets.contains(tag)) {
+            System.out.println("-- S6 δ-sensitivity sweep (distribution A, best T=" + cores + ") --");
+            for (double mult : ExpConfig.S6_DELTA_MULT) {
+                final double dS = minUtilRatio * mult;
+                Set<String> oracleS = oracleOrNull(dS, maxRegRatio);     // recall denominator at THIS δ
+                String tick = String.format("d=%.4f", dS);
+                benchmark("S6-deltasweep", tick, "P-RIncHUSP", "trie",
+                        () -> ExpConfig.newProposed(cores), cores, bA, dS, maxRegRatio, oracleS);
+                benchmark("S6-deltasweep", tick, "RIncHusp-Fix0.4", "0.40",
+                        () -> ExpConfig.newRIncHusp(ExpConfig.muMin), 1, bA, dS, maxRegRatio, oracleS);
+            }
+        }
+
+        // ---------- S7: ρ-sensitivity sweep (light datasets only) ----------
+        if (ExpConfig.runS7RhoSweep && ExpConfig.s6Datasets.contains(tag)) {
+            System.out.println("-- S7 ρ-sensitivity sweep (distribution A, best T=" + cores + ") --");
+            for (double mult : ExpConfig.S7_RHO_MULT) {
+                final double rS = maxRegRatio * mult;
+                Set<String> oracleS = oracleOrNull(minUtilRatio, rS);   // recall denominator at THIS ρ
+                String tick = String.format("r=%.4f", rS);
+                benchmark("S7-rhosweep", tick, "P-RIncHUSP", "trie",
+                        () -> ExpConfig.newProposed(cores), cores, bA, minUtilRatio, rS, oracleS);
+                benchmark("S7-rhosweep", tick, "RIncHusp-Fix0.4", "0.40",
+                        () -> ExpConfig.newRIncHusp(ExpConfig.muMin), 1, bA, minUtilRatio, rS, oracleS);
+            }
+        }
+
+        // ---------- S8: batch-count scaling — bounded memory/time over #update cycles (light datasets) ----------
+        if (ExpConfig.runS8BatchScaling && ExpConfig.s6Datasets.contains(tag)) {
+            System.out.println("-- S8 batch-count scaling (best T=" + cores + ") --");
+            for (int nb : ExpConfig.S8_BATCH_COUNTS) {
+                List<List<List<int[]>>> bN = ExpUtil.split(all, ExpConfig.fineRatios(nb, 0.25));
+                benchmark("S8-batchscale", "B=" + nb, "P-RIncHUSP", "trie",
+                        () -> ExpConfig.newProposed(cores), cores, bN, minUtilRatio, maxRegRatio, oracle);
+            }
+        }
+    }
+
+    /** Emit dataset characteristics (once per dataset) to the log AND {@code dataset_stats.csv} — the
+     *  paper's "experimental setup" table: #sequences, #distinct items, avg/max length (items),
+     *  avg/max #itemsets (events) per sequence, total DB utility. */
+    static void writeDatasetStats(String tg, List<List<int[]>> data) throws IOException {
+        int nSeq = data.size(), maxLen = 0, maxEvents = 0;
+        long totalItems = 0, totalEvents = 0, totalUtil = 0;
+        java.util.HashSet<Integer> distinct = new java.util.HashSet<>();
+        for (List<int[]> s : data) {
+            int items = 0;
+            for (int[] ev : s) {
+                items += ev.length / 2;
+                for (int k = 0; k < ev.length; k += 2) distinct.add(ev[k]);
+                for (int k = 1; k < ev.length; k += 2) totalUtil += ev[k];
+            }
+            totalEvents += s.size(); totalItems += items;
+            if (items > maxLen) maxLen = items;
+            if (s.size() > maxEvents) maxEvents = s.size();
+        }
+        double avgLen = nSeq == 0 ? 0 : (double) totalItems / nSeq;
+        double avgEvents = nSeq == 0 ? 0 : (double) totalEvents / nSeq;
+        System.out.printf("   [stats %s] N=%d distinctItems=%d avgLen=%.1f maxLen=%d avgEvents=%.1f maxEvents=%d totalUtil=%d%n",
+                tg, nSeq, distinct.size(), avgLen, maxLen, avgEvents, maxEvents, totalUtil);
+        if (ctx != null) ctx.appendDatasetStats(tg, String.format("%s,%d,%d,%.2f,%d,%.2f,%d,%d",
+                tg, nSeq, distinct.size(), avgLen, maxLen, avgEvents, maxEvents, totalUtil));
     }
 
     /** Oracle = RHusp remining the full DB (recall denominator). null if N>coverageMaxN or OOM/timeout. */
@@ -156,8 +260,25 @@ public class ExperimentOfficial {
         finally { ex.shutdownNow(); }
     }
 
-    /** Warm-up + measure measuredRuns times; write 1 row per run; return aggregate (median, hs, shs, recall). */
+    /** Resume-aware wrapper: skip a cell already finished in this run (reusing its aggregate so the S1
+     *  speed-up table stays correct); otherwise run it and record completion in {@code completed.txt}. */
     static Agg benchmark(String scenario, String dist, String algo, String mu, Supplier<IncrementalHUSPMiner> factory,
+                         int threads, List<List<List<int[]>>> b, double d, double r, Set<String> oracle) throws IOException {
+        String cell = tag + "|" + scenario + "|" + dist + "|" + algo + "|" + threads;
+        if (ctx != null && ctx.isCellDone(cell)) {
+            long[] pa = ctx.priorAgg(cell);
+            boolean ok = pa != null && pa[0] == 1;
+            System.out.printf("   [%-15s %-15s T=%-2d] SKIP (done in prior run)%s%n", scenario, algo, threads,
+                    ok ? "  median=" + pa[1] + "ms HS=" + pa[2] : "");
+            return ok ? new Agg(true, pa[1], (int) pa[2], (int) pa[3]) : Agg.failed();
+        }
+        Agg a = benchmarkImpl(scenario, dist, algo, mu, factory, threads, b, d, r, oracle);
+        if (ctx != null) ctx.recordCell(cell);
+        return a;
+    }
+
+    /** Warm-up + measure measuredRuns times; write 1 row per run; return aggregate (median, hs, shs, recall). */
+    static Agg benchmarkImpl(String scenario, String dist, String algo, String mu, Supplier<IncrementalHUSPMiner> factory,
                          int threads, List<List<List<int[]>>> b, double d, double r, Set<String> oracle) throws IOException {
         Run warm = null;
         for (int w = 0; w < Math.max(1, ExpConfig.warmupRuns); w++) warm = timedRun(factory, b, d, r);
@@ -188,10 +309,12 @@ public class ExperimentOfficial {
         ExecutorService ex = Executors.newSingleThreadExecutor(daemon());
         IncrementalHUSPMiner m = factory.get();
         Callable<Run> task = () -> {
+            long[] phase = new long[2];
             long t0 = System.currentTimeMillis();
-            Map<String, long[]> res = ExpUtil.run(m, b, d, r);
+            Map<String, long[]> res = ExpUtil.run(m, b, d, r, phase);
             Run rr = new Run();
             rr.runtimeMs = System.currentTimeMillis() - t0;
+            rr.buildMs = phase[0]; rr.incrMs = phase[1];
             rr.peakMb = m.peakMemoryMB();
             rr.count = res.size();
             rr.shs = m.bufferedCount();
@@ -212,9 +335,11 @@ public class ExperimentOfficial {
     static void writeRow(String scenario, String dist, String algo, String mu, double d, double r,
                          int threads, int nb, int iter, Run run, String recall) throws IOException {
         String status = run.timedOut ? "TIMEOUT" : (run.error != null ? "ERROR" : "OK");
-        csv.write(String.format("%s,%s,%s,%s,%s,%s,%s,%d,%d,%d,%d,%.2f,%d,%d,%s,%s%n",
+        csv.write(String.format("%s,%s,%s,%s,%s,%s,%s,%d,%d,%d,%d,%d,%d,%.2f,%d,%d,%s,%s%n",
                 tag, scenario, dist, algo, mu, d, r, threads, nb, iter,
                 run.timedOut ? -1 : run.runtimeMs,
+                run.timedOut ? -1 : run.buildMs,
+                run.timedOut ? -1 : run.incrMs,
                 run.timedOut ? 0.0 : run.peakMb,
                 run.timedOut ? -1 : run.count,
                 run.timedOut ? -1 : run.shs,
@@ -248,7 +373,7 @@ public class ExperimentOfficial {
     }
 
     static final class Run {
-        long runtimeMs; double peakMb; int count; int shs;
+        long runtimeMs; long buildMs; long incrMs; double peakMb; int count; int shs;
         Map<String, long[]> patterns;
         boolean timedOut = false; String error = null;
     }

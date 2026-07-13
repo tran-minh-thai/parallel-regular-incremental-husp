@@ -3,6 +3,7 @@ package test;
 import algorithms.AdaptiveBuffer;
 import algorithms.AlgoPRIncHUSP;
 import algorithms.AlgoRIncHUSP;
+import algorithms.AlgoRemine;
 
 /**
  * CENTRALIZED configuration for the PARALLEL experiment — every constant lives in ONE place for
@@ -39,20 +40,82 @@ public final class ExpConfig {
     public static final String[]   DIST_NAMES  = {"A-Uniform", "B-Increasing", "C-Oscillating", "D-Decreasing"};
     public static final double[][] DIST_RATIOS = {SCEN_A, SCEN_B, SCEN_C, SCEN_D};
 
+    /**
+     * S5 — fine-batch STREAMING regime: D_old = 25% (keeps the seeding threshold sane; a tiny D_old
+     * collapses it and OOMs — see DatasetCatalog SIGN note) + 15 equal 5% increments. The lazy
+     * buffer's savings scale with #increments × dormancy, so the 4-batch regimes A–D undersell it;
+     * this is also the realistic incremental-mining scenario (many small arrivals on a large base).
+     */
+    public static final double[] SCEN_FINE = fineRatios(16, 0.25);
+
+    /** D_old = {@code dOld} fraction + (nBatches−1) equal increments. Public: reused by S8 batch-scaling. */
+    public static double[] fineRatios(int nBatches, double dOld) {
+        double[] r = new double[nBatches];
+        r[0] = dOld;
+        java.util.Arrays.fill(r, 1, nBatches, (1.0 - dOld) / (nBatches - 1));
+        return r;
+    }
+
     // ===================== Scenario on/off switches =====================
     public static boolean runS1Scalability = true;   // P-RIncHUSP sweep over thread count
-    public static boolean runS2Compare     = true;   // compare against Adaptive-seq + RIncHusp Fix
+    public static boolean runS2Compare     = true;   // compare against Lazy-seq + RIncHusp Fix
     public static boolean runS4Distribution = true;  // 4 distributions A/B/C/D
+    public static boolean runS5FineBatch   = true;   // fine-batch streaming (isolates the maintain strategy)
+    public static boolean runS6DeltaSweep  = true;   // δ-sensitivity sweep (light datasets only)
+    public static boolean runS7RhoSweep    = true;   // ρ-sensitivity sweep (light datasets only)
+    public static boolean runS8BatchScaling = true;  // bounded memory over #update cycles (light datasets)
+
+    // ===================== S6/S7/S8 sensitivity & scaling (light datasets only) =====================
+    /** δ multipliers × each swept dataset's BASE δ. All >= 1.0 (monotone up) so minUtil only RISES →
+     *  fewer patterns, less memory: safe, no OOM risk on the long M5 run. */
+    public static final double[] S6_DELTA_MULT = {1.0, 1.5, 2.0, 3.0};
+    /** ρ multipliers × base ρ (0.30 → 0.15/0.30/0.45/0.60): stricter→looser regularity. */
+    public static final double[] S7_RHO_MULT = {0.5, 1.0, 1.5, 2.0};
+    /** Batch counts for S8 — D_old 25% + (n−1) increments; shows peak memory stays flat as cycles grow. */
+    public static final int[] S8_BATCH_COUNTS = {16, 32, 64};
+    /** Datasets that get S6/S7/S8 — the FAST ones. FIFA/KOSARAK excluded (a sweep would add 20h+). */
+    public static final java.util.Set<String> s6Datasets =
+            new java.util.HashSet<>(java.util.Arrays.asList("SIGN", "LEVIATHAN", "BIBLE"));
+
+    /**
+     * Datasets that run S5 DESPITE {@code s1Only}. SIGN is s1Only because S4's B-Increasing split
+     * (10% D_old) collapses the seeding threshold and OOMs — S5 seeds from 25% D_old, so that risk
+     * does not apply. SIGN is also the dataset where laziness demonstrably pays (dense: ~46k tracked
+     * candidates, −26% match calls in the 16-batch probe); LEVIATHAN/BIBLE measured ≈0 gain, so
+     * without SIGN the S5 table would show none of the mechanism's upside.
+     */
+    public static final java.util.Set<String> s5ExtraDatasets = java.util.Collections.singleton("SIGN");
 
     // ===================== Miner factory =====================
-    /** P-RIncHUSP (proposed) — COMBINED adaptive buffer, runs {@code threads} threads. */
+    /**
+     * P-RIncHUSP (proposed), runs {@code threads} threads. Seeds the RIncHusp buffer at μ_min·minUtil
+     * (coverage identical to Fix(μ_min)) and maintains it via the CONTENT-DRIVEN parallel trie
+     * ({@code trieMaintain}): a shared prefix is matched once for all patterns extending it, work split
+     * over disjoint ascending sequence ranges. Output (pattern,utility,period) is verified element-wise
+     * identical to the per-pattern re-match and to the sequential baseline (TrieVerify), deterministic
+     * across T; measured faster than RIncHusp-Fix0.4 on ALL datasets (1.6–5.3× @ T=10, MaintainBench).
+     * Lazy buffering is OFF: it showed no runtime gain on the M5 suite and is incompatible with the trie.
+     */
     public static AlgoPRIncHUSP newProposed(int threads) {
         AlgoPRIncHUSP m = new AlgoPRIncHUSP();
         m.numThreads = threads;
-        m.buffer.strategy = AdaptiveBuffer.Strategy.COMBINED;
+        m.trieMaintain = true;                       // content-driven parallel maintain
+        m.lazy = false;
+        m.buffer.strategy = AdaptiveBuffer.Strategy.FIX;
+        m.buffer.fixedMu = muMin;                    // seed AND maintain buffer at μ_min·minUtil (= Fix0.4 coverage)
         m.buffer.bufferFactorMin = muMin;
         m.buffer.bufferFactorMax = muMax;
-        m.label = (threads == 1) ? "Adaptive-seq" : "P-RIncHUSP";
+        m.label = (threads == 1) ? "P-RIncHUSP-seq" : "P-RIncHUSP";
+        return m;
+    }
+
+    /** S5 ablation: the SAME proposed miner with the OLD per-pattern (inverted-index) maintain —
+     *  isolates the content-driven maintain's contribution in the official numbers (identical HS by
+     *  construction; the delta is pure maintenance-strategy cost). */
+    public static AlgoPRIncHUSP newProposedInvindex(int threads) {
+        AlgoPRIncHUSP m = newProposed(threads);
+        m.trieMaintain = false;
+        m.label = "P-RIncHUSP-invidx";
         return m;
     }
 
@@ -62,4 +125,7 @@ public final class ExpConfig {
         m.bufferFactor = mu;
         return m;
     }
+
+    /** Naive baseline: re-mine the full DB from scratch each batch (isolates the value of incrementality). */
+    public static AlgoRemine newRemine() { return new AlgoRemine(); }
 }

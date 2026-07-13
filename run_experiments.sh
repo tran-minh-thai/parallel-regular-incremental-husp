@@ -28,6 +28,9 @@ HEAP="16g"
 STACK="4m"
 SKIP_BUILD=0
 DRY_RUN=0
+RESUME=0          # --resume: continue the newest unfinished run (skip cells already done)
+TEST_SUITE=0      # --test:   run the tiny testSuite (example datasets) — seconds, for a smoke check
+NO_MAVEN=0        # --no-maven: build with javac + run with java (no Maven, no network)
 NO_CAFFEINATE=0   # macOS only: prevent idle sleep during the run (auto-detected)
 
 # ---------- Experiment -> Maven main class ----------
@@ -59,7 +62,16 @@ Options:
 
       --heap   <size>       Max JVM heap, e.g. 8g, 16g (default 16g).
       --stack  <size>       Per-thread stack, e.g. 4m, 8m (default 4m).
-      --skip-build          Skip `mvn compile` (assumes target/classes is up to date).
+      --skip-build          Skip the compile step (assumes classes are already built).
+      --no-maven            Build with `javac` and run with `java` instead of Maven. The project has
+                            NO external dependencies, so this needs no network and no ~/.m2 — use it
+                            when Maven cannot reach repo.maven.apache.org. Classes go to out/.
+      --test                (full suite) Run the tiny testSuite (example datasets) instead of the real
+                            one — finishes in seconds. Use it to smoke-test the WHOLE pipeline
+                            (compile + run + results dir) before starting a multi-hour run.
+      --resume              (full suite) Continue the newest UNFINISHED run: skip datasets/cells
+                            already completed, redo only what is missing. Safe to re-invoke after a
+                            crash/OOM/kill. A run is finished when its results/run_*/ has a DONE file.
       --no-caffeinate       (macOS) do NOT wrap mvn with `caffeinate -i`.
                             By default, on macOS the run is wrapped in
                             `caffeinate -i` so the Mac stays awake until
@@ -77,6 +89,9 @@ while [[ $# -gt 0 ]]; do
         --stack)         STACK="${2:?missing value for $1}"; shift 2 ;;
         --skip-build)    SKIP_BUILD=1; shift ;;
         --no-caffeinate) NO_CAFFEINATE=1; shift ;;
+        --resume)        RESUME=1; shift ;;
+        --test)          TEST_SUITE=1; shift ;;
+        --no-maven)      NO_MAVEN=1; shift ;;
         --dry-run)       DRY_RUN=1; shift ;;
         -h|--help)       print_help; exit 0 ;;
         *) echo "Unknown option: $1" >&2; print_help; exit 2 ;;
@@ -114,8 +129,16 @@ else
 fi
 
 # ---------- Sanity ----------
-command -v mvn  >/dev/null 2>&1 || { echo "mvn not found on PATH"  >&2; exit 1; }
 command -v java >/dev/null 2>&1 || { echo "java not found on PATH" >&2; exit 1; }
+if (( NO_MAVEN == 1 )); then
+    command -v javac >/dev/null 2>&1 || { echo "javac not found on PATH (need a JDK, not just a JRE)" >&2; exit 1; }
+else
+    command -v mvn >/dev/null 2>&1 || {
+        echo "mvn not found on PATH. Tip: the project has no dependencies — you can run without Maven:" >&2
+        echo "      ./run_experiments.sh --no-maven" >&2
+        exit 1
+    }
+fi
 
 # Wrap with caffeinate -i on macOS to prevent idle sleep during multi-hour runs.
 # caffeinate auto-stops when the wrapped process exits; no manual cleanup needed.
@@ -128,53 +151,110 @@ elif [[ "$(uname -s)" == "Darwin" ]] && (( NO_CAFFEINATE == 1 )); then
     CAFFEINATE_STATUS="off (--no-caffeinate)"
 fi
 
-section "P-RIncHUSP experiment runner (Maven)"
+section "P-RIncHUSP experiment runner"
 echo "Project root  : $PROJ_ROOT"
 echo "Experiment    : $EXPERIMENT  ->  $MAIN_CLASS"
 echo "Heap / Stack  : -Xmx${HEAP}  /  -Xss${STACK}"
-echo "mvn / java    : $(command -v mvn)  /  $(command -v java)"
+if (( NO_MAVEN == 1 )); then
+    echo "Build / Run   : javac + java  (no Maven, no network needed)"
+    echo "javac / java  : $(command -v javac)  /  $(command -v java)"
+else
+    echo "Build / Run   : Maven (mvn compile + exec:exec)"
+    echo "mvn / java    : $(command -v mvn)  /  $(command -v java)"
+fi
 echo "Sleep guard   : $CAFFEINATE_STATUS"
 echo "Log file      : $LOG_FILE"
 echo "Cores         : $CORES"
 
 # ---------- Step 1: compile ----------
+# Where the .class files land: Maven -> target/classes ; javac fallback -> out/
+if (( NO_MAVEN == 1 )); then
+    CLASSES_DIR="$PROJ_ROOT/out"
+else
+    CLASSES_DIR="$PROJ_ROOT/target/classes"
+fi
+
 if (( SKIP_BUILD == 0 )); then
-    section "Step 1/2  mvn compile"
-    echo "mvn -q compile"
-    if (( DRY_RUN == 0 )); then
-        mvn -q compile
+    if (( NO_MAVEN == 1 )); then
+        section "Step 1/2  javac  (no Maven, no network)"
+        echo "javac --release 11 -d '$CLASSES_DIR' <all .java under src/>"
+        if (( DRY_RUN == 0 )); then
+            mkdir -p "$CLASSES_DIR"
+            # Collect sources NUL-safely: the project path may contain spaces (e.g. ".../My Drive/...").
+            # An unquoted $(find ...) would word-split on those spaces and javac would reject the fragments.
+            SRC_FILES=()
+            while IFS= read -r -d '' f; do SRC_FILES+=("$f"); done \
+                < <(find "$PROJ_ROOT/src" -name "*.java" -print0)
+            if (( ${#SRC_FILES[@]} == 0 )); then
+                echo "ERROR: no .java sources found under $PROJ_ROOT/src" >&2
+                exit 1
+            fi
+            javac --release 11 -d "$CLASSES_DIR" "${SRC_FILES[@]}"
+        fi
+    else
+        section "Step 1/2  mvn compile"
+        echo "mvn -q compile"
+        if (( DRY_RUN == 0 )); then
+            mvn -q compile
+        fi
     fi
     echo "Compile OK"
 else
-    section "Step 1/2  mvn compile  [SKIPPED]"
-    if [[ ! -f "$PROJ_ROOT/target/classes/test/ExperimentOfficial.class" ]]; then
-        echo "ERROR: target/classes does not contain compiled classes - rerun without --skip-build" >&2
+    section "Step 1/2  compile  [SKIPPED]"
+    if [[ ! -f "$CLASSES_DIR/test/ExperimentOfficial.class" ]]; then
+        echo "ERROR: $CLASSES_DIR has no compiled classes - rerun without --skip-build" >&2
         exit 1
     fi
 fi
 
 # ---------- Step 2: run ----------
-section "Step 2/2  mvn exec:exec  ($MAIN_CLASS)"
+if (( NO_MAVEN == 1 )); then
+    section "Step 2/2  java  ($MAIN_CLASS)"
+else
+    section "Step 2/2  mvn exec:exec  ($MAIN_CLASS)"
+fi
 
 # Snapshot of results/ before the run, so we can list newly created files later.
 FILES_BEFORE="$(mktemp)"
 trap 'rm -f "$FILES_BEFORE"' EXIT
 find "$RESULTS_DIR" -type f 2>/dev/null | sort > "$FILES_BEFORE"
 
-MVN_ARGS=(-q exec:exec
-          "-Dexec.mainClass=$MAIN_CLASS"
-          "-DheapSize=$HEAP"
-          "-DstackSize=$STACK")
-echo "${RUNNER_PREFIX[*]} mvn ${MVN_ARGS[*]}"
+# --resume / --test are only meaningful for the full-suite runner.
+SUITE_MODE=0
+[[ "$EXP_KEY" == "all" || "$EXP_KEY" == "official" ]] && SUITE_MODE=1
+
+PROG_ARGS=()
+HAVE_ARGS=0
+if (( TEST_SUITE == 1 )); then
+    if (( SUITE_MODE == 1 )); then PROG_ARGS+=(--test); HAVE_ARGS=1
+    else echo "Note: --test only applies to the full suite; ignored for '$EXP_KEY'." >&2; fi
+fi
+if (( RESUME == 1 )); then
+    if (( SUITE_MODE == 1 )); then PROG_ARGS+=(--resume); HAVE_ARGS=1
+    else echo "Note: --resume only applies to the full suite; ignored for '$EXP_KEY'." >&2; fi
+fi
+
+if (( NO_MAVEN == 1 )); then
+    RUN_CMD=(java "-Xmx${HEAP}" "-Xss${STACK}" -cp "$CLASSES_DIR" "$MAIN_CLASS")
+    if (( HAVE_ARGS == 1 )); then RUN_CMD+=("${PROG_ARGS[@]}"); fi
+else
+    MVN_ARGS=(-q exec:exec
+              "-Dexec.mainClass=$MAIN_CLASS"
+              "-DheapSize=$HEAP"
+              "-DstackSize=$STACK")
+    if (( HAVE_ARGS == 1 )); then MVN_ARGS+=("-Dprog.args=${PROG_ARGS[*]}"); fi
+    RUN_CMD=(mvn "${MVN_ARGS[@]}")
+fi
+echo "${RUNNER_PREFIX[*]} ${RUN_CMD[*]}"
 echo "Streaming output to console AND $LOG_FILE ..."
 echo ""
 
 START_TS=$(date +%s)
 if (( DRY_RUN == 0 )); then
-    # Tee combines stdout+stderr to console AND log file. PIPESTATUS preserves mvn's exit code.
+    # Tee combines stdout+stderr to console AND log file. PIPESTATUS preserves the runner's exit code.
     set +e
     # ${arr[@]+...} pattern: safe with empty array under `set -u` on macOS bash 3.2.
-    ${RUNNER_PREFIX[@]+"${RUNNER_PREFIX[@]}"} mvn "${MVN_ARGS[@]}" 2>&1 | tee "$LOG_FILE"
+    ${RUNNER_PREFIX[@]+"${RUNNER_PREFIX[@]}"} "${RUN_CMD[@]}" 2>&1 | tee "$LOG_FILE"
     EXIT=${PIPESTATUS[0]}
     set -e
 else

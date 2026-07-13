@@ -86,9 +86,15 @@ Log file: `results/run_log_<experiment>_<timestamp>.txt`.
 ./run_experiments.sh                                 # full suite, -Xmx16g -Xss4m
 ./run_experiments.sh -e recall                       # RecallProbe only
 ./run_experiments.sh -e mu --heap 8g                 # MuProbe with 8 GB heap
+./run_experiments.sh --resume                        # continue an aborted suite run
+./run_experiments.sh --no-maven                      # build/run with javac+java (no Maven, no network)
 ./run_experiments.sh --skip-build --dry-run          # show command without running
 ./run_experiments.sh --no-caffeinate                 # macOS: don't keep Mac awake
+./results_status.sh                                  # which run dirs are VALID vs PARTIAL/stale
 ```
+
+> `--no-maven` exists because the project has **no external dependencies**: only Maven's own build
+> plugins need the network. Use it when `repo.maven.apache.org` is unreachable (offline machine).
 
 > On **macOS**, the script auto-wraps `mvn` with `caffeinate -i` so the system
 > won't idle-sleep during multi-hour benchmark runs. Pass `--no-caffeinate`
@@ -124,7 +130,7 @@ Place dataset files in the `datasets/` directory. The `_seq.txt` file holds the 
 
 | Dataset | Sequences | Events/seq | Items | Recommended δ | Note |
 |---|---|---|---|---|---|
-| SIGN | 730 | high | — | 0.030 | Dense; δ≤0.02 OOM at 6 GB |
+| SIGN | 730 | high | — | 0.030 | Dense; δ≤0.02 OOM at 6 GB. **S1 only** — under S4's `B-Increasing` (10% first batch) the seeding threshold collapses and the SHS set explodes combinatorially → OOM even at 32 GB (T-independent) |
 | LEVIATHAN | 5,834 | low | — | 0.005 | Sparse |
 | BIBLE | 36,369 | low | — | 0.0025 | Sparse; matches paper δ |
 | FIFA | 20,450 | ≤100 | — | 0.050 | Dense; ~7 min/run — S1 only |
@@ -268,11 +274,28 @@ datasets/
 
 ## Output Format
 
-`ExperimentOfficial` writes one CSV row per (dataset, scenario, algorithm, thread count, iteration):
+Each suite run creates one **self-describing directory** `results/run_<timestamp>_<confighash>/`:
+
+| File | Contents |
+|---|---|
+| `results.csv` | One row per (dataset, scenario, distribution, algorithm, threads, iteration). Holds **only completed cells** — partial rows left by a crashed cell are pruned on `--resume`. |
+| `meta.properties` | Environment (OS, JVM, cores, max heap, host, git commit) **and** the config that produced the numbers (per-dataset δ/ρ/s1Only, μ band, warm-up/measured runs, timeout, S1/S2/S4 switches) + `config.signature` + `status`. |
+| `DONE` | Written **only** when the whole suite finished. Present ⇒ results are complete and valid; absent ⇒ the run was aborted. |
+| `completed.txt`, `datasets_done.txt` | Resume bookkeeping (which cells / datasets already finished). |
+
+CSV columns:
 
 ```
-dataset, scenario, algorithm, delta, rho, threads, n_batches, iteration, runtime_ms, peak_mb, hs_count, coverage, status
+dataset,scenario,distribution,algorithm,mu,minUtilRatio,maxRegRatio,threads,n_batches,iteration,runtime_ms,peak_mb,hs_count,shs_count,recall,status
 ```
+
+### Telling valid results from stale ones
+
+Run `./results_status.sh` — it lists every run directory with its status and signature:
+
+- **VALID** (has `DONE`) → complete, usable numbers.
+- **PARTIAL** (no `DONE`) → aborted run. Continue it with `./run_experiments.sh --resume`, or delete the directory.
+- Runs whose `config.signature` differs came from a **different configuration** (changed δ / ρ / μ / suite / scenario switches). **Never mix their numbers** in one analysis.
 
 `ExperimentTest` additionally writes a pattern file per algorithm:
 

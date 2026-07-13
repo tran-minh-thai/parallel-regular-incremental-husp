@@ -27,6 +27,14 @@ public class AdaptiveBuffer {
     /** Fixed μ value when {@code strategy == FIX} (e.g. 0.4 = SC5, 0.9 = SC6). */
     public double fixedMu = 0.4;
 
+    /**
+     * COMBINED only: include the "threshold difficulty" signal r_B = δ in the per-batch min().
+     * r_B is CONSTANT across batches (it is a per-dataset value), so with the reference bounds it
+     * saturates factorBase to μ_min and pins μ. Set {@code false} to drive per-batch adaptation from
+     * the genuinely batch-varying signals (r_U growth, r_G growth) only; r_B then just sets the band.
+     */
+    public boolean includeBaseSignal = true;
+
     // bufferFactorMin is the initial μ of P-RIncHUSP (on the first batch, with no risk signal,
     // computeBufferFactor returns bufferFactorMin). For a fair comparison this value must equal
     // AlgoRIncHUSP.bufferFactor (both 0.4): the two algorithms initialize with the same buffer
@@ -72,7 +80,9 @@ public class AdaptiveBuffer {
             case MINBASE:   bufferFactor = factorBase;   break;
             case UTILRATIO: bufferFactor = factorUtil;   break;
             case COMBINED:
-            default:        bufferFactor = Math.min(factorUtil, Math.min(factorBase, factorGrowth));
+            default:
+                bufferFactor = Math.min(factorUtil, factorGrowth);
+                if (includeBaseSignal) bufferFactor = Math.min(bufferFactor, factorBase);
         }
         lastBufferFactor = Math.max(bufferFactorMin, Math.min(bufferFactorMax, bufferFactor));
         return lastBufferFactor;
