@@ -2,6 +2,8 @@ package test;
 
 import algorithms.AdaptiveBuffer;
 import algorithms.AlgoPRIncHUSP;
+import algorithms.AlgoParRemine;
+import algorithms.AlgoRHUSPMinerParallel;
 import algorithms.AlgoRIncHUSP;
 import algorithms.AlgoRemine;
 
@@ -25,6 +27,38 @@ public final class ExpConfig {
     public static int  warmupRuns   = 1;
     public static int  measuredRuns = 3;
     public static long runTimeoutMs = 60L * 60 * 1000;   // 60 minutes per run
+
+    // ===================== Thread sweep — PINNED (reproducibility, luuy C7) =====================
+    /**
+     * Thread counts swept in S1, and the source of the "best T" used by S2/S4/S5/S6/S7/S8.
+     * <b>PINNED</b> rather than derived from {@code availableProcessors()}: a machine can silently
+     * report fewer cores (macOS Low Power Mode did exactly that mid-study), which would quietly change
+     * the tables. Entries above the machine's real core count are DROPPED — never oversubscribed —
+     * and {@link #threadSweepTruncated()} makes the runner print a loud warning.
+     */
+    public static final int[] THREAD_SWEEP = {1, 2, 4, 8, 10};
+
+    /** The pinned sweep restricted to what this machine can actually run. */
+    public static int[] effectiveThreadSweep() {
+        int cores = Runtime.getRuntime().availableProcessors();
+        java.util.List<Integer> ok = new java.util.ArrayList<>();
+        for (int t : THREAD_SWEEP) if (t <= cores) ok.add(t);
+        if (ok.isEmpty()) ok.add(1);
+        int[] a = new int[ok.size()];
+        for (int i = 0; i < a.length; i++) a[i] = ok.get(i);
+        return a;
+    }
+
+    /** "Best T" for the single-configuration scenarios = largest usable entry of the pinned sweep. */
+    public static int bestT() {
+        int[] s = effectiveThreadSweep();
+        return s[s.length - 1];
+    }
+
+    /** True when this machine cannot run the full pinned sweep → results deviate from the protocol. */
+    public static boolean threadSweepTruncated() {
+        return effectiveThreadSweep().length < THREAD_SWEEP.length;
+    }
 
     // ===================== Oracle / recall =====================
     /** Measure recall ONLY WHEN numSequences ≤ threshold (in-memory RHusp oracle feasible). */
@@ -71,8 +105,12 @@ public final class ExpConfig {
     public static final double[] S6_DELTA_MULT = {1.0, 1.5, 2.0, 3.0};
     /** ρ multipliers × base ρ (0.30 → 0.15/0.30/0.45/0.60): stricter→looser regularity. */
     public static final double[] S7_RHO_MULT = {0.5, 1.0, 1.5, 2.0};
-    /** Batch counts for S8 — D_old 25% + (n−1) increments; shows peak memory stays flat as cycles grow. */
-    public static final int[] S8_BATCH_COUNTS = {16, 32, 64};
+    /**
+     * Batch counts for S8 (D_old 25% + (n−1) increments). Spans SMALL counts — where re-mining with the
+     * parallel engine is still cheap — through LARGE ones, so the CROSSOVER between the two cost curves
+     * is visible: re-mining is O(#updates), incremental maintenance is flat.
+     */
+    public static final int[] S8_BATCH_COUNTS = {2, 4, 8, 16, 32, 64};
     /** Datasets that get S6/S7/S8 — the FAST ones. FIFA/KOSARAK excluded (a sweep would add 20h+). */
     public static final java.util.Set<String> s6Datasets =
             new java.util.HashSet<>(java.util.Arrays.asList("SIGN", "LEVIATHAN", "BIBLE"));
@@ -101,8 +139,9 @@ public final class ExpConfig {
     public static AlgoPRIncHUSP newProposed(int threads) {
         AlgoPRIncHUSP m = new AlgoPRIncHUSP();
         m.numThreads = threads;
-        m.trieMaintain = true;                       // content-driven parallel maintain
-        m.forkSeed = true;                           // fork-join work-stealing on the seeding enumeration
+        m.seedWithEngine05 = true;                   // D_old seeded by the companion study's parallel engine
+        m.trieMaintain = true;                       // content-driven parallel maintain (THIS paper's contribution)
+        m.forkSeed = false;                          // in-house enumeration unused when seeding with [05]
         m.lazy = false;
         m.buffer.strategy = AdaptiveBuffer.Strategy.FIX;
         m.buffer.fixedMu = muMin;                    // seed AND maintain buffer at μ_min·minUtil (= Fix0.4 coverage)
@@ -129,6 +168,19 @@ public final class ExpConfig {
         return m;
     }
 
-    /** Naive baseline: re-mine the full DB from scratch each batch (isolates the value of incrementality). */
+    /** Naive baseline: re-mine the full DB from scratch each batch, SEQUENTIAL static miner. */
     public static AlgoRemine newRemine() { return new AlgoRemine(); }
+
+    /**
+     * DECISIVE baseline: the companion study's PARALLEL static RHUSP engine (RDLB scheduler) re-run
+     * from scratch on every batch. Answers "a parallel static miner exists — why not just re-run it?".
+     * The gap to P-RIncHUSP is precisely the value of parallel INCREMENTAL maintenance.
+     */
+    public static AlgoParRemine newParRemine(int threads) {
+        AlgoParRemine m = new AlgoParRemine();
+        m.numThreads = threads;
+        m.parallelStrategy = AlgoRHUSPMinerParallel.STRAT_RDLB;   // the companion paper's best config
+        m.denseBuffers = true;
+        return m;
+    }
 }

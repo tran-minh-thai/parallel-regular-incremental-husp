@@ -138,6 +138,19 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
     /** Occurrence-count (VUL size) below which a subtree is enumerated sequentially instead of forked. */
     public int seedGrain = 128;
 
+    /**
+     * Seed {@code D_old} with the companion study's PARALLEL static engine
+     * ({@link AlgoRHUSPMinerParallel}: CSR layout, EUCS + LA-PEU bounds, RDLB scheduler) instead of
+     * this class's own VUL/DEUCS enumeration. That engine is several times faster on the same input,
+     * and seeding is 85–95% of the runtime — so this is the architecture the incremental layer should
+     * sit on: <b>[05]'s engine seeds, our parallel incremental maintenance takes over</b>.
+     * <p>
+     * The engine is run in {@code seedMode} at the buffer threshold θ = μ_min·minUtil, and returns
+     * per pattern the {@code lastSeqId} and {@code maxInnerPeriod} needed to CONTINUE the regularity
+     * accumulation. Output is identical to the in-house enumeration (same exact RHUSP semantics).
+     */
+    public boolean seedWithEngine05 = false;
+
     // ----- State persistent across batches -----
     private final QSeqDatabase data = new QSeqDatabase();
     private final DEUCS deucs = new DEUCS();
@@ -271,8 +284,10 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
     @Override
     public void initialBuild(List<List<int[]>> dOld, double minUtilRatio, double maxRegRatio) {
         this.minUtilRatio = minUtilRatio; this.maxRegRatio = maxRegRatio;
-        deucs.incUpdate(dOld);
-        deucs.buildAdjacency();          // adjacency index for fast candidate generation (used only in enumeration)
+        if (!seedWithEngine05) {          // DEUCS only serves the in-house enumeration
+            deucs.incUpdate(dOld);
+            deucs.buildAdjacency();      // adjacency index for fast candidate generation
+        }
         data.appendBatch(dOld);
         recomputeThresholds(0, 0, dOld.size(), 0);   // first batch: μ = μ_min
         // Lazy mode: ALWAYS seed at μ_min — seeding defines the coverage ceiling (lazy can only
@@ -285,7 +300,8 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         seedMaxReg = (seedPruneByFinalN && hintedTotalN > data.numSequences)
                 ? (int) (maxRegRatio * hintedTotalN)     // sound (ρ·N_final) — no recall loss
                 : maxReg;                                // default ρ·N_current — strong pruning, approximate (paper)
-        staticBuild();
+        if (seedWithEngine05) seedWithParallelEngine(dOld);
+        else staticBuild();
         pats = patsQueue.toArray(new Pat[0]);
         patsQueue.clear();
         deucs.release();            // DEUCS only serves seeding; the incremental phase does not need it -> release (less residual memory)
@@ -304,6 +320,55 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
      * depth, so no contention and no per-node allocation. Patterns with {@code totalUtility >= θ} are
      * added to {@code patsQueue}.
      */
+    /**
+     * Seed with the companion study's parallel engine (see {@link #seedWithEngine05}). Runs it in
+     * {@code seedMode} at the exact buffer threshold θ and the seeding regularity bound, then converts
+     * each returned pattern into a {@link Pat} carrying the state needed to continue incrementally
+     * (utility, lastSeqId, maxInnerPeriod).
+     */
+    private void seedWithParallelEngine(List<List<int[]>> dOld) {
+        AlgoRHUSPMinerParallel eng = new AlgoRHUSPMinerParallel();
+        eng.numThreads = numThreads;
+        eng.parallelStrategy = AlgoRHUSPMinerParallel.STRAT_RDLB;
+        eng.denseBuffers = true;
+        eng.useEUCS = true;
+        eng.boundMode = AlgoRHUSPMinerParallel.BOUND_LA_PEU;
+        eng.useRegPruning = true;
+        eng.seedMode = true;                                     // keep seeds with a large trailing gap
+        eng.forcedMinUtil = (long) Math.ceil(bufferThreshold);   // θ = μ_min · minUtil
+        eng.forcedMaxReg = seedMaxReg;
+        eng.runAlgorithmInMemory(dOld, minUtilRatio, maxRegRatio);
+
+        for (Map.Entry<String, AlgoRHUSPMinerParallel.PatternResult> e : eng.finalPatterns.entrySet()) {
+            AlgoRHUSPMinerParallel.PatternResult r = e.getValue();
+            if (r.lastSeqId < 0) continue;
+            int[][] path = parsePath(e.getKey());
+            patsQueue.add(new Pat(path[0], path[1], r.utility, r.lastSeqId, r.maxInnerPeriod));
+        }
+    }
+
+    /** Parse {@code "<(1 2)(3)>"} into {ext[], item[]}: first item of an event = S_EXT, later = I_EXT. */
+    private static int[][] parsePath(String key) {
+        String body = key.replace("<", "").replace(">", "").trim();
+        String[] events = body.replace(")(", ")#(").split("#");
+        List<Integer> exts = new ArrayList<>(), items = new ArrayList<>();
+        for (String ev : events) {
+            String inner = ev.replace("(", "").replace(")", "").trim();
+            if (inner.isEmpty()) continue;
+            boolean first = true;
+            for (String tok : inner.split("[,\\s]+")) {
+                if (tok.isEmpty()) continue;
+                items.add(Integer.parseInt(tok));
+                exts.add(first ? S_EXT : I_EXT);
+                first = false;
+            }
+        }
+        int n = items.size();
+        int[] ext = new int[n], item = new int[n];
+        for (int i = 0; i < n; i++) { ext[i] = exts.get(i); item[i] = items.get(i); }
+        return new int[][]{ext, item};
+    }
+
     private void staticBuild() {
         enumDeucs = deucs; enumThreshold = bufferThreshold; enumMaxReg = seedMaxReg;
         enumUseIntraGap = false; enumCap = Integer.MAX_VALUE; enumCount.set(0);

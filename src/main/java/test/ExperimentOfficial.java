@@ -79,6 +79,18 @@ public class ExperimentOfficial {
         csv = ctx.csv;
         System.out.printf("### PARALLEL EXPERIMENT — %d datasets | %s | dir=results/%s ###%n",
                 suite.size(), ctx.resumed ? "RESUME (skipping finished work)" : "fresh run", ctx.dir.getName());
+        System.out.printf("### thread sweep (pinned) = %s | best T = %d ###%n",
+                Arrays.toString(ExpConfig.effectiveThreadSweep()), ExpConfig.bestT());
+        if (ExpConfig.threadSweepTruncated()) {
+            String bar = "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
+            System.out.println(bar);
+            System.out.printf("!! WARNING: this machine reports only %d cores, so the pinned sweep %s%n",
+                    Runtime.getRuntime().availableProcessors(), Arrays.toString(ExpConfig.THREAD_SWEEP));
+            System.out.printf("!! is TRUNCATED to %s. The tables will NOT match the paper's protocol.%n",
+                    Arrays.toString(ExpConfig.effectiveThreadSweep()));
+            System.out.println("!! macOS: plug in the charger, turn OFF Low Power Mode, and re-run.");
+            System.out.println(bar);
+        }
         for (DatasetSpec s : suite) {
             if (ctx.isDatasetDone(s.tag)) {
                 System.out.printf("%n========== %s — SKIP (already finished in this run) ==========%n", s.tag);
@@ -112,19 +124,20 @@ public class ExperimentOfficial {
         tag = tg;
         all = ExpUtil.loadAll(seqFile, euiFile);
         writeDatasetStats(tg, all);                    // characteristics table (once per dataset)
-        final int cores = Runtime.getRuntime().availableProcessors();
+        final int cores = ExpConfig.bestT();           // PINNED best-T (not availableProcessors) — see ExpConfig
         Set<String> oracle = oracleOrNull(minUtilRatio, maxRegRatio);
 
-        System.out.printf("%n========== %s%s | %d sequences | δ=%.4f ρ=%.2f | %s | %d cores ==========%n",
+        System.out.printf("%n========== %s%s | %d sequences | δ=%.4f ρ=%.2f | %s | best T=%d (machine has %d) ==========%n",
                 tag, s1Only ? " [S1 ONLY]" : "", all.size(), minUtilRatio, maxRegRatio,
-                oracle != null ? "oracle(RHusp)=" + oracle.size() : "recall=SKIPPED (N>" + ExpConfig.coverageMaxN + ")", cores);
+                oracle != null ? "oracle(RHusp)=" + oracle.size() : "recall=SKIPPED (N>" + ExpConfig.coverageMaxN + ")",
+                cores, Runtime.getRuntime().availableProcessors());
 
         List<List<List<int[]>>> bA = ExpUtil.split(all, ExpConfig.SCEN_A);
 
         // ---------- S1: Scalability + S3: correctness invariance ----------
         if (ExpConfig.runS1Scalability) {
             System.out.println("-- S1 Scalability (distribution A) --");
-            int[] ts = threadCounts(cores);
+            int[] ts = ExpConfig.effectiveThreadSweep();   // PINNED sweep (clamped to real cores)
             long[] med = new long[ts.length];
             List<Integer> hsByT = new ArrayList<>();
             for (int i = 0; i < ts.length; i++) {
@@ -152,11 +165,17 @@ public class ExperimentOfficial {
                     () -> ExpConfig.newRIncHusp(ExpConfig.muMin), 1, bA, minUtilRatio, maxRegRatio, oracle);
             benchmark("S2-compare", "A-Uniform", "RIncHusp-Fix0.9", "0.90",
                     () -> ExpConfig.newRIncHusp(ExpConfig.muFixHigh), 1, bA, minUtilRatio, maxRegRatio, oracle);
-            // Naive re-mine baseline (light datasets only — re-mining a heavy DB every batch is prohibitive,
+            // Re-mine baselines (light datasets only — re-mining a heavy DB every batch is prohibitive,
             // which is exactly the cost the incremental methods avoid; see C2/C3 in the design notes).
-            if (ExpConfig.s6Datasets.contains(tag))
+            //   Remine-static : SEQUENTIAL static miner re-run each batch.
+            //   ParRemine     : the companion study's PARALLEL static engine (RDLB) re-run each batch —
+            //                   the decisive baseline ("why not just re-run the parallel miner?").
+            if (ExpConfig.s6Datasets.contains(tag)) {
                 benchmark("S2-compare", "A-Uniform", "Remine-static", "static",
                         () -> ExpConfig.newRemine(), 1, bA, minUtilRatio, maxRegRatio, oracle);
+                benchmark("S2-compare", "A-Uniform", "ParRemine-RDLB", "rdlb",
+                        () -> ExpConfig.newParRemine(cores), cores, bA, minUtilRatio, maxRegRatio, oracle);
+            }
         }
 
         // ---------- S4: Robustness across 4 distributions ----------
@@ -213,13 +232,18 @@ public class ExperimentOfficial {
             }
         }
 
-        // ---------- S8: batch-count scaling — bounded memory/time over #update cycles (light datasets) ----------
+        // ---------- S8: batch-count scaling — THE CROSSOVER (light datasets) ----------
+        // The decisive figure: re-mining with the parallel static engine costs O(#updates) while
+        // incremental maintenance is flat, so the two curves cross. Both methods are measured over the
+        // SAME data split into an increasing number of update cycles.
         if (ExpConfig.runS8BatchScaling && ExpConfig.s6Datasets.contains(tag)) {
-            System.out.println("-- S8 batch-count scaling (best T=" + cores + ") --");
+            System.out.println("-- S8 batch-count scaling / crossover (best T=" + cores + ") --");
             for (int nb : ExpConfig.S8_BATCH_COUNTS) {
                 List<List<List<int[]>>> bN = ExpUtil.split(all, ExpConfig.fineRatios(nb, 0.25));
                 benchmark("S8-batchscale", "B=" + nb, "P-RIncHUSP", "trie",
                         () -> ExpConfig.newProposed(cores), cores, bN, minUtilRatio, maxRegRatio, oracle);
+                benchmark("S8-batchscale", "B=" + nb, "ParRemine-RDLB", "rdlb",
+                        () -> ExpConfig.newParRemine(cores), cores, bN, minUtilRatio, maxRegRatio, oracle);
             }
         }
     }
