@@ -74,6 +74,7 @@ public class ExperimentOfficial {
         boolean resume = flags.contains("--resume");
         boolean testMode = flags.contains("--test");
         List<DatasetSpec> suite = testMode ? DatasetCatalog.testSuite() : DatasetCatalog.officialSuite();
+        if (testMode) ExpConfig.enableSweepsForTestSuite();   // exercise S6-S10 too, in seconds
 
         ctx = RunContext.start(suite, resume);
         csv = ctx.csv;
@@ -219,6 +220,9 @@ public class ExperimentOfficial {
         }
 
         // ---------- S7: ρ-sensitivity sweep (light datasets only) ----------
+        // The approximate variant is measured HERE on purpose: its recall collapses as ρ tightens
+        // (SIGN 0.9667 @ρ=0.30 → 0.7667 @ρ=0.15) because the unsound ρ·N_current seed prune gets
+        // proportionally harsher. That collapse is the empirical case for the exact design.
         if (ExpConfig.runS7RhoSweep && ExpConfig.s6Datasets.contains(tag)) {
             System.out.println("-- S7 ρ-sensitivity sweep (distribution A, best T=" + cores + ") --");
             for (double mult : ExpConfig.S7_RHO_MULT) {
@@ -227,6 +231,8 @@ public class ExperimentOfficial {
                 String tick = String.format("r=%.4f", rS);
                 benchmark("S7-rhosweep", tick, "P-RIncHUSP", "trie",
                         () -> ExpConfig.newProposed(cores), cores, bA, minUtilRatio, rS, oracleS);
+                benchmark("S7-rhosweep", tick, "P-RIncHUSP-approx", "0.40",
+                        () -> ExpConfig.newProposedApprox(cores), cores, bA, minUtilRatio, rS, oracleS);
                 benchmark("S7-rhosweep", tick, "RIncHusp-Fix0.4", "0.40",
                         () -> ExpConfig.newRIncHusp(ExpConfig.muMin), 1, bA, minUtilRatio, rS, oracleS);
             }
@@ -245,6 +251,41 @@ public class ExperimentOfficial {
                 benchmark("S8-batchscale", "B=" + nb, "ParRemine-RDLB", "rdlb",
                         () -> ExpConfig.newParRemine(cores), cores, bN, minUtilRatio, maxRegRatio, oracle);
             }
+        }
+
+        // ---------- S9: θ₀ sweep — why μ=1 is not a tuned constant ----------
+        // Two claims, one table. (a) recall is 1.0000 at EVERY μ: exactness does not depend on θ₀, exactly
+        // as the partition lemma says. (b) cost is U-shaped — the seed gets cheaper as θ₀ rises, discovery
+        // gets more expensive — and the minimum sits at μ=1, where each part is mined at its own natural
+        // threshold (θ₀=δ·U(D_old), θ_disc=δ·U(ΔD)). μ=0.4 is the inherited RIncHusp buffer value.
+        if (ExpConfig.runS9MuSweep && ExpConfig.s6Datasets.contains(tag)) {
+            System.out.println("-- S9 θ₀ sweep (distribution A, best T=" + cores + ") --");
+            for (double mu : ExpConfig.S9_MUS) {
+                final double m = mu;
+                benchmark("S9-musweep", String.format("mu=%.1f", m), "P-RIncHUSP", String.format("%.2f", m),
+                        () -> ExpConfig.newProposedMu(cores, m), cores, bA, minUtilRatio, maxRegRatio, oracle);
+            }
+        }
+
+        // ---------- S10: exactness ablation — which flag closes which ceiling ----------
+        // The seed-once ceiling has TWO independent components needing DIFFERENT bounds:
+        //   regBound  (ρ·N_final seed prune) closes the REGULARITY component;
+        //   discovery (mine ΔD at minUtil−θ₀) closes the UTILITY component.
+        // Neither alone is exact. Both together are. θ₀ is held at its natural value (μ=1) throughout so
+        // the 2×2 isolates the FLAGS; the final row adds the pre-fix μ=0.4 buffer to show what it cost.
+        if (ExpConfig.runS10Exactness && ExpConfig.s6Datasets.contains(tag)) {
+            System.out.println("-- S10 exactness ablation (distribution A, best T=" + cores + ") --");
+            final double mu1 = ExpConfig.MU_PARTITION;
+            benchmark("S10-exactness", "neither", "P-RIncHUSP[-,-]", "1.00",
+                    () -> ExpConfig.newProposedAblation(cores, false, false, mu1), cores, bA, minUtilRatio, maxRegRatio, oracle);
+            benchmark("S10-exactness", "reg-only", "P-RIncHUSP[reg,-]", "1.00",
+                    () -> ExpConfig.newProposedAblation(cores, true, false, mu1), cores, bA, minUtilRatio, maxRegRatio, oracle);
+            benchmark("S10-exactness", "disc-only", "P-RIncHUSP[-,disc]", "1.00",
+                    () -> ExpConfig.newProposedAblation(cores, false, true, mu1), cores, bA, minUtilRatio, maxRegRatio, oracle);
+            benchmark("S10-exactness", "both-EXACT", "P-RIncHUSP[reg,disc]", "1.00",
+                    () -> ExpConfig.newProposedAblation(cores, true, true, mu1), cores, bA, minUtilRatio, maxRegRatio, oracle);
+            benchmark("S10-exactness", "pre-fix", "P-RIncHUSP-approx", "0.40",
+                    () -> ExpConfig.newProposedApprox(cores), cores, bA, minUtilRatio, maxRegRatio, oracle);
         }
     }
 

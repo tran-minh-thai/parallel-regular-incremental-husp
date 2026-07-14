@@ -255,22 +255,28 @@ public final class RunContext {
 
     /** Signature of every knob that changes the NUMBERS — bump the prefix if the schema changes.
      *  v3: proposed maintain = content-driven parallel trie (lazy retired); S5 ablation = trie vs
-     *  inverted-index. Older v1/v2 dirs are a different algorithm and must never be resumed into. */
+     *  inverted-index.
+     *  v5: the proposed miner is now EXACT (sound ρ·N_final seed prune + ΔD discovery at minUtil−θ₀,
+     *  θ₀ at its natural value μ=1). Adds S9 (θ₀ sweep) and S10 (exactness ablation). Every v4 and older
+     *  dir is a DIFFERENT algorithm with different recall and must never be resumed into. */
     private static String signature(List<DatasetSpec> suite) {
-        StringBuilder sb = new StringBuilder("v4;algo=eng05seed+trie;");
+        StringBuilder sb = new StringBuilder("v5;algo=eng05seed+trie+exact;");
         for (DatasetSpec s : suite)
             sb.append(s.tag).append(':').append(s.minUtilRatio).append(':').append(s.maxRegRatio)
               .append(':').append(s.s1Only).append(';');
-        sb.append("mu=").append(ExpConfig.muMin).append(',').append(ExpConfig.muMax).append(';');
+        sb.append("mu=").append(ExpConfig.MU_PARTITION).append(';');       // proposed: parameter-free
+        sb.append("muBase=").append(ExpConfig.muMin).append(',').append(ExpConfig.muMax).append(';');  // baselines only
         sb.append("runs=").append(ExpConfig.warmupRuns).append(',').append(ExpConfig.measuredRuns).append(';');
         sb.append("to=").append(ExpConfig.runTimeoutMs).append(";cov=").append(ExpConfig.coverageMaxN).append(';');
         sb.append("S=").append(ExpConfig.runS1Scalability).append(ExpConfig.runS2Compare)
           .append(ExpConfig.runS4Distribution).append(ExpConfig.runS5FineBatch).append(ExpConfig.runS6DeltaSweep)
-          .append(ExpConfig.runS7RhoSweep).append(ExpConfig.runS8BatchScaling);
+          .append(ExpConfig.runS7RhoSweep).append(ExpConfig.runS8BatchScaling)
+          .append(ExpConfig.runS9MuSweep).append(ExpConfig.runS10Exactness);
         sb.append(";s5x=").append(ExpConfig.s5ExtraDatasets);
         sb.append(";s6=").append(java.util.Arrays.toString(ExpConfig.S6_DELTA_MULT));
         sb.append(";s7=").append(java.util.Arrays.toString(ExpConfig.S7_RHO_MULT));
         sb.append(";s8=").append(java.util.Arrays.toString(ExpConfig.S8_BATCH_COUNTS)).append(ExpConfig.s6Datasets);
+        sb.append(";s9=").append(java.util.Arrays.toString(ExpConfig.S9_MUS));
         sb.append(";T=").append(java.util.Arrays.toString(ExpConfig.effectiveThreadSweep()));
         return sb.toString();
     }

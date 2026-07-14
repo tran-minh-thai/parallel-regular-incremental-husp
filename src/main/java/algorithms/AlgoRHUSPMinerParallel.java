@@ -145,6 +145,16 @@ public class AlgoRHUSPMinerParallel {
      */
     public boolean seedMode = false;
 
+    /**
+     * ADDED — WINDOW MODE (discovery). The database handed in is a WINDOW {@code ΔD} that does not
+     * start at global sequence 0, so BOTH boundary gaps are meaningless here: the leading gap is
+     * measured from the window's own first sequence (not the true predecessor in {@code D_old}), and
+     * the trailing gap can still shrink. Only gaps between CONSECUTIVE occurrences INSIDE the window
+     * are true global gaps, and only those may prune (they are anti-monotone). Implies the
+     * {@link #seedMode} relaxations.
+     */
+    public boolean windowMode = false;
+
     // ----- Tier 0 / EUCS (immutable after Phase 1) -----
     private int[] itemToDense;
     private int[] denseToItem;
@@ -446,9 +456,12 @@ public class AlgoRHUSPMinerParallel {
                     // boundary periods: from virtual sequence 0 to first occurrence, and from
                     // last occurrence to virtual sequence N (one past the end)
                     int mp = maxPer[it];
-                    int head = globalFirst[it] + 1;        // = firstSid + 1, with virtual boundary at 0
-                    if (head > mp) mp = head;              // leading gap is STABLE (batches append at the tail)
-                    if (!seedMode) {
+                    if (!windowMode) {
+                        // Leading gap is a TRUE gap only when the data starts at global sequence 0.
+                        int head = globalFirst[it] + 1;    // = firstSid + 1, with virtual boundary at 0
+                        if (head > mp) mp = head;
+                    }
+                    if (!seedMode && !windowMode) {
                         // The TRAILING gap shrinks as soon as a later batch contains the item, so it must
                         // not filter items when seeding an incremental miner (see the seedMode javadoc).
                         int tail = numSeq - globalLast[it];    // = N - lastSid
@@ -802,8 +815,12 @@ public class AlgoRHUSPMinerParallel {
         while (i < parent.size) {
             int s = parent.sid[i];
             if (useRegPruning) {
-                int gap = (prevSid == -1) ? (s + 1) : (s - prevSid);
-                if (gap > maxRegularity) { prunedRegularityA.increment(); return; }
+                // windowMode: the leading gap (prevSid == -1) is measured from the WINDOW's start, not
+                // from the true predecessor occurrence in D_old -> it is not a real gap and must not prune.
+                if (!(windowMode && prevSid == -1)) {
+                    int gap = (prevSid == -1) ? (s + 1) : (s - prevSid);
+                    if (gap > maxRegularity) { prunedRegularityA.increment(); return; }
+                }
             }
             int start = i;
             while (i < parent.size && parent.sid[i] == s) i++;
@@ -852,20 +869,21 @@ public class AlgoRHUSPMinerParallel {
         }
 
         if (prevSid == -1) return;
+        final boolean relaxed = seedMode || windowMode;   // boundary gaps are not final in these modes
         final int innerPeriod = maxPeriod;   // ADDED: gaps among occurrences, BEFORE the trailing gap
         int finalPer = numSeq - prevSid;
-        // seedMode: the trailing gap must not prune -- later batches can shrink it (see field javadoc).
-        if (!seedMode && useRegPruning && finalPer > maxRegularity) { prunedRegularityA.increment(); return; }
+        // The trailing gap must not prune when seeding/windowing -- later data can shrink it.
+        if (!relaxed && useRegPruning && finalPer > maxRegularity) { prunedRegularityA.increment(); return; }
         if (finalPer > maxPeriod) maxPeriod = finalPer;
         boolean isRegular = maxPeriod <= maxRegularity;
 
         pushPattern(ctx, candidate, isIExt);
         try {
-            if ((seedMode || isRegular) && totalUtil >= minUtility)
+            if ((relaxed || isRegular) && totalUtil >= minUtility)
                 finalPatterns.put(formatCurrentPattern(ctx),
                         new PatternResult(totalUtil, maxPeriod, prevSid, innerPeriod));
             if (totalUtil + totalRU < minUtility) { prunedNodeCondA.increment(); return; }
-            if (!seedMode && useRegPruning && !isRegular) { prunedRegularityA.increment(); return; }
+            if (!relaxed && useRegPruning && !isRegular) { prunedRegularityA.increment(); return; }
             mine(ctx, next, candidate);
         } finally {
             popPattern(ctx, isIExt);

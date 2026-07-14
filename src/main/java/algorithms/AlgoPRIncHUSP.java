@@ -151,6 +151,40 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
      */
     public boolean seedWithEngine05 = false;
 
+    /**
+     * BREAK THE SEED-ONCE CEILING — "exact on demand". Incremental maintenance is cheap but can only
+     * promote patterns that were SEEDED; one below θ₀ in {@code D_old} that later becomes high-utility
+     * is missed (this is what costs SIGN 1 of 30). When {@code discoverExact} is on, querying the
+     * result triggers ONE reconciliation pass that provably recovers every such pattern.
+     * <p>
+     * <b>Soundness.</b> A missed pattern α satisfies {@code u(α,D_old) < θ₀} and {@code u(α,D) ≥ minUtil}.
+     * By additivity (Lemma P1), {@code u(α,ΔD) = u(α,D) − u(α,D_old) > minUtil − θ₀ ≜ θ_disc}. So EVERY
+     * missed pattern must surface when the increments are mined at θ_disc — no candidate can escape.
+     * <p>
+     * <b>The right θ₀ is not a tuning choice.</b> Setting μ = 1 gives θ₀ = δ·U(D_old) and therefore
+     * θ_disc = δ·U(D) − δ·U(D_old) = δ·U(ΔD): each part is mined at its OWN natural threshold. That is
+     * exactly the partition lemma of {@link #discoverFrom} — see there. Empirically μ = 1 also minimises
+     * seed + discovery on every dataset tested (the seed cost falls and the discovery cost rises with θ₀;
+     * μ = 1 is the U-shaped minimum). Sub-1 "semi-high buffers" only drag θ₀ below the natural threshold,
+     * exploding the seed while buying nothing that discovery does not already guarantee.
+     */
+    public boolean discoverExact = false;
+
+    /**
+     * Fully-incremental discovery: mine EVERY batch Δ_k once, at its own natural threshold δ·U(Δ_k).
+     *
+     * <p>Same partition lemma, finer partition ({@code D = D_old ⊎ Δ₁ ⊎ … ⊎ Δ_k}). Trade-off against
+     * {@link #discoverExact}, which uses the coarsest 2-part split:
+     * <ul>
+     *   <li>{@code discoverExact} — ONE mine of the whole ΔD, so the fewest candidates; but the answer
+     *       is only exact when you query, and a query after every batch re-mines a growing ΔD.</li>
+     *   <li>{@code partitionMine} — each sequence is mined exactly ONCE, ever, and the answer is exact
+     *       after EVERY batch; but k parts mined at the same δ yield ≈k× the candidates of one part.</li>
+     * </ul>
+     * Coarser partitions are cheaper; finer partitions give per-batch exactness. Both are complete.
+     */
+    public boolean partitionMine = false;
+
     // ----- State persistent across batches -----
     private final QSeqDatabase data = new QSeqDatabase();
     private final DEUCS deucs = new DEUCS();
@@ -176,6 +210,12 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
 
     /** key -> tracked Pat (active or evicted); built only when {@link #reseed} (dedup + resurrection). */
     private java.util.HashMap<String, Pat> patIndex;
+
+    // ----- discoverExact state -----
+    private final List<List<int[]>> increments = new ArrayList<>();   // raw ΔD (everything after D_old)
+    private double seedThreshold0 = 0;                                // θ₀ actually used at seeding
+    private boolean reconciled = false;
+    public long discMs = 0;                                           // wall-clock spent in reconcile()
 
     // ----- Lazy-buffer bookkeeping (only populated when {@link #lazy}) -----
     private int batchIdx = 0;                                            // 0 = D_old; increments per processBatch
@@ -300,6 +340,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         seedMaxReg = (seedPruneByFinalN && hintedTotalN > data.numSequences)
                 ? (int) (maxRegRatio * hintedTotalN)     // sound (ρ·N_final) — no recall loss
                 : maxReg;                                // default ρ·N_current — strong pruning, approximate (paper)
+        seedThreshold0 = bufferThreshold;      // θ₀ — the discovery bound is derived from exactly this
         if (seedWithEngine05) seedWithParallelEngine(dOld);
         else staticBuild();
         pats = patsQueue.toArray(new Pat[0]);
@@ -500,6 +541,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         long t0 = System.currentTimeMillis();
         if (!initialized) { initialBuild(deltaD, minUtilRatio, maxRegRatio); return System.currentTimeMillis() - t0; }
 
+        if (discoverExact) { increments.addAll(deltaD); reconciled = false; }   // ΔD kept raw; new data ⇒ must re-reconcile
         long prevUD = data.totalDbUtility; int prevN = data.numSequences;
         long batchUtil = AdaptiveBuffer.batchUtility(deltaD);
         int[] range = data.appendBatch(deltaD);        // append at tail -> [lo,hi); update totalDbUtility/numSequences
@@ -527,6 +569,11 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         }
         if (reseed && buffer.lastBufferFactor <= reseedTrigger)
             discover(deltaD, range[0], range[1], batchUtil);   // admit emerging patterns / resurrect evicted ones
+        if (partitionMine) {                           // mine Δ_k ONCE at its own natural threshold δ·U(Δ_k)
+            long t = System.currentTimeMillis();
+            discoverFrom(deltaD, minUtilRatio * batchUtil);
+            discMs += System.currentTimeMillis() - t;
+        }
         classify();                                    // promote SHS->HS / reclassify
 
         sampleMemory();
@@ -1212,7 +1259,98 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         if (mb > peakMB) peakMB = mb;
     }
 
-    @Override public Map<String, long[]> getHighUtilityPatterns() { return highUtility; }
+    /** Querying the result triggers the reconciliation when {@link #discoverExact} is on (exact on demand). */
+    @Override public Map<String, long[]> getHighUtilityPatterns() {
+        if (discoverExact && !reconciled) {
+            long t0 = System.currentTimeMillis();
+            reconcile();
+            discMs += System.currentTimeMillis() - t0;
+            reconciled = true;
+        }
+        return highUtility;
+    }
+
+    /** Query-time reconciliation (2-part split): mine ALL increments at θ_disc = minUtil − θ₀. */
+    private void reconcile() {
+        if (increments.isEmpty()) return;
+        discoverFrom(increments, minUtil - seedThreshold0);   // θ₀ = δ·U(D_old) ⟹ θ_disc = δ·U(ΔD)
+    }
+
+    /**
+     * PARTITION-LEMMA DISCOVERY — the one mechanism that removes the seed-once ceiling.
+     *
+     * <p>For a sequence-disjoint partition {@code D = P₁ ⊎ … ⊎ P_m}, if {@code u(α,Pᵢ) < δ·U(Pᵢ)} for
+     * every i then {@code u(α,D) = Σ u(α,Pᵢ) < δ·Σ U(Pᵢ) = minUtil}. Contrapositive: every globally
+     * high-utility α clears the NATURAL threshold {@code δ·U(Pᵢ)} in at least one part. So mining each
+     * part at its own natural threshold yields a COMPLETE candidate superset.
+     *
+     * <p>This method mines one part and folds its candidates into the tracked set. Callers:
+     * <ul>
+     *   <li>{@link #reconcile()} — part = all increments, threshold = minUtil − θ₀ (coarse 2-part split:
+     *       fewest candidates, but exact only at query time);</li>
+     *   <li>{@link #partitionMine} — part = Δ_k, threshold = δ·U(Δ_k) (fine k-part split: each sequence
+     *       mined exactly once, ever, and the answer is exact after EVERY batch).</li>
+     * </ul>
+     *
+     * <p>Every fresh candidate is KEPT, not just the currently-qualifying ones: the lemma only promises
+     * that α surfaces in SOME part, possibly a past one, so a candidate that is below minUtil now may be
+     * the one that crosses it three batches later. Dropping it would re-open the ceiling.
+     */
+    private void discoverFrom(List<List<int[]>> part, double threshold) {
+        if (part.isEmpty() || threshold <= 0) return;          // θ ≥ minUtil ⟹ nothing can be missed
+
+        AlgoRHUSPMinerParallel eng = new AlgoRHUSPMinerParallel();
+        eng.numThreads = numThreads;
+        eng.parallelStrategy = AlgoRHUSPMinerParallel.STRAT_RDLB;
+        eng.denseBuffers = true;
+        eng.useEUCS = true;
+        eng.boundMode = AlgoRHUSPMinerParallel.BOUND_LA_PEU;
+        eng.useRegPruning = true;
+        eng.windowMode = true;                                 // a mid-stream part: neither leading nor
+                                                               // trailing gap is a real gap of α in D
+        eng.forcedMinUtil = (long) Math.ceil(threshold);
+        eng.forcedMaxReg = seedMaxReg;                         // ρ·N_final — sound for FUTURE batches too
+        eng.runAlgorithmInMemory(part, minUtilRatio, maxRegRatio);
+        discCandidates += eng.finalPatterns.size();
+        if (eng.finalPatterns.isEmpty()) return;
+
+        java.util.HashSet<String> known = new java.util.HashSet<>(pats.length * 2);
+        for (Pat p : pats) known.add(formatPattern(p.ext, p.item));
+        final List<Pat> fresh = new ArrayList<>();
+        for (String key : eng.finalPatterns.keySet()) {
+            if (known.contains(key)) continue;
+            int[][] path = parsePath(key);
+            if (path[1].length == 0) continue;
+            fresh.add(new Pat(path[0], path[1], 0, -1, 0));   // exact state recomputed below
+        }
+        if (fresh.isEmpty()) return;
+
+        // Exact full-DB state for each fresh candidate, from scratch over [0, n).
+        final int n = data.numSequences;
+        final Map<Integer, int[]> inv = buildInvertedIndex(0, n);
+        runParallelIndexed(fresh.size(), i -> {
+            Pat p = fresh.get(i);
+            int[] cand = candidateSeqs(p, inv);
+            if (cand == null) return;
+            for (int s : cand) matchAndUpdate(p, s);           // ascending seqIds -> regularity is exact
+        });
+
+        for (Pat p : fresh) {
+            if (p.lastSeqId == -1 || p.utility < minUtil) continue;
+            int trueMaxPer = p.trueMaxPer(n);
+            if (trueMaxPer > maxReg) continue;
+            highUtility.put(formatPattern(p.ext, p.item), new long[]{p.utility, trueMaxPer});
+            discAccepted++;
+        }
+        // KEEP ALL of them — see the javadoc above.
+        Pat[] np = java.util.Arrays.copyOf(pats, pats.length + fresh.size());
+        for (int i = 0; i < fresh.size(); i++) {
+            np[pats.length + i] = fresh.get(i);
+            if (patIndex != null) patIndex.put(formatPattern(fresh.get(i).ext, fresh.get(i).item), fresh.get(i));
+        }
+        pats = np;
+        trieRoot = null;                                        // force a trie rebuild
+    }
     @Override public int bufferedCount() { return bufferedN; }
     @Override public double peakMemoryMB() { return peakMB; }
     public long getMinUtil() { return minUtil; }
