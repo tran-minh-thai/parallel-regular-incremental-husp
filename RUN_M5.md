@@ -5,12 +5,11 @@
 > đừng lấy số cũ ghép với số mới.
 
 ```bash
-# 1 — Đồng bộ + kiểm commit
-cd "$HOME/My Drive/Researching/07_RegIncHUSPM_Parallel_July2026_HJS/RegIncHUSPM_Parallel_Code"
-git log -1 --oneline          # phải thấy commit "exact incremental" (chưa thấy = đợi Drive sync xong)
+# 1 — Vào thư mục gốc của repo
+cd /đường/dẫn/tới/RegIncHUSPM_Parallel_Code
 
-# 2 — Build + smoke (bắt buộc, ~3 phút; nay CÓ quét cả S6–S10 trên dataset ví dụ)
-find src -name '*.java' -print0 | xargs -0 javac --release 11 -d out
+# 2 — Build + smoke (bắt buộc, ~3 phút; quét cả S6–S10 trên dataset ví dụ)
+javac --release 11 -d out $(find src/main/java -name '*.java')
 java -Xmx2g -cp out test.ExperimentOfficial --test
 
 # 3 — Chạy thật
@@ -32,13 +31,13 @@ Dòng đầu log phải là:
 ```
 Thấy `!! WARNING ... TRUNCATED to [1, 2, 4, 8]` → máy chỉ nhận 8 lõi → **Ctrl-C, chỉnh nguồn, chạy lại**.
 
-## ⚠️ BẮT BUỘC: dọn ổ đĩa trước khi chạy
+## ⚠️ BẮT BUỘC: kiểm ổ đĩa và heap trước khi chạy
 
 ```bash
 df -h /      # cần >= 20 GB trống
 ```
-Ngày 2026-07-14 máy chỉ còn **3.8 GB** và một JVM `-Xmx12g` đã thrash vào swap, **lấp đầy 100% ổ boot**
-đến mức không chạy nổi lệnh nào. Run 4–6h này có heap lớn — thiếu đĩa là chết giữa chừng.
+Đặt `-Xmx` **thấp hơn hẳn RAM vật lý**. Nếu heap chạm mức RAM, JVM sẽ swap chứ không báo lỗi: chậm
+hơn nhiều lần và có thể lấp đầy ổ đĩa, giết cả lần chạy dài.
 
 ## ✅ Cổng chặn ở bước 2 (smoke) — sai là DỪNG, đừng chạy tiếp 4h
 
@@ -57,8 +56,8 @@ Ngày 2026-07-14 máy chỉ còn **3.8 GB** và một JVM `-Xmx12g` đã thrash 
 |---|---|
 | **Recall** | **1.0000 ở MỌI dataset, MỌI kịch bản** (không còn SIGN 0.9667) |
 | **S10 (bảng cơ chế)** | `[-,-]` và `[-,disc]` sót mẫu · `[reg,-]` sót mẫu · **`[reg,disc]` = 1.0000** |
-| **S9 (θ₀)** | recall ≡ 1.0000 ∀μ; thời gian hình chữ **U**, **cực tiểu tại μ=1.0**; μ=0.4 chậm hơn nhiều (SIGN ~5.6×) |
-| **S8 (crossover)** | P-RIncHUSP **phẳng** theo #batch; ParRemine **tuyến tính** → cắt nhau ở **k≈3–4** |
+| **S9 (θ₀)** | recall ≡ 1.0000 ∀μ; thời gian hình chữ **U**, **cực tiểu tại μ=1.0**; μ=0.4 chậm hơn nhiều |
+| **S8 (crossover)** | P-RIncHUSP **phẳng** theo #batch; ParRemine **tuyến tính** → cắt nhau ở **k≈3–8** tùy tập |
 | **S7 (ρ)** | `P-RIncHUSP` = 1.0000 ∀ρ · `P-RIncHUSP-approx` **sụp khi ρ giảm** (đây là lý do phải làm exact) |
 | **S2** | P-RIncHUSP nhanh hơn ParRemine-RDLB **và recall bằng nhau (1.0)** |
 | **S5** | `P-RIncHUSP` ≡ `P-RIncHUSP-invidx` về HS/recall (chỉ khác thời gian) |
@@ -66,8 +65,7 @@ Ngày 2026-07-14 máy chỉ còn **3.8 GB** và một JVM `-Xmx12g` đã thrash 
 Kết quả: `results/run_*/results.csv` · `dataset_stats.csv` · `meta.properties`
 (signature `v5;algo=eng05seed+trie+exact`, có `env.gitCommit`).
 
-**Ước lượng: ~4–6h.** (Dài hơn v4 vì thêm S9/S10, SIGN nay chạy full S2+S4, và δ hạ thấp hơn →
-nhiều mẫu hơn. Bù lại seeding ở μ=1 rẻ hơn ~10× so với μ=0.4.)
+**Ước lượng: ~2–4h** trên máy 10 nhân, tùy δ của từng tập.
 
 ---
 
@@ -85,14 +83,12 @@ result có chủ đích**, dùng để trả lời sẵn câu hỏi reviewer *"s
 
 ---
 
-## Những gì đã đổi so với v4 (để khỏi quên khi viết bài)
+## Vì sao suite này khác các lần chạy cũ
 
-1. **μ = 1, không còn là hyperparameter.** θ₀ = δ·U(D_old) và θ_disc = δ·U(ΔD) — mỗi phần được đào ở
-   *ngưỡng tự nhiên của chính nó*. Suy ra từ **bổ đề phân hoạch**, không phải do tune.
-2. **Toàn bộ tuyến "adaptive-μ / semi-high buffer" bị loại** — nó là *nguyên nhân*, không phải giải pháp:
-   kéo θ₀ xuống dưới ngưỡng tự nhiên ⇒ seed nổ tung. Chính nó gây ra:
-   - OOM của SIGN ở phân phối B (nay peak **92 MB**, chạy ngon);
-   - việc phải **nâng δ** của LEVIATHAN/BIBLE để né OOM (nay hạ lại được → BIBLE **5 → 1349 mẫu**).
-3. **Seed prune regularity dùng ρ·N_final** (sound) thay vì ρ·N_current (unsound).
-4. **P-RIncHUSP giờ EXACT** — claim của bài mạnh hẳn lên:
-   *"incremental **chính xác tuyệt đối**, mà nhanh hơn parallel re-mine tới 14–15×"*.
+1. **μ = 1 không phải hyperparameter.** θ₀ = δ·U(D_old) và θ_disc = δ·U(ΔD) — mỗi phần được đào ở
+   ngưỡng tự nhiên của chính nó. Đây là điều kiện của **bổ đề phân hoạch**, không phải kết quả tinh chỉnh.
+2. **Cắt tỉa đều đặn khi gieo hạt dùng ρ·N_final** (sound) thay cho ρ·N_current.
+3. Hai điểm trên cộng lại khiến P-RIncHUSP **chính xác**: tập trả về bằng đúng khai thác lại, trong
+   khi vẫn nhanh hơn khai thác lại song song khi số lô vượt điểm giao.
+
+Chi tiết lý thuyết: `../paper/results_v3/seed_exactness.md`.
