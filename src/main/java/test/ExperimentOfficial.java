@@ -76,6 +76,21 @@ public class ExperimentOfficial {
         List<DatasetSpec> suite = testMode ? DatasetCatalog.testSuite() : DatasetCatalog.officialSuite();
         if (testMode) ExpConfig.enableSweepsForTestSuite();   // exercise S6-S10 too, in seconds
 
+        // --only=TAG1,TAG2 : partial re-run of just these datasets (each keeps its own s1Only flag).
+        // Use after a δ change (e.g. SIGN 0.03→0.02) to avoid re-running unchanged datasets; then feed
+        // the resulting run dir to gen_tables.py as its PATCH argument to merge over the full run.
+        for (String a : args) {
+            if (a.startsWith("--only=")) {
+                java.util.Set<String> keep = new java.util.HashSet<>(
+                        java.util.Arrays.asList(a.substring("--only=".length()).split(",")));
+                java.util.List<DatasetSpec> f = new java.util.ArrayList<>();
+                for (DatasetSpec s : suite) if (keep.contains(s.tag)) f.add(s);
+                suite = f;
+                if (suite.isEmpty()) { System.out.println("!! --only matched no datasets: " + keep); return; }
+                System.out.println("### --only: partial run of " + suite.size() + " dataset(s): " + keep + " ###");
+            }
+        }
+
         ctx = RunContext.start(suite, resume);
         csv = ctx.csv;
         System.out.printf("### PARALLEL EXPERIMENT — %d datasets | %s | dir=results/%s ###%n",
