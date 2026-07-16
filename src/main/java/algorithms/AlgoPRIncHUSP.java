@@ -40,7 +40,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
 
     public int numThreads = Runtime.getRuntime().availableProcessors();
     public String label = "P-RIncHUSP";
-    /** A/B switch (test.OverheadProbe): {@code true} = inverted-index prune in maintain(); {@code false} = original cross-product. */
+    /** A/B switch: {@code true} = inverted-index prune in maintain(); {@code false} = original cross-product. */
     public boolean useInvertedIndex = true;
     /**
      * Maintain strategy. {@code false} (default) = per-pattern re-match (each kept pattern DP-matched
@@ -255,7 +255,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
     // distributions (millions of Strings), and is pure waste since only the COUNT is ever read.
     private int bufferedN = 0;
     private final LongAdder exploredNodes = new LongAdder();
-    // Instrumentation (test.OverheadProbe): incremental re-match calls + misses; guarded by COUNT so
+    // Instrumentation: incremental re-match calls + misses; guarded by COUNT so
     // normal timing pays no LongAdder overhead (the count/time confound when calls differ by 5x).
     public static boolean COUNT = false;
     public final LongAdder matchCalls = new LongAdder();
