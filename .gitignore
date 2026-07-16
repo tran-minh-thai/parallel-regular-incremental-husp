@@ -26,5 +26,3 @@ datasets/*.txt
 !datasets/example_eui.txt
 !datasets/example2_seq.txt
 !datasets/example2_eui.txt
-!datasets/greedytest_seq.txt
-!datasets/greedytest_eui.txt

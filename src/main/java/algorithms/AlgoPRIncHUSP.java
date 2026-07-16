@@ -51,7 +51,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
      * (the trie holds all patterns; laziness would need a hot-only trie rebuilt on tier changes).
      */
     public boolean trieMaintain = false;
-    /** test.AdaptiveProbe: when true, μ(t) gates maintain — a pattern whose utility drops below the
+    /** When true, μ(t) gates maintain — a pattern whose utility drops below the
      *  buffer threshold θ(t)=μ(t)·minUtil is evicted (marked inactive) and stops being re-matched. */
     public boolean evict = false;
     /** Trend-aware eviction: spare a below-θ pattern whose utility/minUtil ratio is RISING (it is
@@ -71,7 +71,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
      * EXACT (identical to Fix(μ_min) which never evicts) by construction — μ(t) now only tunes how
      * aggressively the buffer sleeps, i.e. cost, never recall. */
     public boolean lazy = false;
-    // Lazy stats (read by test.AdaptiveProbe): tier-1 = O(items) per-item bound; tier-2 = posting-list
+    // Lazy stats: tier-1 = O(items) per-item bound; tier-2 = posting-list
     // intersection bound (Σ u(S) over sequences containing ALL pattern items — pays the intersection
     // but skips the expensive DP matching; on a wake the intersection work is reused anyway).
     public long lazyBoundSkips = 0, lazyT2Skips = 0, lazyWakeups = 0;
@@ -112,7 +112,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
     /** Safety valve: abort a batch's discovery outright if enumeration records more than this many
      *  candidates (all-or-nothing, so results stay deterministic; the batch simply gets no discovery). */
     public int reseedCandidateCap = 200_000;
-    // Discovery stats (read by test.AdaptiveProbe).
+    // Discovery stats.
     public int discCandidates = 0, discAccepted = 0, discResurrected = 0, discAborted = 0;
 
     /**
@@ -1087,7 +1087,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         lazyCheckpoints++;
     }
 
-    /** Human-readable lazy bookkeeping footprint (test.LazySmoke). */
+    /** Human-readable lazy bookkeeping footprint. */
     public String lazyFootprint() {
         long utilRows = 0;
         for (long[] a : utilByBatch.values()) utilRows += a.length;
