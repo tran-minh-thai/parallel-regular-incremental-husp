@@ -39,7 +39,7 @@ public class RunIncremental {
         System.out.printf("Loaded %d sequences -> %d batches %s%n", all.size(), batches.size(),
                 java.util.Arrays.toString(sizes(batches)));
 
-        // ---- ORACLE for coverage measurement: RHusp re-mine from scratch (experimentVN.tex, row "RHusp") ----
+        // ---- ORACLE for coverage measurement: RHusp re-mine from scratch (the manuscript, row "RHusp") ----
         AlgoRHUSPRecompute oracle = new AlgoRHUSPRecompute();
         runMiner(oracle, batches, minUtilRatio, maxRegRatio);
         Map<String, long[]> oracleResult = oracle.getHighUtilityPatterns();

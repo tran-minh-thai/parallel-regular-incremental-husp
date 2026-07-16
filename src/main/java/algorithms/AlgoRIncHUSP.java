@@ -11,7 +11,7 @@ import java.util.Map;
  * Direct competing BASELINE: Ishita, Ahmed &amp; Leung (2022), "New approaches for mining
  * regular high utility sequential patterns", Applied Intelligence — bib key
  * {@code Ishita2022}. Corresponds to the <b>"RIncHusp"</b> row in the baseline table
- * (experimentVN.tex): R/I/P = yes/yes/no, re-implementation, original is APPROXIMATE. This
+ * (the manuscript): R/I/P = yes/yes/no, re-implementation, original is APPROXIMATE. This
  * implementation references {@code codeThamKhao/AlgoRIncHUSP.java} and {@code AlgoRIncHUSP_Adaptive.java}.
  * <p>
  * Initialize via one SEQUENTIAL static mining pass over {@code D_old} (through {@link AlgoRHUSP})

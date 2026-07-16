@@ -11,7 +11,7 @@ import java.util.Map;
 /**
  * Quantitative Sequence Database (QSDB) for the incremental framework.
  * <p>
- * The data model matches {@code preliminaryVN.tex} (Definition 1):
+ * The data model matches the manuscript (Definition 1):
  * each sequence {@code S = <E_1,...,E_n>} is an ordered list of itemsets; each itemset
  * {@code E} is a flat interleaved array {@code [item, util, item, util, ...]}
  * sorted ascending by item id (for ordered same-itemset matching).

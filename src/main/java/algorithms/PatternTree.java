@@ -7,7 +7,7 @@ import java.util.Map;
 
 /**
  * Prefix enumeration tree storing the state of patterns that are currently high-utility or buffered
- * — proposedVN.tex §Buffer and pattern tree.
+ * — the manuscript, §Buffer and pattern tree.
  * <p>
  * Each {@link Node} stores a VUL (vertical utility list) plus two child tables: within-itemset join
  * ({@link Node#iChildren}) and sequence-order join ({@link Node#sChildren}). Both tables are allocated

@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * STATIC RHUSP mining engine over the whole database (non-incremental), using the PEU upper bound
  * and the regularity constraint. Corresponds to the <b>"RHusp"</b> row in the baseline table
- * (experimentVN.tex): R/--/--, serving as the <b>full-result oracle</b> and the "re-mine from
+ * (the manuscript): R/--/--, serving as the <b>full-result oracle</b> and the "re-mine from
  * scratch" reference. Condensed version of {@code codeThamKhao/AlgoRHUSPMiner.java} (RHusp,
  * Ishita2022) and {@code AlgoRHUSPMinerParallel.java} (parallel version).
  * <p>

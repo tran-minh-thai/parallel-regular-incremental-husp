@@ -3,7 +3,7 @@ package algorithms;
 import java.util.Arrays;
 
 /**
- * Vertical utility list (VUL) of a pattern {@code α} — proposedVN.tex §Data structures.
+ * Vertical utility list (VUL) of a pattern {@code α} — the manuscript, §Data structures.
  * <p>
  * Stored as <b>parallel primitive arrays</b> (memory-efficient). Each entry is a single
  * <b>non-dominated end position</b> of the pattern in one sequence: a sequence may have multiple

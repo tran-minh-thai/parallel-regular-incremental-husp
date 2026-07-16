@@ -9,7 +9,7 @@ import java.util.TreeSet;
 
 /**
  * Runner for the STATIC REFERENCE baselines (USpan, HUSP-ULL) — HUSP mining cores, NOT
- * incremental, NOT regularity-aware. Per experimentVN.tex they are "mining-core reference
+ * incremental, NOT regularity-aware. Per the manuscript they are "mining-core reference
  * points with a different result set" -> run SEPARATELY over the whole {@code D_new},
  * reporting pattern count/runtime; NOT included in the coverage comparison against the
  * RHUSP oracle.

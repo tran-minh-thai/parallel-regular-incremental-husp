@@ -5,10 +5,12 @@ title: "P-RIncHUSP: Parallel Regular Incremental High-Utility Sequential Pattern
 abstract: >
   A Java implementation of P-RIncHUSP — a parallel, incremental framework for
   mining Regular High-Utility Sequential Patterns (RHUSP) from a growing
-  quantitative sequence database. The framework extends the sequential incremental
-  baseline (RIncHusp) with prefix-partitioned parallel enumeration over a
-  ForkJoinPool, an adaptive per-batch buffer threshold, and correct max-measure
-  utility maintenance via multi-position Vertical Utility Lists.
+  quantitative sequence database. It extends the sequential incremental baseline
+  (RIncHusp) with prefix-partitioned parallel enumeration over a ForkJoinPool,
+  content-driven maintenance, and correct max-measure utility via multi-position
+  Vertical Utility Lists. The incremental result is exact — equal to a full
+  re-mine — through a two-part seed bound (sound regularity pruning plus a discovery
+  phase) whose buffer factor is fixed by a partition lemma rather than tuned.
 authors:
   - family-names: "Tran"
     given-names: "Minh Thai"
@@ -25,7 +27,7 @@ keywords:
 license: MIT
 version: "1.0.0"
 date-released: "2026-06-25"
-repository-code: "https://github.com/"
+repository-code: "https://github.com/tran-minh-thai/parallel-regular-incremental-husp"
 references:
   - type: article
     authors:

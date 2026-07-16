@@ -8,7 +8,7 @@ import java.util.Map;
 /**
  * Directed Estimated-Utility Co-occurrence Structure (DEUCS).
  * <p>
- * Defined in {@code preliminaryVN.tex} (Definition 6) and {@code proposedVN.tex} §Data structures:
+ * Defined in the manuscript (Definition 6) and the manuscript, §Data structures:
  * a sparse two-dimensional hash table keyed by ORDERED item pairs {@code (x -> y)}, with values
  * equal to the sequence-weighted utility (SWU) of sequences containing both {@code x} and {@code y}
  * under the corresponding relation. Two components:
@@ -73,7 +73,7 @@ public class DEUCS {
 
     /**
      * Algorithm 2 — IncUpdateDEUCS: additive incremental update from batch {@code batch} only.
-     * Cost O(|ΔD|·L̄²), independent of the history size (proposedVN.tex §Complexity).
+     * Cost O(|ΔD|·L̄²), independent of the history size (the manuscript, §Complexity).
      */
     public void incUpdate(java.util.List<java.util.List<int[]>> batch) {
         for (java.util.List<int[]> S : batch) {

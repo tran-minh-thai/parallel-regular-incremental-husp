@@ -3,26 +3,25 @@ package algorithms;
 import java.util.List;
 
 /**
- * Adaptive buffer threshold — Algorithm 3 (ComputeAdaptiveMu), proposedVN.tex.
+ * Buffer threshold θ = μ × minUtil, holding patterns whose utility falls in {@code [θ, minUtil)}.
  * <p>
- * The buffer holds promising patterns with utility in {@code [θ(t), minUtil)} with buffer threshold
- * {@code θ(t) = μ(t) × minUtil}. The factor {@code μ(t) ∈ [μ_min, μ_max]} is adjusted per batch:
- * the higher the risk (batch contributes much utility / fast growth / smaller minUtil threshold),
- * the lower {@code μ} is chosen to favor coverage.
- * <p>
- * The risk function {@code f(x) = x^{0.25}} (fourth root) raises risk quickly for small variations,
- * matching {@code getHighSensitivityRisk} of the reference AlgoRIncHUSP_Adaptive.
+ * The proposed miner fixes μ = 1 ({@code FIX}), which the partition lemma shows to be the value that
+ * makes the incremental result exact; the RIncHusp baselines use {@code FIX} at 0.4 and 0.9. The four
+ * adaptive strategies below choose μ per batch from three risk signals (batch utility ratio, growth
+ * rate, threshold difficulty), lowering μ when risk is high to favour coverage. They belong to the
+ * sequential line of work this study compares against and are retained for that comparison; the
+ * current experiment configuration does not select them.
  */
 public class AdaptiveBuffer {
 
     /**
-     * Per-batch μ selection strategy (Algorithm 2, paper). {@code FIX} = fixed threshold (RIncHusp baseline).
-     * The four adaptive modes differ in the heuristic used: COMBINED merges all three (min);
-     * GROWTH/MINBASE/UTILRATIO use only one heuristic r_G / r_θ / r_U respectively.
+     * How μ is chosen each batch. {@code FIX} is a constant threshold; the adaptive modes differ in
+     * which signals they use — COMBINED takes the min of all three, GROWTH/MINBASE/UTILRATIO use one
+     * each (r_G / r_θ / r_U).
      */
     public enum Strategy { COMBINED, GROWTH, MINBASE, UTILRATIO, FIX }
 
-    /** Active strategy. Default COMBINED (main proposal, SC1). */
+    /** Active strategy. */
     public Strategy strategy = Strategy.COMBINED;
     /** Fixed μ value when {@code strategy == FIX} (e.g. 0.4 = SC5, 0.9 = SC6). */
     public double fixedMu = 0.4;

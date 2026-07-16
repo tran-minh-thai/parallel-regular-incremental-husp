@@ -14,7 +14,7 @@ import java.util.Map;
  * accumulates ΔD).
  * <p>
  * With {@code parallel=true} (default) it represents "proposed-static re-run" (R/--/yes, the
- * "proposed-static" row in experimentVN.tex); with {@code parallel=false} it yields the sequential
+ * "proposed-static" row in the manuscript); with {@code parallel=false} it yields the sequential
  * RHusp oracle used to measure coverage. The runner {@link RunIncremental} uses it as oracle.
  */
 public class AlgoRHUSPRecompute implements IncrementalHUSPMiner {
