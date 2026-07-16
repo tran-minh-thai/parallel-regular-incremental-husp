@@ -1,8 +1,7 @@
 # Code overview
 
 Parallel, incremental mining of regular high-utility sequential patterns (P-RIncHUSP). This note maps
-the code onto the manuscript (`../../../../paper/VN/mainVN.tex`) and explains the conventions, so the
-two can be read side by side.
+the code onto the manuscript and explains the conventions, so the two can be read side by side.
 
 The method is **exact**: the pattern set it returns equals a full re-mine of the updated database. That
 rests on two bounds that close independent gaps, plus a threshold choice that is forced rather than
@@ -21,7 +20,7 @@ java -cp out test.ExperimentOfficial              # the full benchmark suite
 
 Dataset paths resolve relative to either the project root or the module root, so runs work from
 either directory. Thresholds and datasets are configured in `test.ExpConfig` and
-`test.DatasetCatalog`; the runner needs no edits. See `../../../../paper/RUN_CHANGES.md` for the
+`test.DatasetCatalog`; the runner needs no edits. See `RUNNING.md` at the repository root for the
 full experiment workflow.
 
 ## Core classes
