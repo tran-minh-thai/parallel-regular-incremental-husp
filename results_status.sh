@@ -59,7 +59,7 @@ for d in "${runs[@]}"; do
 done
 
 echo ""
-echo "VALID   = có DONE (harness chạy hết).  PARTIAL = không DONE (chạy dở -> ./run_experiments.sh --resume)."
+echo "VALID   = has DONE (the suite finished).  PARTIAL = no DONE (aborted -> ./run_experiments.sh --resume)."
 echo "OK/ERR  = so o (cell x iteration) THANH CONG / bi LOI (ERROR/TIMEOUT/OOM)."
 echo "STATUS co dau '*'  = run XONG nhung CO o loi -> KIEM TRA cot OK/ERR truoc khi lay so lieu!"
-echo "SIGNATURE khác nhau = CẤU HÌNH khác nhau -> KHÔNG trộn số liệu của chúng."
+echo "Different SIGNATURE = different CONFIGURATION -> never mix their numbers in one table."
