@@ -8,17 +8,22 @@ import algorithms.AlgoRIncHUSP;
 import algorithms.AlgoRemine;
 
 /**
- * CENTRALIZED configuration for the PARALLEL experiment — every constant lives in ONE place for
- * CONSISTENT, REPRODUCIBLE evaluation. See {@link ExperimentOfficial} for the S1–S4 design.
- * <p>
- * <b>μ is no longer a tuning knob.</b> The RIncHusp line treats μ as a "semi-high buffer" factor to be
- * chosen or adapted in [0.4, 0.9]. The partition lemma settles it: with {@link #MU_PARTITION}=1 the seed
- * threshold is θ₀ = δ·U(D_old) and the discovery threshold is θ_disc = δ·U(ΔD) — <i>each part mined at
- * its own natural threshold</i>, which is exactly the condition under which the union of the per-part
- * mines is COMPLETE. Every μ &lt; 1 lowers θ₀ below that natural threshold, exploding the seed while
- * buying no recall that discovery does not already guarantee; every μ &gt; 1 raises θ₀ and pushes the
- * same work into a more expensive discovery. μ = 1 is both the sound choice and the measured cost
- * minimum. {@link #muMin}/{@link #muMax} survive only to configure the RIncHusp <i>baselines</i>.
+ * Configuration for the experiment suite. Every constant shared by more than one scenario lives
+ * here, so a run is reproducible from this file together with {@link DatasetCatalog}; the scenarios
+ * themselves are described in {@link ExperimentOfficial}.
+ *
+ * <p>The buffer factor μ needs a word of explanation, because it is a tuning parameter in the
+ * sequential line of work this study builds on but not in this one. Those algorithms treat μ as a
+ * "semi-high buffer" factor to be chosen or adapted within [0.4, 0.9]. Here it is fixed at
+ * {@link #MU_PARTITION} = 1, which makes the seed threshold θ₀ = δ·U(D_old) and the discovery
+ * threshold θ_disc = δ·U(ΔD) — each part of the database mined at its own natural threshold, which
+ * is the condition under which the union of the per-part results is complete.
+ *
+ * <p>Values on either side cost more without buying anything: below 1, the seed threshold drops
+ * under that natural point and the seed grows, but discovery would have recovered those patterns
+ * regardless; above 1, the threshold rises and the same work moves into a more expensive discovery
+ * phase. Scenario S9 sweeps μ and shows both effects, along with recall staying at 1.0 throughout.
+ * {@link #muMin} and {@link #muMax} remain only to configure the baselines.
  */
 public final class ExpConfig {
     private ExpConfig() {}
@@ -105,91 +110,97 @@ public final class ExpConfig {
     public static boolean runS5FineBatch   = true;   // fine-batch streaming (isolates the maintain strategy)
     public static boolean runS6DeltaSweep  = true;   // δ-sensitivity sweep (light datasets only)
     public static boolean runS7RhoSweep    = true;   // ρ-sensitivity sweep (light datasets only)
-    public static boolean runS8BatchScaling = true;  // batch-count CROSSOVER vs Par-Remine (light datasets)
-    public static boolean runS9MuSweep     = true;   // θ₀ sweep: recall≡1 ∀μ, cost is U-shaped, min at μ=1
-    public static boolean runS10Exactness  = true;   // 2x2 ablation: which flag closes which ceiling
+    public static boolean runS8BatchScaling = true;  // batch-count scaling against re-mining
+    public static boolean runS9MuSweep     = true;   // buffer factor sweep
+    public static boolean runS10Exactness  = true;   // 2x2 ablation of the two seed bounds
 
     /**
-     * S9 — θ₀ = μ·δ·U(D_old). Sweeping μ is how we SHOW that μ = 1 is not a tuned constant:
-     * recall stays 1.0000 at EVERY μ (exactness is invariant to θ₀ — the partition lemma), while the cost
-     * is U-shaped (seed falls, discovery rises) with its minimum exactly at μ = 1. μ = 0.4 is the RIncHusp
-     * "semi-high buffer" value we inherited and is included to show what it cost us (SIGN: 5.6× slower).
+     * Buffer factors swept by S9, where θ₀ = μ·δ·U(D_old). The sweep is what shows μ = 1 to be the
+     * cost minimum rather than a tuned constant: recall holds at 1.0 throughout, since exactness does
+     * not depend on θ₀, while cost traces a U — the seed shrinks as μ rises and discovery grows to
+     * match. 0.4 is the value the sequential baselines use and is included for that comparison.
      */
     public static final double[] S9_MUS = {0.4, 0.7, 1.0, 1.5, 2.0, 3.0};
 
-    // ===================== S6/S7/S8 sensitivity & scaling (light datasets only) =====================
-    /** δ multipliers × each swept dataset's BASE δ. All >= 1.0 (monotone up) so minUtil only RISES →
-     *  fewer patterns, less memory: safe, no OOM risk on the long M5 run. */
+    // ===================== Sweep ranges for S6/S7/S8 =====================
+    /**
+     * δ multipliers applied to each dataset's base δ. All are ≥ 1, so minUtil only rises and the
+     * pattern space only shrinks: a sweep can never be heavier than the base configuration, which
+     * matters because these run unattended.
+     */
     public static final double[] S6_DELTA_MULT = {1.0, 1.5, 2.0, 3.0};
-    /** ρ multipliers × base ρ (0.30 → 0.15/0.30/0.45/0.60): stricter→looser regularity. */
+    /** ρ multipliers applied to the base ρ, giving 0.15 / 0.30 / 0.45 / 0.60: strict to loose. */
     public static final double[] S7_RHO_MULT = {0.5, 1.0, 1.5, 2.0};
     /**
-     * Batch counts for S8 (D_old 25% + (n−1) increments). Spans SMALL counts — where re-mining with the
-     * parallel engine is still cheap — through LARGE ones, so the CROSSOVER between the two cost curves
-     * is visible: re-mining is O(#updates), incremental maintenance is flat.
+     * Batch counts for S8, each run as D_old (25%) followed by n−1 increments. The range spans counts
+     * small enough for re-mining to still be cheap through counts where it clearly is not, so the two
+     * cost curves cross inside the plot: re-mining is linear in the number of updates, incremental
+     * maintenance is close to flat.
      */
     public static final int[] S8_BATCH_COUNTS = {2, 4, 8, 16, 32, 64};
     /**
-     * Datasets that get the sweeps S6/S7/S8/S9/S10 — the FAST ones. FIFA/KOSARAK excluded (a sweep would
-     * add 20h+). NOT final: {@code --test} adds the tiny example datasets so the sweep scenarios are
-     * actually EXERCISED before a 3–5 h M5 run commits to them. The last time a scenario shipped without
-     * running on the tiny suite, an item-filter bug (trailing-gap prune at seeding) survived into the
-     * real benchmarks, where loose maxReg masked it.
+     * Datasets that get the S6–S10 sweeps. The heavy ones are left out: sweeping them would add
+     * many hours and the sweeps answer questions the large datasets do not. Not final —
+     * {@code --test} swaps in the tiny example datasets so the sweep scenarios can be exercised in
+     * seconds before committing to a long run. That check is worth keeping: a scenario that has
+     * never run on the small suite has never had its correctness assertions tested at all, and a
+     * loose regularity threshold on the real data can easily hide a seeding bug.
      */
     public static java.util.Set<String> s6Datasets =
             new java.util.HashSet<>(java.util.Arrays.asList("SIGN", "LEVIATHAN", "BIBLE"));
 
-    /** {@code --test}: run every sweep on the tiny example datasets too (seconds, not hours). */
+    /** {@code --test}: point the sweeps at the tiny example datasets so they run in seconds. */
     public static void enableSweepsForTestSuite() {
         s6Datasets = new java.util.HashSet<>(java.util.Arrays.asList("example", "example2"));
     }
 
     /**
-     * Datasets that run S5 DESPITE {@code s1Only}. SIGN is s1Only because S4's B-Increasing split
-     * (10% D_old) collapses the seeding threshold and OOMs — S5 seeds from 25% D_old, so that risk
-     * does not apply. SIGN is also the dataset where laziness demonstrably pays (dense: ~46k tracked
-     * candidates, −26% match calls in the 16-batch probe); LEVIATHAN/BIBLE measured ≈0 gain, so
-     * without SIGN the S5 table would show none of the mechanism's upside.
+     * Escape hatch for datasets that should run S5 even though they are marked scalability-only.
+     * The fine-batch schedule seeds from 25% of the data, so it avoids the memory pressure that
+     * usually causes a dataset to be marked that way in the first place. Currently empty: no
+     * scalability-only dataset needs S5.
      */
-    public static final java.util.Set<String> s5ExtraDatasets = java.util.Collections.singleton("SIGN");
+    public static final java.util.Set<String> s5ExtraDatasets = java.util.Collections.emptySet();
 
     // ===================== Miner factory =====================
     /**
-     * P-RIncHUSP (proposed), runs {@code threads} threads. <b>EXACT</b>: recall = 1.0 against the full
-     * re-mine oracle, by construction and measured on every dataset. Three ingredients:
+     * Builds the proposed miner on {@code threads} threads.
+     *
+     * <p>The result is exact: the pattern set equals a full re-mine of the updated database, by
+     * construction and as measured on every dataset in the suite. Three settings are responsible, and
+     * the first two close independent gaps, so neither alone is enough — S10 ablates them.
      *
      * <ol>
-     *   <li><b>{@code seedPruneByFinalN}</b> — the seed prunes regularity at ρ·N_final, the tightest
-     *       SOUND bound (an inner gap inside D_old survives verbatim into D, and is anti-monotone under
-     *       extension). The old default ρ·N_current is unsound: it silently dropped patterns that are
-     *       irregular inside D_old but regular in the final DB. That, not the utility buffer, is what
-     *       cost SIGN its 30th pattern — and it got far worse as ρ tightened (recall 0.77 at ρ=0.15).</li>
-     *   <li><b>{@code discoverExact}</b> — mines ΔD at θ_disc = minUtil − θ₀, which by additivity
-     *       (Lemma P1) catches every pattern too weak in D_old to be seeded.</li>
-     *   <li><b>μ = 1</b> — <i>not</i> a tuned constant. It makes θ₀ = δ·U(D_old) and θ_disc = δ·U(ΔD):
-     *       each part is mined at its OWN natural threshold. The partition lemma then guarantees
-     *       completeness, and μ = 1 is also the empirical cost minimum on every dataset (seed cost falls
-     *       with θ₀, discovery cost rises; the U-shape bottoms out exactly here). The sub-1 "semi-high
-     *       buffer" of the RIncHusp line drags θ₀ to 0.1·minUtil — a 10× lower threshold that explodes
-     *       the seed (SIGN: 5283 ms vs 463 ms) and buys nothing discovery does not already guarantee.</li>
+     *   <li>{@code seedPruneByFinalN} — regularity is pruned at ρ·N_final while seeding, the tightest
+     *       bound that stays sound. A gap inside D_old survives unchanged when data is appended, and
+     *       irregularity is anti-monotone under extension, so pruning at ρ·N_current instead drops
+     *       patterns that are irregular within D_old yet regular once the database is complete. The
+     *       effect grows as ρ tightens.</li>
+     *   <li>{@code discoverExact} — the increment is mined at minUtil − θ₀. Because utility is
+     *       additive over a partition, that recovers precisely those patterns too weak in D_old to
+     *       have been seeded.</li>
+     *   <li>μ = 1 — this sets θ₀ = δ·U(D_old) and the discovery threshold to δ·U(ΔD), so each part is
+     *       mined at its own natural threshold, which is what the partition lemma requires for the
+     *       union of the two to be complete. It is also where cost bottoms out, seeding growing
+     *       cheaper as θ₀ rises and discovery more expensive; see {@link #S9_MUS}.</li>
      * </ol>
      *
-     * Maintenance is the CONTENT-DRIVEN parallel trie ({@code trieMaintain}): a shared prefix is matched
-     * once for all patterns extending it, work split over disjoint ascending sequence ranges. Output is
-     * verified element-wise identical to the per-pattern re-match (TrieVerify) and deterministic across T.
-     * D_old is seeded by the companion study's parallel engine [05].
+     * <p>Maintenance uses the content-driven parallel trie: a shared prefix is matched once on behalf
+     * of every pattern extending it, and the work is split over disjoint ascending sequence ranges.
+     * Its output is verified element-wise against per-pattern re-matching and does not depend on the
+     * thread count. D_old itself is seeded by the companion study's parallel engine.
      */
     public static AlgoPRIncHUSP newProposed(int threads) {
         AlgoPRIncHUSP m = new AlgoPRIncHUSP();
         m.numThreads = threads;
-        m.seedWithEngine05 = true;                   // D_old seeded by the companion study's parallel engine
-        m.trieMaintain = true;                       // content-driven parallel maintain (THIS paper's contribution)
-        m.seedPruneByFinalN = true;                  // SOUND regularity bound at seeding (ρ·N_final)
-        m.discoverExact = true;                      // SOUND utility recovery from ΔD  -> together: EXACT
-        m.forkSeed = false;                          // in-house enumeration unused when seeding with [05]
+        m.seedWithEngine05 = true;                   // seed D_old with the companion parallel engine
+        m.trieMaintain = true;                       // content-driven parallel maintenance
+        m.seedPruneByFinalN = true;                  // regularity bound at seeding: ρ·N_final
+        m.discoverExact = true;                      // recover from ΔD what D_old was too weak to seed
+        m.forkSeed = false;                          // in-house enumeration is unused when seeding externally
         m.lazy = false;
         m.buffer.strategy = AdaptiveBuffer.Strategy.FIX;
-        m.buffer.fixedMu = MU_PARTITION;             // θ₀ = δ·U(D_old): each part at its natural threshold
+        m.buffer.fixedMu = MU_PARTITION;             // θ₀ = δ·U(D_old)
         m.buffer.bufferFactorMin = MU_PARTITION;
         m.buffer.bufferFactorMax = MU_PARTITION;
         m.label = (threads == 1) ? "P-RIncHUSP-seq" : "P-RIncHUSP";

@@ -20,30 +20,51 @@ import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 
 /**
- * <h1>OFFICIAL experiment — PARALLEL study</h1>
+ * Runs the experiment suite and writes one CSV row per measured run.
  *
- * Each benchmark point: WARM-UP (1) + MEASURE {@code measuredRuns} runs + 60-minute TIMEOUT per run.
- * Writes METRICS ONLY to CSV. Baseline = RIncHusp [Ishita2022] Fix(μ) (does NOT use a non-regular
- * miner — not the same problem, not a fair comparison). Recall ground truth = RHusp remining the
- * full DB.
+ * <p>Every benchmark point is one warm-up run followed by {@code ExpConfig.measuredRuns} measured
+ * runs, each under a 60-minute timeout. Only metrics are recorded; the patterns themselves are not
+ * written out.
  *
- * <h3>Five scenarios</h3>
+ * <p>Two references matter when reading the numbers. RIncHusp Fix(mu) is the sequential incremental
+ * miner this work extends, run at a fixed buffer factor. Recall is measured against RHusp re-mining
+ * the whole database, which is the ground truth by definition; miners without the regularity
+ * constraint solve a different problem and are not used as baselines. Recall is skipped on datasets
+ * larger than {@code ExpConfig.coverageMaxN}, where building that ground truth is impractical.
+ *
+ * <h2>Scenarios</h2>
  * <ul>
- *   <li><b>S1 — Scalability:</b> P-RIncHUSP sweeps T∈{1,2,4,8,…} (distribution A). Speedup S(p)=T₁/Tₚ, Efficiency E=S/p.</li>
- *   <li><b>S2 — Comparison:</b> P-RIncHUSP(best T) vs P-RIncHUSP-seq(T₁) vs RIncHusp Fix(0.4)/Fix(0.9)
- *       vs Remine-static (naive full re-mine each batch — light datasets only).</li>
- *   <li><b>S3 — Correctness invariance:</b> HS Found is IDENTICAL across all T (deterministic parallelism). Checked within S1.</li>
- *   <li><b>S4 — Distribution robustness:</b> 4 batch distributions A/B/C/D × (P-RIncHUSP vs RIncHusp Fix(0.4)).</li>
- *   <li><b>S5 — Fine-batch streaming:</b> D_old 25% + 15×5% increments; P-RIncHUSP(content-driven trie)
- *       vs the SAME miner with the per-pattern inverted-index maintain (isolates the maintain strategy,
- *       identical HS) vs RIncHusp Fix(0.4).</li>
- *   <li><b>S6 — δ-sensitivity sweep:</b> light datasets only (SIGN/LEVIATHAN/BIBLE); P-RIncHUSP(best T)
- *       vs RIncHusp Fix(0.4) over δ ∈ base×{1,1.5,2,3} — runtime/#patterns/recall vs threshold.</li>
+ *   <li><b>S1</b> — scalability: sweep the thread count on distribution A, reporting speedup
+ *       S(p) = T1/Tp and efficiency E = S/p.</li>
+ *   <li><b>S2</b> — comparison at the best thread count: the proposed miner against its own
+ *       sequential variant, the Fix(0.4)/Fix(0.9) baselines, and re-mining every batch (both
+ *       sequential and parallel).</li>
+ *   <li><b>S3</b> — parallel invariance: pattern count and recall must not change with the thread
+ *       count. Checked from the S1 runs rather than measured separately.</li>
+ *   <li><b>S4</b> — robustness across the four batch distributions.</li>
+ *   <li><b>S5</b> — maintenance strategy: content-driven against the per-pattern inverted index, on
+ *       a fine batch schedule. Both return the same patterns, so the gap is maintenance cost alone.</li>
+ *   <li><b>S6</b> — sensitivity to the utility threshold delta.</li>
+ *   <li><b>S7</b> — sensitivity to the regularity threshold rho, including the approximate variant,
+ *       whose recall falls away as rho tightens.</li>
+ *   <li><b>S8</b> — batch-count scaling: incremental maintenance against re-mining every batch over
+ *       k batches, which locates the point where incremental work becomes the cheaper option.</li>
+ *   <li><b>S9</b> — buffer factor sweep: recall is independent of mu, cost is not.</li>
+ *   <li><b>S10</b> — exactness ablation: the two seed bounds switched on and off.</li>
  * </ul>
+ * S5 to S10 run only on datasets small enough to have an oracle; the heavy ones are marked
+ * scalability-only in {@link DatasetCatalog}.
  *
- * <h3>How to run</h3>
- * No arguments → runs {@link DatasetCatalog#officialSuite()} (into a single CSV). With arguments:
- * {@code ExperimentOfficial <seqFile> <eutilFile> [δ=0.002] [ρ=0.30] [outCsv]}.
+ * <h2>Running</h2>
+ * <pre>
+ *   java -cp out test.ExperimentOfficial                     # full suite from DatasetCatalog
+ *   java -cp out test.ExperimentOfficial --test              # small datasets; finishes in seconds
+ *   java -cp out test.ExperimentOfficial --only=SIGN,BIBLE   # a subset of the suite
+ *   java -cp out test.ExperimentOfficial --resume            # continue the newest unfinished run
+ *   java -cp out test.ExperimentOfficial seq.txt eutil.txt [delta] [rho] [out.csv]   # one dataset
+ * </pre>
+ * Suite runs create {@code results/run_<timestamp>_<id>/} holding the CSV, the dataset statistics
+ * and the resume state; see {@link RunContext}.
  */
 public class ExperimentOfficial {
 
@@ -76,9 +97,9 @@ public class ExperimentOfficial {
         List<DatasetSpec> suite = testMode ? DatasetCatalog.testSuite() : DatasetCatalog.officialSuite();
         if (testMode) ExpConfig.enableSweepsForTestSuite();   // exercise S6-S10 too, in seconds
 
-        // --only=TAG1,TAG2 : partial re-run of just these datasets (each keeps its own s1Only flag).
-        // Use after a δ change (e.g. SIGN 0.03→0.02) to avoid re-running unchanged datasets; then feed
-        // the resulting run dir to gen_tables.py as its PATCH argument to merge over the full run.
+        // --only=TAG1,TAG2 restricts the suite to the named datasets, each keeping its own settings.
+        // Useful after changing one dataset's threshold: re-run that dataset alone, then merge the
+        // resulting directory over the previous full run as a patch (see the table generator).
         for (String a : args) {
             if (a.startsWith("--only=")) {
                 java.util.Set<String> keep = new java.util.HashSet<>(

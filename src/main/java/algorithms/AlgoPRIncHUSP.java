@@ -116,13 +116,17 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
     public int discCandidates = 0, discAccepted = 0, discResurrected = 0, discAborted = 0;
 
     /**
-     * Choice of regularity pruning threshold at seeding time:
+     * Which regularity threshold to prune with while seeding.
      * <ul>
-     *   <li>{@code false} (default): ρ·N_<b>current</b> (RIncHusp/paper style) — strong pruning,
-     *       approximates high coverage (few patterns regular-at-final-DB are lost). Required to make
-     *       low δ (dense data) feasible to run.</li>
-     *   <li>{@code true}: ρ·N_<b>final</b> (requires hint) — sound, no recall loss, but ineffective
-     *       when D_old is small.</li>
+     *   <li>{@code true} — ρ·N_final, the tightest bound that stays sound, so no pattern is lost.
+     *       A gap inside {@code D_old} survives unchanged when later batches are appended, while the
+     *       threshold itself grows with N, so a pattern can be irregular now and regular once the
+     *       database is complete. Needs the final sequence count as a hint, and prunes little when
+     *       {@code D_old} is a small fraction of the data. This is what the proposed configuration
+     *       uses; see {@code ExpConfig.newProposed}.</li>
+     *   <li>{@code false} (default) — ρ·N_current, as in the sequential predecessor. It prunes harder
+     *       and so keeps low δ on dense data affordable, but it drops exactly those patterns that
+     *       become regular later, which costs recall. Kept for the ablation in S10.</li>
      * </ul>
      */
     public boolean seedPruneByFinalN = false;
@@ -139,49 +143,57 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
     public int seedGrain = 128;
 
     /**
-     * Seed {@code D_old} with the companion study's PARALLEL static engine
-     * ({@link AlgoRHUSPMinerParallel}: CSR layout, EUCS + LA-PEU bounds, RDLB scheduler) instead of
+     * Seed {@code D_old} with the companion study's parallel static engine
+     * ({@link AlgoRHUSPMinerParallel}: CSR layout, EUCS and LA-PEU bounds, RDLB scheduler) rather than
      * this class's own VUL/DEUCS enumeration. That engine is several times faster on the same input,
-     * and seeding is 85–95% of the runtime — so this is the architecture the incremental layer should
-     * sit on: <b>[05]'s engine seeds, our parallel incremental maintenance takes over</b>.
+     * and seeding accounts for most of the total runtime, so it is the natural layer to build on: the
+     * external engine produces the seed and the incremental maintenance here takes over from it.
      * <p>
-     * The engine is run in {@code seedMode} at the buffer threshold θ = μ_min·minUtil, and returns
-     * per pattern the {@code lastSeqId} and {@code maxInnerPeriod} needed to CONTINUE the regularity
-     * accumulation. Output is identical to the in-house enumeration (same exact RHUSP semantics).
+     * The engine runs in {@code seedMode} at the buffer threshold and returns, for each pattern, the
+     * {@code lastSeqId} and {@code maxInnerPeriod} needed to keep accumulating regularity across later
+     * batches. Its output matches the in-house enumeration — the semantics are the same.
      */
     public boolean seedWithEngine05 = false;
 
     /**
-     * BREAK THE SEED-ONCE CEILING — "exact on demand". Incremental maintenance is cheap but can only
-     * promote patterns that were SEEDED; one below θ₀ in {@code D_old} that later becomes high-utility
-     * is missed (this is what costs SIGN 1 of 30). When {@code discoverExact} is on, querying the
-     * result triggers ONE reconciliation pass that provably recovers every such pattern.
+     * Recover the patterns seeding alone cannot reach, which is what makes the result exact rather
+     * than merely high-coverage.
      * <p>
-     * <b>Soundness.</b> A missed pattern α satisfies {@code u(α,D_old) < θ₀} and {@code u(α,D) ≥ minUtil}.
-     * By additivity (Lemma P1), {@code u(α,ΔD) = u(α,D) − u(α,D_old) > minUtil − θ₀ ≜ θ_disc}. So EVERY
-     * missed pattern must surface when the increments are mined at θ_disc — no candidate can escape.
+     * Incremental maintenance is cheap, but it can only promote patterns that were seeded in the first
+     * place. A pattern whose utility in {@code D_old} falls below θ₀ is never tracked, so it stays
+     * missing even when later batches push it past {@code minUtil}. With this flag set, querying the
+     * result triggers a single reconciliation pass that recovers every such pattern.
      * <p>
-     * <b>The right θ₀ is not a tuning choice.</b> Setting μ = 1 gives θ₀ = δ·U(D_old) and therefore
-     * θ_disc = δ·U(D) − δ·U(D_old) = δ·U(ΔD): each part is mined at its OWN natural threshold. That is
-     * exactly the partition lemma of {@link #discoverFrom} — see there. Empirically μ = 1 also minimises
-     * seed + discovery on every dataset tested (the seed cost falls and the discovery cost rises with θ₀;
-     * μ = 1 is the U-shaped minimum). Sub-1 "semi-high buffers" only drag θ₀ below the natural threshold,
-     * exploding the seed while buying nothing that discovery does not already guarantee.
+     * That pass cannot miss one. A missed pattern α has {@code u(α,D_old) < θ₀} and
+     * {@code u(α,D) ≥ minUtil}; utility is additive over the partition, so
+     * {@code u(α,ΔD) = u(α,D) − u(α,D_old) > minUtil − θ₀}. Mining the increments at that threshold
+     * therefore surfaces it.
+     * <p>
+     * The threshold is not a free parameter. μ = 1 gives θ₀ = δ·U(D_old) and hence a discovery
+     * threshold of δ·U(D) − δ·U(D_old) = δ·U(ΔD), so each part is mined at its own natural threshold —
+     * the condition the partition lemma in {@link #discoverFrom} needs. It is also the cost minimum in
+     * practice: seeding grows cheaper as θ₀ rises while discovery grows dearer, and the two cross
+     * there.
      */
     public boolean discoverExact = false;
 
     /**
-     * Fully-incremental discovery: mine EVERY batch Δ_k once, at its own natural threshold δ·U(Δ_k).
+     * Mine each batch Δ_k once at its own natural threshold δ·U(Δ_k), so the result is exact after
+     * every batch rather than only when queried.
      *
-     * <p>Same partition lemma, finer partition ({@code D = D_old ⊎ Δ₁ ⊎ … ⊎ Δ_k}). Trade-off against
-     * {@link #discoverExact}, which uses the coarsest 2-part split:
+     * <p>This is the same partition lemma applied to a finer partition
+     * ({@code D = D_old ⊎ Δ₁ ⊎ … ⊎ Δ_k}). Weighed against {@link #discoverExact}, which uses the
+     * coarsest two-part split:
      * <ul>
-     *   <li>{@code discoverExact} — ONE mine of the whole ΔD, so the fewest candidates; but the answer
-     *       is only exact when you query, and a query after every batch re-mines a growing ΔD.</li>
-     *   <li>{@code partitionMine} — each sequence is mined exactly ONCE, ever, and the answer is exact
-     *       after EVERY batch; but k parts mined at the same δ yield ≈k× the candidates of one part.</li>
+     *   <li>{@code discoverExact} mines the whole increment once and so produces the fewest
+     *       candidates, but the answer is exact only at query time, and querying after every batch
+     *       re-mines an increment that keeps growing.</li>
+     *   <li>{@code partitionMine} mines each sequence exactly once, ever, and leaves the answer exact
+     *       after every batch — but k parts mined at the same δ yield roughly k times the candidates
+     *       of a single part, since a small part has a small absolute threshold and so admits patterns
+     *       that are locally strong yet globally negligible.</li>
      * </ul>
-     * Coarser partitions are cheaper; finer partitions give per-batch exactness. Both are complete.
+     * Both are complete: coarser partitions cost less, finer ones give per-batch exactness.
      */
     public boolean partitionMine = false;
 
