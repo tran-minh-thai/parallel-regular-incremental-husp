@@ -52,7 +52,7 @@ public class MaintainBench {
 
     static AlgoPRIncHUSP proposed(boolean trie, int th) {
         AlgoPRIncHUSP m = new AlgoPRIncHUSP();
-        m.numThreads = th; m.lazy = false; m.useInvertedIndex = true; m.trieMaintain = trie;
+        m.numThreads = th; m.useInvertedIndex = true; m.trieMaintain = trie;
         m.buffer.strategy = AdaptiveBuffer.Strategy.FIX; m.buffer.fixedMu = ExpConfig.muMin;
         m.buffer.bufferFactorMin = ExpConfig.muMin; m.buffer.bufferFactorMax = ExpConfig.muMax;
         return m;

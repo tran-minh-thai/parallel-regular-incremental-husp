@@ -228,7 +228,7 @@ public class ExperimentOfficial {
             }
         }
 
-        // ---------- S5: Fine-batch streaming — isolates the lazy gain ----------
+        // ---------- S5: Fine-batch streaming — isolates the maintenance-strategy cost ----------
         // s1Only datasets skip S5 too, EXCEPT the explicit allowlist (SIGN — see ExpConfig.s5ExtraDatasets).
         if (ExpConfig.runS5FineBatch && (!s1Only || ExpConfig.s5ExtraDatasets.contains(tag))) {
             System.out.println("-- S5 Fine-batch streaming (D_old 25% + 15 x 5% increments, best T=" + cores + ") --");

@@ -5,12 +5,12 @@ import java.util.List;
 /**
  * Buffer threshold θ = μ × minUtil, holding patterns whose utility falls in {@code [θ, minUtil)}.
  * <p>
- * The proposed miner fixes μ = 1 ({@code FIX}), which the partition lemma shows to be the value that
- * makes the incremental result exact; the RIncHusp baselines use {@code FIX} at 0.4 and 0.9. The four
- * adaptive strategies below choose μ per batch from three risk signals (batch utility ratio, growth
- * rate, threshold difficulty), lowering μ when risk is high to favour coverage. They belong to the
- * sequential line of work this study compares against and are retained for that comparison; the
- * current experiment configuration does not select them.
+ * The proposed miner fixes μ = 1 ({@code FIX}), the value the partition lemma identifies as the one
+ * that makes the incremental result exact. The four adaptive strategies below instead choose μ per
+ * batch from three risk signals (batch utility ratio, growth rate, threshold difficulty), lowering μ
+ * when risk is high to favour coverage. The official experiment suite (ExpConfig) always runs
+ * {@code FIX}; the adaptive modes are exercised only by the diagnostic probes (see {@code MuProbe}),
+ * which use them to show how μ trades coverage for cost.
  */
 public class AdaptiveBuffer {
 

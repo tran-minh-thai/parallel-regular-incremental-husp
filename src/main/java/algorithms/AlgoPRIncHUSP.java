@@ -44,76 +44,15 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
     public boolean useInvertedIndex = true;
     /**
      * Maintain strategy. {@code false} (default) = per-pattern re-match (each kept pattern DP-matched
-     * against its candidate sequences). {@code true} = CONTENT-DRIVEN: build a prefix trie over the
+     * against its candidate sequences). {@code true} = content-driven: build a prefix trie over the
      * kept patterns and, per new sequence, traverse the trie guided by the sequence's items —
-     * matching a shared prefix ONCE serves all patterns extending it (baseline RIncHusp's efficiency),
-     * parallelized over disjoint ascending sequence ranges. Cannot combine with {@link #lazy}
-     * (the trie holds all patterns; laziness would need a hot-only trie rebuilt on tier changes).
+     * matching a shared prefix once serves all patterns extending it, parallelized over disjoint
+     * ascending sequence ranges. This is what the proposed miner uses.
      */
     public boolean trieMaintain = false;
-    /** When true, μ(t) gates maintain — a pattern whose utility drops below the
-     *  buffer threshold θ(t)=μ(t)·minUtil is evicted (marked inactive) and stops being re-matched. */
-    public boolean evict = false;
-    /** Trend-aware eviction: spare a below-θ pattern whose utility/minUtil ratio is RISING (it is
-     *  converging on promotion). Fixes the dense-dataset failure where a scalar μ evicts the crowd
-     *  of patterns approaching the boundary (μ's growth signals are blind to dataset geometry). */
-    public boolean trendSpare = false;
-    /** Minimum ratio increase per batch to count as "rising" (guards float noise). */
-    public double trendEps = 1e-9;
-    /**
-     * LAZY buffer (hot/cold tiering with a SOUND dormancy bound) — supersedes hard eviction.
-     * A pattern below θ(t) goes COLD: frozen, no longer re-matched. Each batch, its possible utility
-     * gain over the skipped window is upper-bounded by {@code min_item Σ_batch SWU_batch(item)}
-     * (the pattern occurs in a sequence ⇒ every one of its items does ⇒ gain ≤ the SWU any single
-     * item accumulated). If {@code frozen + bound < θ(t)} the pattern is CERTIFIED still below θ —
-     * stays cold at O(1) cost. Otherwise it is caught up EXACTLY over precisely the batches it
-     * skipped (stored per-batch posting lists) and reactivated. Consequently the per-batch HS set is
-     * EXACT (identical to Fix(μ_min) which never evicts) by construction — μ(t) now only tunes how
-     * aggressively the buffer sleeps, i.e. cost, never recall. */
-    public boolean lazy = false;
-    // Lazy stats: tier-1 = O(items) per-item bound; tier-2 = posting-list
-    // intersection bound (Σ u(S) over sequences containing ALL pattern items — pays the intersection
-    // but skips the expensive DP matching; on a wake the intersection work is reused anyway).
-    public long lazyBoundSkips = 0, lazyT2Skips = 0, lazyWakeups = 0;
-    /**
-     * Memory cap for the per-batch lazy bookkeeping, in posting-list ints (~4 bytes each; default
-     * 50M ≈ 200 MB). Crossing it triggers a CHECKPOINT: force-wake every cold pattern (exact
-     * catch-up — the same work Fix(μ_min) would have paid for those windows anyway), then drop ALL
-     * per-batch tables. Nothing references the old batches afterwards, so memory returns to ~zero
-     * and correctness is untouched. Sized for streams far beyond KOSARAK (measured ~6M ints there).
-     */
-    public long lazyMaxPostingInts = 50_000_000;
-    private long postingInts = 0;                    // running posting-list footprint (ints)
-    public int lazyCheckpoints = 0;                  // stat: how many times the cap fired
-    /**
-     * Engagement gate: freezing (and hence the per-batch bookkeeping) only kicks in once at least
-     * this many below-minUtil candidates are tracked. With a tiny candidate set (KOSARAK: 19) the
-     * bookkeeping scan of ΔD costs far more than the maintenance it could save (+29% measured), so
-     * lazy stays dormant there and the run is bit-identical to lazy=false. Invariant kept: any batch
-     * during which SOME pattern is cold gets full bookkeeping (catch-up windows must have no gaps).
-     */
-    public int lazyMinCandidates = 32;
-    private int coldCount = 0;                       // #patterns currently frozen
-    private int lastBufferedN = 0;                   // SHS count from the previous classify
-    private boolean freezeAllowed = false;           // set per batch before classify
 
-    /** Re-seed (discovery): on each processed batch, enumerate ΔD at a batch-scaled threshold and
-     *  verify candidates exactly over the full DB — admits patterns that were below the seeding
-     *  threshold in D_old but intensified later, and resurrects wrongly evicted ones. This is the
-     *  only mechanism that can push recall ABOVE the seed-once ceiling (= Fix(μ_min)'s recall).
-     *  Measured VERY expensive per-batch (28× runtime on LEVIATHAN); kept for ablation, off by default. */
-    public boolean reseed = false;
-    /** Run discovery only when μ(t) ≤ this value (risk-gated). 1.0 = every batch. */
-    public double reseedTrigger = 1.0;
-    /** κ scale on the discovery threshold θ_disc = κ·θ(t)·(batchUtil/totalUtil). κ=1 ("on pace")
-     *  explodes combinatorially on small batches (few occurrences suffice); κ=2 targets patterns
-     *  genuinely INTENSIFYING in ΔD while still catching HS-pace ones whenever κ·μ(t) ≤ 1. */
-    public double reseedScale = 2.0;
-    /** Safety valve: abort a batch's discovery outright if enumeration records more than this many
-     *  candidates (all-or-nothing, so results stay deterministic; the batch simply gets no discovery). */
-    public int reseedCandidateCap = 200_000;
-    // Discovery stats.
-    public int discCandidates = 0, discAccepted = 0, discResurrected = 0, discAborted = 0;
+    // Discovery stats: candidates enumerated over the increment, and those admitted to the result.
+    public int discCandidates = 0, discAccepted = 0;
 
     /**
      * Which regularity threshold to prune with while seeding.
@@ -220,22 +159,11 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         CapExceeded() { super(null, null, false, false); }
     }
 
-    /** key -> tracked Pat (active or evicted); built only when {@link #reseed} (dedup + resurrection). */
-    private java.util.HashMap<String, Pat> patIndex;
-
     // ----- discoverExact state -----
     private final List<List<int[]>> increments = new ArrayList<>();   // raw ΔD (everything after D_old)
     private double seedThreshold0 = 0;                                // θ₀ actually used at seeding
     private boolean reconciled = false;
     public long discMs = 0;                                           // wall-clock spent in reconcile()
-
-    // ----- Lazy-buffer bookkeeping (only populated when {@link #lazy}) -----
-    private int batchIdx = 0;                                            // 0 = D_old; increments per processBatch
-    private final Map<Integer, Map<Integer, Long>> swuByBatch = new java.util.HashMap<>();   // batch -> item -> SWU_batch(item)
-    private final Map<Integer, Map<Integer, Long>> iuByBatch = new java.util.HashMap<>();    // batch -> item -> Σ occurrence-utility (2nd bound)
-    private final Map<Integer, Map<Integer, int[]>> invByBatch = new java.util.HashMap<>();  // batch -> posting lists (catch-up + tier-2)
-    private final Map<Integer, long[]> utilByBatch = new java.util.HashMap<>();              // batch -> u(S) per sequence (tier-2 bound)
-    private final Map<Integer, Integer> loByBatch = new java.util.HashMap<>();               // batch -> first seqId (aligns utilByBatch)
 
     /** Tracked SHS/HS pattern set (flat, no persistent tree). Utility/regularity updated each batch. */
     private Pat[] pats = new Pat[0];
@@ -293,11 +221,6 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
     static final class Pat {
         final int[] ext, item;            // ext[0]=S_EXT; item[k] = k-th item
         long utility; int lastSeqId; int maxInnerPeriod;
-        boolean active = true;            // false once evicted (utility fell below θ(t)); skipped in maintain
-        double prevRatio = 0;             // utility/minUtil at the previous classify (trend-aware eviction)
-        int coldFromBatch = -1;           // lazy mode: first batch NOT reflected in the frozen state (-1 = hot / hard-evicted)
-        long t2Sum = 0;                   // incremental tier-2 bound: Σ u(S) over intersection seqs in batches (coldFromBatch..t2Batch]
-        int t2Batch = -1;                 // last batch folded into t2Sum (avoids re-intersecting the whole window each batch)
         Pat(int[] ext, int[] item, long utility, int lastSeqId, int maxInnerPeriod) {
             this.ext = ext; this.item = item;
             this.utility = utility; this.lastSeqId = lastSeqId; this.maxInnerPeriod = maxInnerPeriod;
@@ -342,10 +265,6 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         }
         data.appendBatch(dOld);
         recomputeThresholds(0, 0, dOld.size(), 0);   // first batch: μ = μ_min
-        // Lazy mode: ALWAYS seed at μ_min — seeding defines the coverage ceiling (lazy can only
-        // preserve what was seeded); μ(t)/FIX-μ only tiers hot/cold from batch 1 on. Without this a
-        // Lazy-Fix(0.9) run would seed at 0.9 and inherit Fix(0.9)'s recall, defeating the design.
-        if (lazy) bufferThreshold = buffer.bufferFactorMin * minUtil;
         // Seeding-time regularity pruning threshold = ρ·N_final (if total N is known) — cut irregular
         // branches early without losing patterns regular-at-final-DB. No hint -> use current maxReg
         // (may prune slightly too aggressively).
@@ -358,10 +277,6 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         pats = patsQueue.toArray(new Pat[0]);
         patsQueue.clear();
         deucs.release();            // DEUCS only serves seeding; the incremental phase does not need it -> release (less residual memory)
-        if (reseed) {               // key index for discovery dedup + resurrection of evicted patterns
-            patIndex = new java.util.HashMap<>(pats.length * 2);
-            for (Pat p : pats) patIndex.put(formatPattern(p.ext, p.item), p);
-        }
         initialized = true;
         classify();
         sampleMemory();
@@ -558,29 +473,8 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         long batchUtil = AdaptiveBuffer.batchUtility(deltaD);
         int[] range = data.appendBatch(deltaD);        // append at tail -> [lo,hi); update totalDbUtility/numSequences
         recomputeThresholds(batchUtil, prevUD, deltaD.size(), prevN);
-        batchIdx++;
 
-        // Engagement: bookkeeping is MANDATORY while anything is cold (window gaps would break
-        // catch-up); otherwise it only runs once the candidate set is big enough to pay for itself.
-        boolean book = lazy && coldCount > 0;
-        freezeAllowed = lazy && (coldCount > 0 || lastBufferedN >= lazyMinCandidates);
-        if (book) {                                    // bookkeeping for the dormancy bounds + catch-up
-            computeLazyBatchStats(deltaD, range[0]);
-            Map<Integer, int[]> inv = buildInvertedIndex(range[0], range[1]);
-            for (int[] post : inv.values()) postingInts += post.length;
-            invByBatch.put(batchIdx, inv);
-        } else if (freezeAllowed) {
-            // First engaged batch: nothing cold yet, but this classify may freeze -> those windows
-            // start at batchIdx+1, so bookkeeping correctly begins NEXT batch (coldCount > 0 then).
-        }
         maintain(range[0], range[1]);                  // re-match each pattern on new sequences (parallel over patterns)
-        if (book) {                                    // certify-or-catch-up BEFORE classify -> per-batch HS stays exact
-            boolean checkpoint = postingInts > lazyMaxPostingInts;
-            wakeUncertainCold(checkpoint);
-            if (checkpoint) clearLazyBookkeeping();    // every pattern is hot again -> old batches unreferenced
-        }
-        if (reseed && buffer.lastBufferFactor <= reseedTrigger)
-            discover(deltaD, range[0], range[1], batchUtil);   // admit emerging patterns / resurrect evicted ones
         if (partitionMine) {                           // mine Δ_k ONCE at its own natural threshold δ·U(Δ_k)
             long t = System.currentTimeMillis();
             discoverFrom(deltaD, minUtilRatio * batchUtil);
@@ -604,7 +498,6 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         if (!useInvertedIndex) {                            // original |pats| x |Δseq| cross-product (A/B baseline)
             runParallelIndexed(arr.length, idx -> {
                 Pat p = arr[idx];
-                if (!p.active) return;
                 for (int s = lo; s < hi; s++) matchAndUpdate(p, s);
             });
             return;
@@ -615,13 +508,9 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         // occurrence), instead of every new sequence. Exact: a sequence missing any pattern item cannot
         // contain the pattern, so it would have returned MIN_VALUE and left utility/regularity unchanged.
         // Ascending seqId order preserves the consecutive-occurrence gap computation in matchAndUpdate.
-        // In engaged-lazy batches the index was already built (and retained for catch-up) in
-        // processBatch; otherwise (lazy dormant, or lazy off) build a transient one.
-        Map<Integer, int[]> stored = lazy ? invByBatch.get(batchIdx) : null;
-        final Map<Integer, int[]> inv = (stored != null) ? stored : buildInvertedIndex(lo, hi);
+        final Map<Integer, int[]> inv = buildInvertedIndex(lo, hi);
         runParallelIndexed(arr.length, idx -> {
             Pat p = arr[idx];
-            if (!p.active) return;                          // evicted -> no longer maintained
             int[] cand = candidateSeqs(p, inv);
             if (cand == null) return;                      // some pattern item absent from the whole batch
             for (int s : cand) matchAndUpdate(p, s);
@@ -977,241 +866,20 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
     }
 
     // =====================================================================
-    //  LAZY BUFFER — sound dormancy bound + exact catch-up
-    // =====================================================================
-
-    /**
-     * One pass over ΔD filling the three per-batch bound tables:
-     * SWU (item -> Σ u(S) over sequences containing it), IU (item -> Σ occurrence utilities —
-     * u(α,S) picks ONE occurrence per pattern item, so window gain ≤ Σ_k IU_win(item_k)), and
-     * u(S) per sequence (tier-2: Σ u(S) over the posting-list INTERSECTION of the pattern's items).
-     */
-    private void computeLazyBatchStats(List<List<int[]>> deltaD, int lo) {
-        Map<Integer, Long> swu = new java.util.HashMap<>();
-        Map<Integer, Long> iu = new java.util.HashMap<>();
-        long[] su = new long[deltaD.size()];
-        java.util.HashSet<Integer> seen = new java.util.HashSet<>();
-        for (int i = 0; i < deltaD.size(); i++) {
-            List<int[]> S = deltaD.get(i);
-            long uS = 0;
-            for (int[] ev : S) for (int k = 1; k < ev.length; k += 2) uS += ev[k];
-            su[i] = uS;
-            seen.clear();
-            for (int[] ev : S)
-                for (int j = 0; j + 1 < ev.length; j += 2) {
-                    iu.merge(ev[j], (long) ev[j + 1], Long::sum);
-                    if (seen.add(ev[j])) swu.merge(ev[j], uS, Long::sum);
-                }
-        }
-        swuByBatch.put(batchIdx, swu);
-        iuByBatch.put(batchIdx, iu);
-        utilByBatch.put(batchIdx, su);
-        loByBatch.put(batchIdx, lo);
-    }
-
-    /**
-     * For every cold pattern: certify it cannot influence the HS output, or catch it up EXACTLY.
-     * Window-gain bound = min( min_k SWU_win(item_k),  Σ_k IU_win(item_k) ) — both sound:
-     * the pattern occurs in a sequence ⇒ every item occurs there (SWU term), and u(α,S) picks one
-     * occurrence per pattern item (IU term). Wake threshold is {@code minUtil}, NOT θ(t): a cold
-     * pattern certified below minUtil cannot enter HS, which is the exactness that matters — its SHS
-     * membership may go stale (diagnostic only). Woken patterns are caught up over precisely the
-     * skipped batches (stored posting lists, ascending seqIds ⇒ gap bookkeeping stays correct) and
-     * reactivated BEFORE classify, so same-batch promotion works — per-batch HS stays exact.
-     */
-    private void wakeUncertainCold(boolean forceAll) {
-        final Pat[] arr = pats;
-        final long wakeAt = minUtil;                              // HS-exactness threshold
-        final int curBatch = batchIdx;
-        final java.util.concurrent.atomic.AtomicLong skips = new java.util.concurrent.atomic.AtomicLong();
-        final java.util.concurrent.atomic.AtomicLong t2skips = new java.util.concurrent.atomic.AtomicLong();
-        final java.util.concurrent.atomic.AtomicLong wakes = new java.util.concurrent.atomic.AtomicLong();
-        runParallelIndexed(arr.length, idx -> {
-            Pat p = arr[idx];
-            if (p.active || p.coldFromBatch < 0) return;          // hot, or hard-evicted (non-lazy path)
-            if (forceAll) {                                       // memory checkpoint: catch everyone up
-                for (int b = p.coldFromBatch; b <= curBatch; b++) {
-                    int[] cand = candidateSeqs(p, invByBatch.get(b));
-                    if (cand != null) for (int s : cand) matchAndUpdate(p, s);
-                }
-                p.active = true; p.coldFromBatch = -1;
-                wakes.incrementAndGet();
-                return;
-            }
-            long swuMin = Long.MAX_VALUE;                         // min over items of window SWU
-            long iuSum = 0;                                       // Σ over items of window item-utility
-            for (int k = 0; k < p.item.length; k++) {
-                long s = 0, u = 0;
-                for (int b = p.coldFromBatch; b <= curBatch; b++) {
-                    Map<Integer, Long> swu = swuByBatch.get(b);
-                    if (swu != null) { Long v = swu.get(p.item[k]); if (v != null) s += v; }
-                    Map<Integer, Long> iu = iuByBatch.get(b);
-                    if (iu != null) { Long v = iu.get(p.item[k]); if (v != null) u += v; }
-                }
-                if (s < swuMin) swuMin = s;
-                iuSum += u;
-            }
-            long bound1 = Math.min(swuMin, iuSum);
-            if (p.utility + bound1 < wakeAt) { skips.incrementAndGet(); return; }  // tier-1: certified out of HS reach
-            // Tier-2: fold the not-yet-seen window batches into the intersection bound
-            // Σ u(S) over sequences containing ALL pattern items (incremental via t2Sum/t2Batch —
-            // each batch is intersected at most once per cold stretch).
-            for (int b = Math.max(p.coldFromBatch, p.t2Batch + 1); b <= curBatch; b++) {
-                int[] cand = candidateSeqs(p, invByBatch.get(b));
-                if (cand != null) {
-                    long[] su = utilByBatch.get(b);
-                    int lo = loByBatch.get(b);
-                    for (int s : cand) p.t2Sum += su[s - lo];
-                }
-            }
-            p.t2Batch = curBatch;
-            if (p.utility + Math.min(bound1, p.t2Sum) < wakeAt) { t2skips.incrementAndGet(); return; }
-            for (int b = p.coldFromBatch; b <= curBatch; b++) {   // exact catch-up over the skipped window
-                int[] cand = candidateSeqs(p, invByBatch.get(b));
-                if (cand != null) for (int s : cand) matchAndUpdate(p, s);
-            }
-            p.active = true; p.coldFromBatch = -1;
-            wakes.incrementAndGet();
-        });
-        lazyBoundSkips += skips.get();
-        lazyT2Skips += t2skips.get();
-        lazyWakeups += wakes.get();
-        coldCount -= (int) wakes.get();
-    }
-
-    /** Drop ALL per-batch lazy tables (valid only right after a force-wake — no cold pattern left). */
-    private void clearLazyBookkeeping() {
-        swuByBatch.clear(); iuByBatch.clear(); invByBatch.clear();
-        utilByBatch.clear(); loByBatch.clear();
-        postingInts = 0;
-        lazyCheckpoints++;
-    }
-
-    /** Human-readable lazy bookkeeping footprint. */
-    public String lazyFootprint() {
-        long utilRows = 0;
-        for (long[] a : utilByBatch.values()) utilRows += a.length;
-        long swuEntries = 0;
-        for (Map<Integer, Long> m : swuByBatch.values()) swuEntries += m.size();
-        return String.format("batches=%d postings=%,d ints (~%.1f MB) utilRows=%,d swuEntries=%,d checkpoints=%d",
-                invByBatch.size(), postingInts, postingInts * 4 / 1048576.0, utilRows, swuEntries, lazyCheckpoints);
-    }
-
-    // =====================================================================
-    //  DISCOVERY (re-seed) — enumerate ΔD, verify exactly over the full DB
-    // =====================================================================
-
-    /**
-     * Discovery pass on the new batch: (1) enumerate ΔD at the batch-scaled threshold
-     * θ_disc = κ·θ(t)·(batchUtil/totalUtil) — a pattern "on pace" for SHS overall carries at least
-     * that much utility inside ΔD; (2) verify each candidate EXACTLY over the full DB
-     * (utility + inner periods via {@link #matchPatternUtil}); accept at θ(t) as a new tracked
-     * pattern, or resurrect an evicted one with freshly recomputed state. Regularity is NOT pruned
-     * during the ΔD enumeration (batch-local periods are meaningless); the verification step applies
-     * the anti-monotone check maxInnerPeriod ≤ maxReg instead.
-     */
-    private void discover(List<List<int[]>> deltaD, int lo, int hi, long batchUtil) {
-        double share = (double) batchUtil / data.totalDbUtility;
-        double thDisc = Math.max(1.0, reseedScale * bufferThreshold * share);
-        DEUCS local = new DEUCS();                     // ΔD-local candidate-generation structure
-        local.incUpdate(deltaD);
-        local.buildAdjacency();
-        // Window enumeration: prune on INTRA-window gaps (sound — a gap between consecutive occurrences
-        // inside [lo,hi) is a true global gap), cap the candidate count as an OOM safety valve.
-        enumDeucs = local; enumThreshold = thDisc; enumMaxReg = maxReg;
-        enumUseIntraGap = true; enumCap = reseedCandidateCap; enumCount.set(0);
-        try {
-            enumerateRange(lo, hi);
-        } catch (CapExceeded ce) {
-            patsQueue.clear();
-            discAborted++;                             // batch gets no discovery (all-or-nothing)
-            return;
-        }
-        List<Pat> cands = new ArrayList<>(patsQueue);  // ΔD-local stats only — recomputed below
-        patsQueue.clear();
-        if (cands.isEmpty()) return;
-        discCandidates += cands.size();
-
-        Map<Integer, int[]> inv = buildInvertedIndex(0, data.numSequences);
-        ConcurrentLinkedQueue<Pat> accepted = new ConcurrentLinkedQueue<>();
-        LongAdder resurrected = new LongAdder();
-        final double th = bufferThreshold; final int mr = maxReg;
-        runParallelIndexed(cands.size(), ci -> {
-            Pat c = cands.get(ci);
-            Pat existing = patIndex.get(formatPattern(c.ext, c.item));
-            if (existing != null && existing.active) return;      // already tracked & maintained
-            int[] seqs = candidateSeqs(c, inv);
-            if (seqs == null) return;
-            long util = 0; int last = -1, maxP = 0;
-            for (int s : seqs) {
-                long u = matchPatternUtil(c.ext, c.item, s);
-                if (u != Long.MIN_VALUE) {
-                    int gap = (last == -1) ? (s + 1) : (s - last);
-                    if (gap > maxP) maxP = gap;
-                    util += u; last = s;
-                }
-            }
-            if (last == -1 || util < th || maxP > mr) return;     // below buffer OR can never be regular
-            if (existing != null) {                               // resurrect with exact recomputed state
-                existing.utility = util; existing.lastSeqId = last; existing.maxInnerPeriod = maxP;
-                existing.prevRatio = 0; existing.active = true;
-                resurrected.increment();
-            } else {
-                accepted.add(new Pat(c.ext, c.item, util, last, maxP));
-            }
-        });
-        discResurrected += resurrected.intValue();
-        if (!accepted.isEmpty()) {
-            List<Pat> add = new ArrayList<>(accepted);
-            discAccepted += add.size();
-            Pat[] np = java.util.Arrays.copyOf(pats, pats.length + add.size());
-            for (int i = 0; i < add.size(); i++) {
-                Pat p = add.get(i);
-                np[pats.length + i] = p;
-                patIndex.put(formatPattern(p.ext, p.item), p);
-            }
-            pats = np;
-        }
-    }
-
-    // =====================================================================
     //  CLASSIFICATION — promote SHS->HS
     // =====================================================================
     private void classify() {
         highUtility.clear();
         bufferedN = 0;
         final int n = data.numSequences;
-        // SHS floor for the diagnostic count: the seeding band lower edge μ_min·minUtil — identical
-        // semantics to the pre-lazy suite (whose θ was always μ_min·minUtil), so shs_count stays
-        // comparable across runs even though the lazy hot/cold boundary θ(t) may sit at minUtil.
-        final double shsFloor = lazy ? buffer.bufferFactorMin * minUtil : bufferThreshold;
         for (Pat p : pats) {
-            boolean cold = !p.active && p.coldFromBatch >= 0;    // frozen (lazy) — RETAINED, counts as buffered
-            if (!p.active && !cold) continue;                    // hard-evicted (legacy path) — gone for good
             if (p.lastSeqId == -1) continue;
-            if (p.active) {
-                double ratio = (double) p.utility / minUtil;
-                if (freezeAllowed && p.utility < bufferThreshold) {  // lazy: below θ -> COLD (exactly recoverable)
-                    p.active = false; p.coldFromBatch = batchIdx + 1;  // first batch the frozen state will not see
-                    p.t2Sum = 0; p.t2Batch = batchIdx;           // fresh tier-2 accumulator for this cold stretch
-                    p.prevRatio = ratio; cold = true; coldCount++;   // fall through: still counted as buffered below
-                } else if (!lazy && evict && p.utility < bufferThreshold) {  // hard eviction (legacy ablation)...
-                    boolean rising = trendSpare && ratio > p.prevRatio + trendEps;
-                    if (!rising) { p.active = false; p.prevRatio = ratio; continue; }
-                    p.prevRatio = ratio;
-                } else {
-                    p.prevRatio = ratio;
-                }
-            }
             int trueMaxPer = p.trueMaxPer(n);
             if (trueMaxPer > maxReg) continue;                  // irregular -> discard from output (Corollary 2)
-            if (p.utility >= minUtil) {
-                if (!cold)                                       // cold is certified < minUtil, can never sit here
-                    highUtility.put(formatPattern(p.ext, p.item), new long[]{p.utility, trueMaxPer});
-            }
-            else if (p.utility >= shsFloor) bufferedN++;         // count only — do NOT materialize a String per SHS
+            if (p.utility >= minUtil)
+                highUtility.put(formatPattern(p.ext, p.item), new long[]{p.utility, trueMaxPer});
+            else if (p.utility >= bufferThreshold) bufferedN++; // count only — do NOT materialize a String per SHS
         }
-        lastBufferedN = bufferedN;                               // engagement signal for the next batch
     }
 
     /** Canonical pattern key {@code <(i i)(i)>}: items in the same itemset separated by a space, a new itemset by ")(". */
@@ -1356,10 +1024,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         }
         // KEEP ALL of them — see the javadoc above.
         Pat[] np = java.util.Arrays.copyOf(pats, pats.length + fresh.size());
-        for (int i = 0; i < fresh.size(); i++) {
-            np[pats.length + i] = fresh.get(i);
-            if (patIndex != null) patIndex.put(formatPattern(fresh.get(i).ext, fresh.get(i).item), fresh.get(i));
-        }
+        for (int i = 0; i < fresh.size(); i++) np[pats.length + i] = fresh.get(i);
         pats = np;
         trieRoot = null;                                        // force a trie rebuild
     }

@@ -89,9 +89,11 @@ public final class ExpConfig {
 
     /**
      * S5 — fine-batch STREAMING regime: D_old = 25% (keeps the seeding threshold sane; a tiny D_old
-     * collapses it and OOMs — see DatasetCatalog SIGN note) + 15 equal 5% increments. The lazy
-     * buffer's savings scale with #increments × dormancy, so the 4-batch regimes A–D undersell it;
-     * this is also the realistic incremental-mining scenario (many small arrivals on a large base).
+     * collapses it and OOMs — see DatasetCatalog SIGN note) + 15 equal 5% increments. Content-driven
+     * maintenance amortizes shared-prefix matching across every increment, so its edge over a
+     * per-pattern inverted index grows with the number of increments; the 4-batch regimes A–D
+     * undersell it. This is also the realistic incremental-mining scenario (many small arrivals on a
+     * large base).
      */
     public static final double[] SCEN_FINE = fineRatios(16, 0.25);
 
@@ -105,7 +107,7 @@ public final class ExpConfig {
 
     // ===================== Scenario on/off switches =====================
     public static boolean runS1Scalability = true;   // P-RIncHUSP sweep over thread count
-    public static boolean runS2Compare     = true;   // compare against Lazy-seq + RIncHusp Fix
+    public static boolean runS2Compare     = true;   // proposed vs P-RIncHUSP-seq, RIncHusp Fix(μ), and re-mine
     public static boolean runS4Distribution = true;  // 4 distributions A/B/C/D
     public static boolean runS5FineBatch   = true;   // fine-batch streaming (isolates the maintain strategy)
     public static boolean runS6DeltaSweep  = true;   // δ-sensitivity sweep (light datasets only)
@@ -198,7 +200,6 @@ public final class ExpConfig {
         m.seedPruneByFinalN = true;                  // regularity bound at seeding: ρ·N_final
         m.discoverExact = true;                      // recover from ΔD what D_old was too weak to seed
         m.forkSeed = false;                          // in-house enumeration is unused when seeding externally
-        m.lazy = false;
         m.buffer.strategy = AdaptiveBuffer.Strategy.FIX;
         m.buffer.fixedMu = MU_PARTITION;             // θ₀ = δ·U(D_old)
         m.buffer.bufferFactorMin = MU_PARTITION;
