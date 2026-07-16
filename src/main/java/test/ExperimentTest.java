@@ -2,7 +2,6 @@ package test;
 
 import algorithms.*;
 import common.Sequence;
-import common.Sequence;
 
 import java.io.File;
 import java.io.IOException;

@@ -10,7 +10,6 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.atomic.LongAdder;
-import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 import java.util.stream.IntStream;
 
@@ -906,12 +905,6 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
     private ForkJoinPool pool() {
         if (pool == null) pool = new ForkJoinPool(Math.max(1, numThreads));
         return pool;
-    }
-
-    private <T> void runParallel(List<T> items, Consumer<T> body) {
-        if (numThreads <= 1 || items.size() <= 1) { for (T t : items) body.accept(t); return; }
-        try { pool().submit(() -> items.parallelStream().forEach(body)).get(); }
-        catch (Exception e) { propagate(e); }
     }
 
     private void runParallelIndexed(int n, IntConsumer body) {

@@ -4,7 +4,6 @@ import algorithms.AdaptiveBuffer;
 import algorithms.AlgoPRIncHUSP;
 import algorithms.SeqConverter;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
