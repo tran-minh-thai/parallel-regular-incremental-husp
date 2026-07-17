@@ -356,7 +356,7 @@ public class ExperimentOfficial {
         if (all.size() > ExpConfig.coverageMaxN) return null;
         ExecutorService ex = Executors.newSingleThreadExecutor(daemon());
         Future<Set<String>> f = ex.submit(() -> ExpUtil.oracleCanon(all, d, r));
-        try { return f.get(ExpConfig.runTimeoutMs, TimeUnit.MILLISECONDS); }
+        try { return f.get(ExpConfig.oracleTimeoutMs, TimeUnit.MILLISECONDS); }
         catch (Throwable t) { f.cancel(true); return null; }
         finally { ex.shutdownNow(); }
     }

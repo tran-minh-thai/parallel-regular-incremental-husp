@@ -39,7 +39,18 @@ public final class ExpConfig {
     // ===================== Benchmark =====================
     public static int  warmupRuns   = 1;
     public static int  measuredRuns = 3;
+    /** Timeout for one measured run of one algorithm. A run past this is recorded as timed out and
+     *  the suite carries on — the safety net that stops a pathological configuration from eating the
+     *  night. Keep it tight. */
     public static long runTimeoutMs = 60L * 60 * 1000;   // 60 minutes per run
+    /**
+     * Timeout for building the recall oracle, kept separate from {@link #runTimeoutMs} on purpose.
+     * The oracle is single-threaded by design and re-mines the whole database, so it is far slower
+     * than any measured run; sharing one limit would force a choice between giving the oracle room
+     * and leaving the benchmark runs unguarded. Raise this one (with {@link #coverageMaxN}) to
+     * measure recall on a dataset the oracle cannot reach inside the default hour.
+     */
+    public static long oracleTimeoutMs = 60L * 60 * 1000;
 
     // ===================== Thread sweep — PINNED (reproducibility, luuy C7) =====================
     /**

@@ -168,6 +168,7 @@ public final class RunContext {
         meta.setProperty("config.warmupRuns", Integer.toString(ExpConfig.warmupRuns));
         meta.setProperty("config.measuredRuns", Integer.toString(ExpConfig.measuredRuns));
         meta.setProperty("config.runTimeoutMs", Long.toString(ExpConfig.runTimeoutMs));
+        meta.setProperty("config.oracleTimeoutMs", Long.toString(ExpConfig.oracleTimeoutMs));
         meta.setProperty("config.muMin", Double.toString(ExpConfig.muMin));
         meta.setProperty("config.muMax", Double.toString(ExpConfig.muMax));
         meta.setProperty("config.coverageMaxN", Integer.toString(ExpConfig.coverageMaxN));
@@ -267,7 +268,8 @@ public final class RunContext {
         sb.append("mu=").append(ExpConfig.MU_PARTITION).append(';');       // proposed: parameter-free
         sb.append("muBase=").append(ExpConfig.muMin).append(',').append(ExpConfig.muMax).append(';');  // baselines only
         sb.append("runs=").append(ExpConfig.warmupRuns).append(',').append(ExpConfig.measuredRuns).append(';');
-        sb.append("to=").append(ExpConfig.runTimeoutMs).append(";cov=").append(ExpConfig.coverageMaxN).append(';');
+        sb.append("to=").append(ExpConfig.runTimeoutMs).append(";ot=").append(ExpConfig.oracleTimeoutMs)
+          .append(";cov=").append(ExpConfig.coverageMaxN).append(';');
         sb.append("S=").append(ExpConfig.runS1Scalability).append(ExpConfig.runS2Compare)
           .append(ExpConfig.runS4Distribution).append(ExpConfig.runS5FineBatch).append(ExpConfig.runS6DeltaSweep)
           .append(ExpConfig.runS7RhoSweep).append(ExpConfig.runS8BatchScaling)
