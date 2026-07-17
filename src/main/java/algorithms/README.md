@@ -61,9 +61,14 @@ helps.
 
 μ = 1 is not a tuned constant. It makes the seed threshold δ·U(D_old) and the discovery threshold
 δ·U(ΔD), so each part of the database is mined at its own natural threshold — the condition the
-partition lemma needs for the union of the two to be complete. It is also where cost is lowest:
-seeding gets cheaper as θ₀ rises, discovery gets dearer, and the two cross there. Scenario S9 sweeps μ
-and shows recall unchanged at 1.0 throughout while cost traces a U.
+partition lemma needs for the union of the two to be complete. Scenario S9 sweeps μ and shows recall
+unchanged at 1.0 throughout — correctness does not depend on it — while cost traces a U: seeding gets
+cheaper as θ₀ rises and discovery gets dearer, so the two trade off.
+
+μ = 1 lands at or beside the bottom of that U, but do not claim it *is* the minimum. Measured: it is
+exactly the cheapest on BIBLE, within 1% of the cheapest on SIGN, and about 12% above a shallower
+minimum at μ = 0.7 on LEVIATHAN. The point is not that 1 is optimal — it is that 1 is *fixed by the
+lemma* rather than searched for, and costs at most a few percent against searching.
 
 ## How the miner works
 
