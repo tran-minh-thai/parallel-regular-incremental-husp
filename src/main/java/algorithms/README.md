@@ -31,7 +31,7 @@ full experiment workflow.
 | `DEUCS.java` | Directed estimated-utility co-occurrence structure, accumulated per batch | Definition 6; Algorithm `IncUpdateDEUCS`; Lemma 1 (additivity) |
 | `VerticalUtilityList.java` | Vertical utility list: one entry per non-dominated end position, plus the regularity fields `lastSeqId` and `maxInnerPeriod` | Data structures |
 | `PatternTree.java` | Prefix enumeration tree | Data structures |
-| `AdaptiveBuffer.java` | Seed threshold θ₀ = λ·δ·U(D_old) (the class name predates λ; at λ=1 nothing is buffered). Fixed at μ = 1 for the proposed miner; the adaptive strategies are exercised only by the diagnostic probes | Buffer factor discussion |
+| `AdaptiveBuffer.java` | Seed threshold θ₀ = λ·δ·U(D_old) (the class name predates λ; at λ=1 nothing is buffered). Fixed at λ = 1 for the proposed miner; the adaptive strategies are exercised only by the diagnostic probes | Seed-split factor discussion |
 | **`AlgoPRIncHUSP.java`** | **The proposed algorithm.** Seeding, parallel content-driven maintenance, discovery. `numThreads=1` gives the sequential reference point | Algorithms `P-RIncHUSP`, `ParallelEnumerate`, `Extend`, `ProcessBatch`; Theorem 1; Lemma 4 |
 | `AlgoRHUSPMinerParallel.java` | Parallel static engine from the companion study (CSR, EUCS + LA-PEU, RDLB). Used to seed `D_old`, and as the re-mining baseline | Comparison algorithms |
 | `AlgoRHUSP.java`, `AlgoRHUSPRecompute.java` | Static RHUSP mining; re-mining from scratch supplies the ground truth for recall | Oracle |
