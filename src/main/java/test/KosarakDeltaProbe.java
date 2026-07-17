@@ -8,12 +8,17 @@ import java.util.*;
  * cost. KOSARAK has its own probe rather than using {@link DeltaProbe} because at 990,002 sequences
  * a badly chosen delta can exhaust memory, so the sweep is bounded and stops early.
  *
- * <p>The pattern count comes from the miner's own result. Because the miner is exact, the set it
- * returns is the same set a full re-mine would produce, so there is no reason to build a
- * ground-truth oracle just to count patterns — and doing so would be far more expensive than the
- * mining itself, since the reference miner is single-threaded and would sweep all 990k sequences
- * again for every delta. The suite skips recall on this dataset for the same reason
- * ({@code numSequences > ExpConfig.coverageMaxN}), so no oracle is needed anywhere.
+ * <p>The pattern count comes from the miner's own result, not from an oracle. That is fine for
+ * choosing a threshold — all this sweep needs is how many patterns each delta yields and what it
+ * costs — but note what it does not do: it does not check the miner against a ground truth. Building
+ * one here would cost far more than the mining itself, since the reference miner is single-threaded
+ * and would sweep all 990k sequences again for every delta.
+ *
+ * <p>The suite likewise reports no recall for this dataset, because it exceeds
+ * {@code ExpConfig.coverageMaxN} and the oracle would exceed the per-run timeout. Do not read that
+ * as "the miner is exact, so no oracle is needed" — exactness is the claim under test, so assuming
+ * it here would be circular. It is a cost decision: exactness is proved independently of database
+ * size, and measured against the oracle on the datasets where one is affordable.
  *
  * <p>Requirements and behaviour:
  * <ul>

@@ -74,7 +74,15 @@ public final class ExpConfig {
     }
 
     // ===================== Oracle / recall =====================
-    /** Measure recall ONLY WHEN numSequences ≤ threshold (in-memory RHusp oracle feasible). */
+    /**
+     * Measure recall ONLY WHEN numSequences ≤ this. The oracle is the single-threaded RHusp
+     * reimplementation — single-threaded on purpose, so that it is independent of the parallel
+     * machinery under test — and it re-mines the whole accumulated database at every checkpoint.
+     * Past roughly this size that exceeds {@link #runTimeoutMs}: KOSARAK (990,002 sequences) is the
+     * one benchmark dataset above the line, so it reports timing without recall. This is a cost
+     * limit, not a claim that the result needs no checking; raise both this and the timeout to
+     * measure it anyway.
+     */
     public static int coverageMaxN = 40000;
 
     // ===================== 4 batch distribution scenarios (A/B/C/D) =====================
