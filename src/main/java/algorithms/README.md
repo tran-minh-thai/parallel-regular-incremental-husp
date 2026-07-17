@@ -31,7 +31,7 @@ full experiment workflow.
 | `DEUCS.java` | Directed estimated-utility co-occurrence structure, accumulated per batch | Definition 6; Algorithm `IncUpdateDEUCS`; Lemma 1 (additivity) |
 | `VerticalUtilityList.java` | Vertical utility list: one entry per non-dominated end position, plus the regularity fields `lastSeqId` and `maxInnerPeriod` | Data structures |
 | `PatternTree.java` | Prefix enumeration tree | Data structures |
-| `AdaptiveBuffer.java` | Buffer threshold θ = μ·δ·U(D_old). Fixed at μ = 1 for the proposed miner; the adaptive strategies are exercised only by the diagnostic probes | Buffer factor discussion |
+| `AdaptiveBuffer.java` | Seed threshold θ₀ = λ·δ·U(D_old) (the class name predates λ; at λ=1 nothing is buffered). Fixed at μ = 1 for the proposed miner; the adaptive strategies are exercised only by the diagnostic probes | Buffer factor discussion |
 | **`AlgoPRIncHUSP.java`** | **The proposed algorithm.** Seeding, parallel content-driven maintenance, discovery. `numThreads=1` gives the sequential reference point | Algorithms `P-RIncHUSP`, `ParallelEnumerate`, `Extend`, `ProcessBatch`; Theorem 1; Lemma 4 |
 | `AlgoRHUSPMinerParallel.java` | Parallel static engine from the companion study (CSR, EUCS + LA-PEU, RDLB). Used to seed `D_old`, and as the re-mining baseline | Comparison algorithms |
 | `AlgoRHUSP.java`, `AlgoRHUSPRecompute.java` | Static RHUSP mining; re-mining from scratch supplies the ground truth for recall | Oracle |
@@ -59,15 +59,15 @@ Both are needed in general: on the benchmark datasets the discovery bound does t
 constructed cases where a pattern is irregular in `D_old` but regular later, only the regularity bound
 helps.
 
-μ = 1 is not a tuned constant. It makes the seed threshold δ·U(D_old) and the discovery threshold
+λ = 1 is not a tuned constant. It makes the seed threshold δ·U(D_old) and the discovery threshold
 δ·U(ΔD), so each part of the database is mined at its own natural threshold — the condition the
-partition lemma needs for the union of the two to be complete. Scenario S9 sweeps μ and shows recall
+partition lemma needs for the union of the two to be complete. Scenario S9 sweeps λ and shows recall
 unchanged at 1.0 throughout — correctness does not depend on it — while cost traces a U: seeding gets
 cheaper as θ₀ rises and discovery gets dearer, so the two trade off.
 
-μ = 1 lands at or beside the bottom of that U, but do not claim it *is* the minimum. Measured: it is
+λ = 1 lands at or beside the bottom of that U, but do not claim it *is* the minimum. Measured: it is
 exactly the cheapest on BIBLE, within 1% of the cheapest on SIGN, and about 12% above a shallower
-minimum at μ = 0.7 on LEVIATHAN. The point is not that 1 is optimal — it is that 1 is *fixed by the
+minimum at λ = 0.7 on LEVIATHAN. The point is not that 1 is optimal — it is that 1 is *fixed by the
 lemma* rather than searched for, and costs at most a few percent against searching.
 
 ## How the miner works
@@ -95,7 +95,7 @@ where it helps to line them up.
 | `minUtilRatio` | δ | `minUtil = minUtilRatio × totalDbUtility` |
 | `maxRegRatio` | ρ | `maxReg = maxRegRatio × numSequences` |
 | `bufferThreshold` | θ₀ | seed threshold `= bufferFactor × minUtil` |
-| `bufferFactor` | μ | buffer factor; 1 for the proposed miner, 0.4/0.9 for the baselines |
+| `bufferFactor` | λ | seed-split factor: θ₀ = λ·δ·U(D_old), the rest of minUtil goes to discovery. 1 for the proposed miner. NOT the baselines' μ, which is a *reduction* factor on minUtil (0<μ<1) that retains semi-high-utility patterns — at λ=1 this miner retains none, and discovery covers that role instead |
 | `totalDbUtility` | U(D) | total utility of the database |
 | `numSequences` | N | number of sequences |
 | `matchUtility` | u(α,S) | max-measure utility of the pattern in one sequence |
