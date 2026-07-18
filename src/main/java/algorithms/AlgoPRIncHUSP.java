@@ -1022,6 +1022,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         trieRoot = null;                                        // force a trie rebuild
     }
     @Override public int bufferedCount() { return bufferedN; }
+    @Override public long discoveryMs() { return discMs; }
     @Override public double peakMemoryMB() { return peakMB; }
     public long getMinUtil() { return minUtil; }
     public int getMaxReg() { return maxReg; }

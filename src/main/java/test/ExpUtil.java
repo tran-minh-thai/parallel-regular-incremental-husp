@@ -60,9 +60,11 @@ public final class ExpUtil {
             long buildMs = System.currentTimeMillis() - t0;
             long incrMs = 0;
             for (int i = 1; i < b.size(); i++) incrMs += m.processBatch(b.get(i));  // processBatch returns its ms
+            // getHighUtilityPatterns triggers the query-time discovery, so read discoveryMs() AFTER it
+            Map<String, long[]> res = new java.util.HashMap<>(m.getHighUtilityPatterns());
             if (phaseOut != null && phaseOut.length >= 2) { phaseOut[0] = buildMs; phaseOut[1] = incrMs; }
-            // copy the result BEFORE close() (which frees shared resources/pool)
-            return new java.util.HashMap<>(m.getHighUtilityPatterns());
+            if (phaseOut != null && phaseOut.length >= 3) phaseOut[2] = m.discoveryMs();
+            return res;  // copied BEFORE close() (which frees shared resources/pool)
         } finally {
             m.close();
         }

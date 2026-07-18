@@ -33,6 +33,11 @@ public interface IncrementalHUSPMiner {
     /** Number of patterns currently held in the buffer (0 if the algorithm uses no buffer). */
     default int bufferedCount() { return 0; }
 
+    /** Wall-clock spent in the query-time discovery/reconcile phase (0 if the algorithm has none).
+     *  Reported separately from build (seeding) and incremental (maintenance) so the per-phase cost
+     *  breakdown can show discovery, which for this miner is a distinct and often dominant phase. */
+    default long discoveryMs() { return 0; }
+
     /** Recorded peak memory (MB). */
     double peakMemoryMB();
 
