@@ -10,12 +10,15 @@ serving two purposes at once: (1) illustrating the contributions throughout the 
 - Standard parameters: **δ = 0.10** (minUtil = δ·UD), **ρ = 0.6** (maxReg = ρ·N **over the ENTIRE
   CURRENT DB**, recomputed per batch), batch split **6/3**.
 
-> **P-RIncHUSP mechanism (current version):** maintains the HS + SHS tree *persistently across batches*;
-> each batch only EXTENDS the VUL of existing nodes with the new sequences (no full-DB re-mine) and then
-> PROMOTES SHS->HS once minUtil is reached. It differs from RIncHusp in updating by the correct
-> **MAX-measure**. This is a **high-coverage approximation** (not full mining): coverage depends on the
-> buffer threshold θ=μ·minUtil. Creating nodes for entirely new patterns (frontier growth / pre-large)
-> is a later extension.
+> **P-RIncHUSP mechanism (current, EXACT version):** the result equals a full re-mine (recall 1.0),
+> not a high-coverage approximation. With the seed-split factor λ=1 the seed threshold is θ₀ = δ·U(D_old),
+> so seeding keeps only the HS patterns of D_old; each batch re-matches those by the correct
+> **MAX-measure** and promotes any that reach the growing minUtil. Patterns too weak on D_old to be
+> seeded — the whole `{d,e}` family here — are recovered at query time by the **discovery phase**, which
+> mines the accumulated ΔD at minUtil−θ₀ = δ·U(ΔD). Two seed bounds close two independent gaps:
+> regularity pruning at ρ·N_final, and this discovery phase. (Historical note: an earlier version used a
+> μ<1 semi-HS buffer and was a high-coverage approximation missing `<(e)>`; the discovery phase replaced
+> it and makes the result exact.)
 
 ## 1. Items and external utilities (relabeled when used in the paper)
 
@@ -59,10 +62,11 @@ without rescanning history:
 
 ## 4. Mining results (exact RHusp oracle)
 
-**D_old (6 sequences):** minUtil = 29, maxReg = 3, θ(μ=0.4) = 12
-- High utility (HS): `<(a)(b)>`=104, `<(b)>`=96  *(stable patterns)*
-- Buffer SHS [12, 29): `<(a)(d e)>`=22, `<(d e)>`=18, `<(a)(d)>`=14, `<(a)(e)>`=12, `<(a)>`=12
-  *(the `{d,e}` family is TRACKED from D_old, not yet at minUtil)*
+**D_old (6 sequences):** minUtil = 29, θ₀(λ=1) = δ·U(D_old) = 29, seedMaxReg = ρ·N_final = 5
+- Seeded (HS of D_old, utility ≥ θ₀ = 29): `<(a)(b)>`=104, `<(b)>`=96  *(stable patterns)*
+- NOT seeded (utility < θ₀ = 29): the whole `{d,e}` family — `<(a)(d e)>`=22, `<(d e)>`=18,
+  `<(a)(d)>`=14, `<(a)(e)>`=12, `<(a)>`=12. At λ=1 there is no semi-HS buffer; these are simply
+  below the seed threshold and are recovered later by discovery, not by maintenance.
 
 **D_new (9 sequences):** minUtil = 60, maxReg = 5
 - Correct high-utility set (8 patterns, from the RHusp oracle):
@@ -76,9 +80,9 @@ without rescanning history:
 | `<(a)(d e)>` | `<(1)(4 5)>` | 298 | 3 | emerging | yes |
 | `<(a)(d)>` | `<(1)(4)>` | 170 | 3 | emerging | yes |
 | `<(a)(e)>` | `<(1)(5)>` | 138 | 3 | emerging | yes |
-| `<(e)>` | `<(5)>` | 128 | 3 | emerging | no (see §5.5) |
+| `<(e)>` | `<(5)>` | 128 | 3 | emerging (recovered by discovery) | yes |
 
--> P-RIncHUSP reaches **7/8 = 87.5%** (high coverage); only `<(e)>` is missing.
+-> P-RIncHUSP recovers **8/8 = 100%** (exact): the seeded `<(a)(b)>`, `<(b)>` plus the six `{d,e}`-family patterns (including `<(e)>`) recovered by discovery.
 
 ## 5. Where each contribution is illustrated
 
@@ -90,14 +94,14 @@ without rescanning history:
    takes the maximum match = 50 (not 50+10) -> total utility **160**, not 170 as with naive
    accumulation. This is also where P-RIncHUSP BEATS RIncHusp: with the correct measure, `<(d)>` is
    promoted; RIncHusp updates naively / matches greedily and therefore misses this pattern.
-4. **Buffer + SHS->HS promotion (core contribution, maintenance mechanism):** the `{d,e}` family in
-   D_old has utility BELOW minUtil but is KEPT in the SHS buffer (§4); in D_new it surges and is
-   **promoted** to HS. The lower the adaptive buffer threshold θ=μ·minUtil, the more promising
-   patterns are kept -> the higher the coverage (the basis of the advantage over RIncHusp).
-5. **Approximation limit (stated honestly):** `<(e)>` is pruned at the initialization phase because the
-   upper bound sumPeu = 8 < θ₀ = 12 (item e is always at the end of an event -> remaining utility = 0).
-   No node is tracked -> it cannot be promoted. Recovering patterns of this kind requires **frontier
-   growth / pre-large** (creating nodes for prefixes that newly become promising) — an extension, not yet implemented.
+4. **Discovery recovers the emerging family (exactness):** at λ=1 the `{d,e}` family (utility < θ₀=29 on
+   D_old) is NOT seeded. After ΔD it surges; the discovery phase mines the accumulated ΔD at
+   minUtil−θ₀ = δ·U(ΔD) = 31 and recovers the whole family, giving recall 1.0. This replaces the old
+   μ<1 buffer, which only approximated.
+5. **Why `<(e)>` needs discovery, not maintenance:** at seeding, `<(e)>` is below θ₀ (item e sits at the
+   end of an event -> remaining utility 0, upper bound too low), so no seed node exists and maintenance
+   alone can never promote it. The discovery phase, mining ΔD directly, is exactly what recovers it —
+   the concrete reason both bounds are needed for exactness.
 6. **Directed DEUCS (I and S):** `<(d e)>` co-occurs within the same event (DEUCS_I);
    `<(a)(b)>`, `<(a)(d)>` follow the sequence order (DEUCS_S).
 
@@ -106,18 +110,22 @@ without rescanning history:
 | Algorithm | mechanism | HS | coverage | note |
 |---|---|--:|--:|---|
 | **RHusp** (oracle) | exact re-mine | 8 | 100% | reference patterns (== AlgoRHUSPMiner) |
-| **P-RIncHUSP** (proposed) | maintain SHS + promote, parallel | 7 | **87.5%** | high coverage; correct update |
-| Proposed-sequential (T=1) | as above, 1 thread | 7 | 87.5% | same result, speedup reference point |
+| **P-RIncHUSP** (proposed) | seed + maintain + discover, parallel | 8 | **100%** | exact; correct max-measure |
+| Proposed-sequential (T=1) | as above, 1 thread | 8 | 100% | same result, speedup reference point |
 | **RIncHusp** [Ishita2022] | incremental, naive update | 6 | **75%** | misses `<(d)>` due to greedy match |
 
-P-RIncHUSP and RIncHusp both track the `{d,e}` family from the D_old buffer, but P-RIncHUSP updates by
-the correct **max-measure** and so promotes `<(d)>`; RIncHusp updates naively / matches greedily, gets
-the wrong value, and misses it. Both miss `<(e)>` (approximation limit, §5.5). *No pattern is a false positive.*
+The two differ in mechanism. RIncHusp keeps the `{d,e}` family in its μ<1 semi-HS buffer and promotes
+on surge, but updates by a greedy match, gets `<(d)>` wrong (170 not 160), and has no way to reach
+patterns that were below its buffer floor. P-RIncHUSP does not buffer at all (λ=1): it seeds only the
+D_old HS, updates by the correct **max-measure** (so `<(d)>`=160 is right), and recovers the entire
+`{d,e}` family — including `<(e)>` — through the discovery phase, which RIncHusp has no equivalent of.
+That is why P-RIncHUSP is exact (8/8) and RIncHusp is not (6/8). *No pattern is a false positive.*
 
 ## 7. Reproduction
 
 ```bash
-javac -d out src/algorithms/*.java
-java -cp out algorithms.RunIncremental \
-     datasets/example_seq.txt datasets/example_eui.txt 0.10 0.6 "0.667,0.333"
+javac --release 11 -d out $(find src/main/java -name '*.java')
+# exact config + oracle, prints recall (RunIncremental uses the adaptive default, not the exact miner):
+java -cp out test.RecallProbe datasets/example_seq.txt datasets/example_eui.txt 0.10 0.60 1
+# -> oracle HS=8 | P-RIncHUSP HS=8 recall=100.00%
 ```
