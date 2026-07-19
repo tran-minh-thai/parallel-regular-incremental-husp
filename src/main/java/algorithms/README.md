@@ -66,9 +66,9 @@ unchanged at 1.0 throughout — correctness does not depend on it — while cost
 cheaper as θ₀ rises and discovery gets dearer, so the two trade off.
 
 λ = 1 lands at or beside the bottom of that U, but do not claim it *is* the minimum. Measured: it is
-exactly the cheapest on BIBLE, within 1% of the cheapest on SIGN, and about 12% above a shallower
-minimum at λ = 0.7 on LEVIATHAN. The point is not that 1 is optimal — it is that 1 is *fixed by the
-lemma* rather than searched for, and costs at most a few percent against searching.
+exactly the cheapest on both SIGN and BIBLE, and about 24% above a shallower minimum at λ = 0.7 on
+LEVIATHAN. The point is not that 1 is optimal — it is that 1 is *fixed by the lemma* rather than
+searched for, and costs at most about a quarter against searching, on the datasets measured.
 
 ## How the miner works
 
