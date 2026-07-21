@@ -215,6 +215,37 @@ public class ExperimentOfficial {
             }
         }
 
+        // ---------- S11: the S2 comparison repeated across batch counts ----------
+        // S2 answers "how do we compare against the baselines?" on one split of four batches, which is
+        // close to static for a method whose subject is incremental maintenance. S11 asks the same
+        // question at k=4, 16 and 64 so the comparison is a trend rather than a single point.
+        //
+        // Remine-static runs at k=4 only. It re-mines the whole database sequentially once per batch,
+        // so its cost is linear in k and it already loses by two orders of magnitude at k=4 (152 s vs
+        // 1.4 s on BIBLE). Carrying it to k=64 would add roughly six hours to restate that. This is a
+        // deliberate bound on coverage and the paper says so rather than leaving a gap in the table.
+        if (ExpConfig.runS11BatchCompare && !s1Only && ExpConfig.s6Datasets.contains(tag)) {
+            System.out.println("-- S11 baseline comparison across batch counts (best T=" + cores + ") --");
+            for (int nb : ExpConfig.S11_BATCH_COUNTS) {
+                List<List<List<int[]>>> bK = ExpUtil.split(all, ExpConfig.fineRatios(nb, 0.25));
+                String lab = "B=" + nb;
+                benchmark("S11-batchcompare", lab, "P-RIncHUSP", "trie",
+                        () -> ExpConfig.newProposed(cores), cores, bK, minUtilRatio, maxRegRatio, oracle);
+                benchmark("S11-batchcompare", lab, "P-RIncHUSP-seq", "trie",
+                        () -> ExpConfig.newProposed(1), 1, bK, minUtilRatio, maxRegRatio, oracle);
+                benchmark("S11-batchcompare", lab, "RIncHusp-Fix0.4", "0.40",
+                        () -> ExpConfig.newRIncHusp(ExpConfig.muMin), 1, bK, minUtilRatio, maxRegRatio, oracle);
+                benchmark("S11-batchcompare", lab, "RIncHusp-Fix0.9", "0.90",
+                        () -> ExpConfig.newRIncHusp(ExpConfig.muFixHigh), 1, bK, minUtilRatio, maxRegRatio, oracle);
+                benchmark("S11-batchcompare", lab, "ParRemine-RDLB", "rdlb",
+                        () -> ExpConfig.newParRemine(cores), cores, bK, minUtilRatio, maxRegRatio, oracle);
+                if (nb == 4) {
+                    benchmark("S11-batchcompare", lab, "Remine-static", "static",
+                            () -> ExpConfig.newRemine(), 1, bK, minUtilRatio, maxRegRatio, oracle);
+                }
+            }
+        }
+
         // ---------- S4: Robustness across 4 distributions ----------
         if (ExpConfig.runS4Distribution && !s1Only) {
             System.out.println("-- S4 Distribution robustness (best T=" + cores + ") --");

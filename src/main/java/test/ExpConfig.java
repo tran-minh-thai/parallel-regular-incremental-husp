@@ -38,7 +38,7 @@ public final class ExpConfig {
 
     // ===================== Benchmark =====================
     public static int  warmupRuns   = 1;
-    public static int  measuredRuns = 3;
+    public static int  measuredRuns = 5;
     /** Timeout for one measured run of one algorithm. A run past this is recorded as timed out and
      *  the suite carries on — the safety net that stops a pathological configuration from eating the
      *  night. Keep it tight. */
@@ -128,6 +128,7 @@ public final class ExpConfig {
     public static boolean runS1Scalability = true;   // P-RIncHUSP sweep over thread count
     public static boolean runS2Compare     = true;   // proposed vs P-RIncHUSP-seq, RIncHusp Fix(μ), and re-mine
     public static boolean runS4Distribution = true;  // 4 distributions A/B/C/D
+    public static boolean runS11BatchCompare = true; // S2 comparison repeated at several batch counts
     public static boolean runS5FineBatch   = true;   // fine-batch streaming (isolates the maintain strategy)
     public static boolean runS6DeltaSweep  = true;   // δ-sensitivity sweep (light datasets only)
     public static boolean runS7RhoSweep    = true;   // ρ-sensitivity sweep (light datasets only)
@@ -159,6 +160,17 @@ public final class ExpConfig {
      * maintenance is close to flat.
      */
     public static final int[] S8_BATCH_COUNTS = {2, 4, 8, 16, 32, 64};
+
+    /**
+     * S11 re-runs the S2 baseline comparison at several batch counts, so the comparison is not read
+     * off a single almost-static split. {@code fineRatios(4, 0.25)} is elementwise equal to
+     * {@link #SCEN_A}, so the k=4 column reproduces S2 rather than measuring something new.
+     * <p>
+     * S11 writes its own scenario tag on purpose. {@code gen_tables.py} selects S2 rows without
+     * constraining the batch count, so emitting these under "S2-compare" would make it average
+     * across k and silently corrupt every S2 table.
+     */
+    public static final int[] S11_BATCH_COUNTS = {4, 16, 64};
     /**
      * Datasets that get the S6–S10 sweeps. The heavy ones are left out: sweeping them would add
      * many hours and the sweeps answer questions the large datasets do not. Not final —
