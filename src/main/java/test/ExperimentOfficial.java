@@ -216,14 +216,14 @@ public class ExperimentOfficial {
         }
 
         // ---------- S11: the S2 comparison repeated across batch counts ----------
-        // S2 answers "how do we compare against the baselines?" on one split of four batches, which is
-        // close to static for a method whose subject is incremental maintenance. S11 asks the same
-        // question at k=4, 16 and 64 so the comparison is a trend rather than a single point.
+        // S2 compares against the baselines on ONE split of four batches, which is nearly static for
+        // a method whose subject is incremental maintenance. S11 repeats it at k=4, 16 and 64, so the
+        // comparison is a trend rather than a single point — and on LEVIATHAN the ranking flips as k
+        // grows, which a single split cannot show.
         //
-        // Remine-static runs at k=4 only. It re-mines the whole database sequentially once per batch,
-        // so its cost is linear in k and it already loses by two orders of magnitude at k=4 (152 s vs
-        // 1.4 s on BIBLE). Carrying it to k=64 would add roughly six hours to restate that. This is a
-        // deliberate bound on coverage and the paper says so rather than leaving a gap in the table.
+        // Remine-static runs at k=4 ONLY: it re-mines the whole database sequentially once per batch,
+        // so its cost is linear in k, and it already loses by two orders of magnitude at k=4 (152 s
+        // against 1.4 s on BIBLE). Extending it to k=64 costs about six hours and changes nothing.
         if (ExpConfig.runS11BatchCompare && !s1Only && ExpConfig.s6Datasets.contains(tag)) {
             System.out.println("-- S11 baseline comparison across batch counts (best T=" + cores + ") --");
             for (int nb : ExpConfig.S11_BATCH_COUNTS) {

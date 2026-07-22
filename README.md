@@ -103,10 +103,23 @@ Configured in `ExpConfig`, implemented in `ExperimentOfficial`.
 | S6 | How sensitive is it to the utility threshold δ? |
 | S7 | How sensitive is it to the regularity threshold ρ, and where does the approximate variant fail? |
 | S8 | Past how many batches does incremental maintenance beat re-mining? |
-| S9 | Does the buffer factor μ affect correctness, and where is it cheapest? |
+| S9 | Does the seed-split factor affect correctness, and where is it cheapest? |
 | S10 | Which seed bound closes which gap? |
+| S11 | Does the baseline comparison hold as the number of update batches grows? (k ∈ {4, 16, 64}) |
 
-S5 to S10 run only on datasets small enough to have an oracle.
+S5 to S11 run only on datasets small enough to have an oracle.
+
+Every configuration is warmed up once, then measured over five independent runs. Runtime is
+reported as mean ± standard deviation, peak memory and recall as medians.
+
+### One naming difference between the code and the paper
+
+The code calls the proposed miner's seed-split factor `mu` throughout — the CSV column, the
+`S9-musweep` scenario tag and `ExpConfig.S9_MUS`. The paper calls it **λ**, and reserves μ for the
+baselines' semi-high-utility buffer factor, which is a different quantity. The names were left
+alone here because the CSV column feeds the table generator, so renaming would break every stored
+result. When reading a result file next to the paper: `mu` in an `S9-musweep` row is the paper's λ,
+while `RIncHusp-Fix0.4` and `RIncHusp-Fix0.9` carry the paper's μ in their names.
 
 ## Output
 

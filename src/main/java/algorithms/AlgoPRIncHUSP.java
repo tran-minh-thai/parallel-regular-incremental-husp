@@ -155,6 +155,8 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
 
     /** Thrown inside enumeration workers when {@link #enumCap} is exceeded; caught in discover(). */
     private static final class CapExceeded extends RuntimeException {
+        // Never serialised; declared only because the supertype is Serializable.
+        private static final long serialVersionUID = 1L;
         CapExceeded() { super(null, null, false, false); }
     }
 
@@ -370,8 +372,10 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
 
     /** One enumeration subtree (its full path + own VUL). Large → fork children; small → sequential. */
     private final class EnumTask extends RecursiveAction {
+        // Never serialised; declared only because the supertype is Serializable.
+        private static final long serialVersionUID = 1L;
         final int[] ext, item;
-        final VerticalUtilityList vul;
+        final transient VerticalUtilityList vul;
         EnumTask(int[] ext, int[] item, VerticalUtilityList vul) { this.ext = ext; this.item = item; this.vul = vul; }
 
         protected void compute() {

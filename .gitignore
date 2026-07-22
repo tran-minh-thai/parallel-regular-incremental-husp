@@ -18,7 +18,7 @@ Thumbs.db
 # Experiment outputs (generated, not versioned)
 results/
 test_output/
-nohup_run.log
+*.log
 
 # Large dataset files (download separately)
 datasets/*.txt

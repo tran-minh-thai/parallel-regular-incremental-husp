@@ -307,7 +307,7 @@ public class IncUSPMinerPlusAlgorithm {
 
         // Finalize TSU for I-Ext, check TSU BEFORE storing into the CP-tree.
         // Per the IncUSP-Miner+ 2018 paper: the CP-tree stores ONLY candidates with TSU >= min_util.
-        // Previously the code stored TSU-pruned children too -> the CP-tree bloated and caused OOM.
+        // Storing TSU-pruned children as well makes the CP-tree bloat until the run exhausts memory.
         Iterator<Map.Entry<Integer, TrackerList>> itI = iExtensions.entrySet().iterator();
         while (itI.hasNext()) {
             Map.Entry<Integer, TrackerList> entry = itI.next();

@@ -116,6 +116,7 @@ Sanity checks once a run finishes:
 | S10 | `[reg,disc]` exact; each bound alone misses patterns |
 | S9 | recall `1.0000` at every μ; time U-shaped with its minimum at μ = 1 |
 | S8 | P-RIncHUSP nearly flat in the batch count, re-mining linear — they cross around k = 3 to 8 |
+| S11 | the same crossover seen against every baseline: on LEVIATHAN re-mining wins at k = 4 and loses by roughly 8x at k = 64 |
 | S7 | P-RIncHUSP `1.0000` at every ρ; the approximate variant falls away as ρ tightens |
 | S5 | P-RIncHUSP and the inverted-index variant agree on patterns and recall, and differ only in time |
 

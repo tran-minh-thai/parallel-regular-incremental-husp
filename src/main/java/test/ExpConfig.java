@@ -162,13 +162,13 @@ public final class ExpConfig {
     public static final int[] S8_BATCH_COUNTS = {2, 4, 8, 16, 32, 64};
 
     /**
-     * S11 re-runs the S2 baseline comparison at several batch counts, so the comparison is not read
-     * off a single almost-static split. {@code fineRatios(4, 0.25)} is elementwise equal to
-     * {@link #SCEN_A}, so the k=4 column reproduces S2 rather than measuring something new.
+     * Batch counts for S11, the baseline comparison repeated over several update-cycle counts.
+     * {@code fineRatios(4, 0.25)} is elementwise equal to {@link #SCEN_A}, so the k=4 column
+     * reproduces S2 rather than measuring a different configuration.
      * <p>
-     * S11 writes its own scenario tag on purpose. {@code gen_tables.py} selects S2 rows without
-     * constraining the batch count, so emitting these under "S2-compare" would make it average
-     * across k and silently corrupt every S2 table.
+     * S11 writes its own scenario tag on purpose: the table generator selects S2 rows without
+     * constraining the batch count, so emitting these rows as "S2-compare" would average across
+     * all three k and silently corrupt every S2 table.
      */
     public static final int[] S11_BATCH_COUNTS = {4, 16, 64};
     /**

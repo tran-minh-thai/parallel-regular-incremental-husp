@@ -750,7 +750,9 @@ public class AlgoRHUSPMinerParallel {
 
     /** Root task: enumerate all promising items with an empty prefix. */
     private final class RootTask extends RecursiveAction {
-        final InstanceList init;
+        // Never serialised; declared only because the supertype is Serializable.
+        private static final long serialVersionUID = 1L;
+        final transient InstanceList init;
         RootTask(InstanceList init) { this.init = init; }
         @Override protected void compute() {
             MiningContext ctx = acquireContext();
@@ -768,7 +770,9 @@ public class AlgoRHUSPMinerParallel {
      * so the task is self-contained when stolen by another thread (work stealing).
      */
     private final class MineTask extends RecursiveAction {
-        final InstanceList parent;
+        // Never serialised; declared only because the supertype is Serializable.
+        private static final long serialVersionUID = 1L;
+        final transient InstanceList parent;
         final int candidate;
         final boolean isIExt;
         final int lastItem;
