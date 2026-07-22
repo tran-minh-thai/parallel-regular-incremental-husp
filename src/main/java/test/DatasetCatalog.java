@@ -90,18 +90,22 @@ public final class DatasetCatalog {
         // skipped because the dataset exceeds ExpConfig.coverageMaxN, so no oracle is built.
         s.add(new DatasetSpec("KOSARAK", 0.015, 0.30, ExpConfig.SCEN_A, true));
 
-        // --- Pending: two datasets chosen to close real gaps in the current five ---------------
+        // --- Pending: three datasets chosen to close real gaps in the current five -------------
         //
         // BMS1 (59,601 sequences, 497 items, average length 2.51) covers the short-sequence end.
         // Nothing else here comes close: the next shortest is KOSARAK at 8.10.
         //
-        // C8T1S5I8N5K (47,133 sequences, 68,240 items, 7.97 items per event) is the only dataset
-        // in the release whose events hold more than one item. In the other six, and therefore in
-        // every number this study has published so far, an event is a singleton — which means the
-        // i-extension branch of the miner has never been exercised by an experiment. That is a
-        // wider hole than the dataset count.
+        // C8T1S5I8N5K (47,133 sequences, 68,240 items, 7.97 items per event) and
+        // ONLINE_RETAIL_II_ALL (4,383 sequences, 41,431 items, 22.78 items per event) are the only
+        // datasets in the release whose events hold more than one item. In the other six, and
+        // therefore in every number this study has published so far, an event is a singleton —
+        // which means the i-extension branch of the miner has never been exercised by an
+        // experiment. That is a wider hole than the dataset count. The two approach it from
+        // opposite shapes: C8T1S5I8N5K is synthetic with 2.36 events per sequence of five to ten
+        // items, ONLINE_RETAIL_II_ALL is real retail with 5.36 events of around 23 items. Both are
+        // in huspm-datasets v1.1 and later.
         //
-        // Both stay commented out until probed. Guessing delta is how a dataset ends up measured
+        // All three stay commented out until probed. Guessing delta is how a dataset ends up measured
         // outside the band where the regularity constraint binds, and MSNBC showed how quiet that
         // failure is: it loaded, ran fast, reported full recall, and returned 196 patterns at
         // rho = 0.01, 0.02, 0.05 and 0.30 alike, because with 17 items over sequences averaging 13
@@ -111,10 +115,12 @@ public final class DatasetCatalog {
         // Probe on the benchmark machine, then fill in the delta the sweep supports:
         //     ./probe_dataset.sh BMS1
         //     ./probe_dataset.sh C8T1S5I8N5K
+        //     ./probe_dataset.sh ONLINE_RETAIL_II_ALL
         // The pattern count MUST rise as rho loosens; a flat column disqualifies the dataset.
         //
-        // s.add(new DatasetSpec("BMS1",        0.0??, 0.30, ExpConfig.SCEN_A));
-        // s.add(new DatasetSpec("C8T1S5I8N5K", 0.0??, 0.30, ExpConfig.SCEN_A));
+        // s.add(new DatasetSpec("BMS1",                 0.0??, 0.30, ExpConfig.SCEN_A));
+        // s.add(new DatasetSpec("C8T1S5I8N5K",          0.0??, 0.30, ExpConfig.SCEN_A));
+        // s.add(new DatasetSpec("ONLINE_RETAIL_II_ALL", 0.0??, 0.30, ExpConfig.SCEN_A));
 
         return DatasetSpec.onlyAvailable(s);
     }

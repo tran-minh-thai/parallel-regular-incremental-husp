@@ -12,17 +12,19 @@ The benchmark datasets are not in this repository. Pull them from the pinned rel
 [huspm-datasets](https://github.com/tran-minh-thai/huspm-datasets) into `datasets/`:
 
 ```bash
-VERSION=v1-seed42-lognormal
+VERSION=v1.1-seed42-lognormal
 curl -fLO https://github.com/tran-minh-thai/huspm-datasets/releases/download/$VERSION/huspm-datasets-$VERSION.tar.gz
 tar xzf huspm-datasets-$VERSION.tar.gz -C datasets/
 shasum -a 256 -c MANIFEST.sha256        # Linux: sha256sum -c MANIFEST.sha256
 ```
 
-**Pull the release; do not regenerate the data.** The utilities are synthetic, and although
-`SPMF_Converter` fixes its seed at 42, it draws every file from one shared random stream in list
-order — so converting a different set of files, or the same files in a different order, yields
-different utilities and therefore different numbers than the ones published here. The release is
-the only way to reproduce them, which is why it is versioned by the parameters that produced it.
+**Pull the release; do not regenerate the data.** The utilities are synthetic, and more than one
+version of `SPMF_Converter` is in circulation. The releases were produced by the version that
+creates a fresh generator per input file, which makes a given raw file convert to the same bytes
+regardless of what else was in the batch. Other copies hold one generator as a static field and
+share it across the whole list, so their output depends on which files were converted and in what
+order; rebuilding with one of those produces different utilities, different numbers, and failing
+checksums. Pulling the release removes the question.
 
 Only the four tiny `example*` files stay in `datasets/` under version control. They are test
 fixtures for `--test`, not benchmark data, and they are deliberately not part of the release.
