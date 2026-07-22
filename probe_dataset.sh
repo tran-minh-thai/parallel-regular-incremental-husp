@@ -24,6 +24,10 @@
 # minutes at 700% CPU.
 set -u
 
+# Everything below is relative to the repository, so anchor to this script's own directory.
+# That way the full path works from anywhere and there is no "cd first" step to forget.
+cd "$(dirname "${BASH_SOURCE[0]}")" || exit 1
+
 TAG="${1:?usage: ./probe_dataset.sh TAG [delta-list] [rho-list]}"
 DELTAS="${2:-0.05 0.02 0.01 0.005}"
 RHOS="${3:-0.05 0.15 0.30 0.60}"
