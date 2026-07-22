@@ -8,10 +8,26 @@ project is; this covers running it.
 You need a JDK (11 or later). Maven is optional — there are no runtime dependencies, so `javac`
 works offline.
 
-The benchmark datasets are not in the repository; only the small example is. Download SIGN,
-LEVIATHAN, BIBLE, FIFA and KOSARAK from SPMF, convert them with `SPMF_Converter`, and put the
-resulting `<name>_seq.txt` and `<name>_eui.txt` in `datasets/`. Missing datasets are skipped rather
-than failing the run, so a partial set still works.
+The benchmark datasets are not in this repository. Pull them from the pinned release of
+[huspm-datasets](https://github.com/tran-minh-thai/huspm-datasets) into `datasets/`:
+
+```bash
+VERSION=v1-seed42-lognormal
+curl -fLO https://github.com/tran-minh-thai/huspm-datasets/releases/download/$VERSION/huspm-datasets-$VERSION.tar.gz
+tar xzf huspm-datasets-$VERSION.tar.gz -C datasets/
+shasum -a 256 -c MANIFEST.sha256        # Linux: sha256sum -c MANIFEST.sha256
+```
+
+**Pull the release; do not regenerate the data.** The utilities are synthetic, and although
+`SPMF_Converter` fixes its seed at 42, it draws every file from one shared random stream in list
+order — so converting a different set of files, or the same files in a different order, yields
+different utilities and therefore different numbers than the ones published here. The release is
+the only way to reproduce them, which is why it is versioned by the parameters that produced it.
+
+Only the four tiny `example*` files stay in `datasets/` under version control. They are test
+fixtures for `--test`, not benchmark data, and they are deliberately not part of the release.
+
+Missing datasets are skipped rather than failing the run, so a partial set still works.
 
 **Set the heap well below physical RAM.** On a 32 GB machine use 16g, not 32g. If the heap
 approaches RAM the JVM will swap rather than fail: every timing becomes meaningless and the swap
