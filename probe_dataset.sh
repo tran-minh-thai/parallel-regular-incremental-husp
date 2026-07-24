@@ -39,11 +39,12 @@ _ram_gb=$(( $(sysctl -n hw.memsize 2>/dev/null || echo 8589934592) / 1073741824 
 _half=$(( _ram_gb / 2 )); (( _half > 24 )) && _half=24; (( _half < 2 )) && _half=2
 HEAP="${HEAP:-${_half}g}"
 THREADS="${THREADS:-$(getconf _NPROCESSORS_ONLN)}"
-# Per-configuration wall-clock limit, seconds. The sweep runs 8 configurations per dataset and the
-# expensive end of a delta range can run for hours, so an unbounded probe is how an overnight run
-# turns out in the morning to have spent itself on one cell. A configuration slower than this is
-# too slow to use in the suite anyway: the full suite has 253 of them.
-LIMIT="${LIMIT:-600}"
+# Per-configuration wall-clock limit, seconds. Matches ExpConfig.runTimeoutMs, which is what the
+# suite itself allows a single run, so a configuration this probe rejects is one the suite would
+# reject too. The limit exists only to stop an unbounded probe spending a whole night on its first
+# cell; it is not a judgement about the dataset. Raise it with LIMIT= when a dataset is expected to
+# be slow — a threshold that needs two hours is still a usable threshold if the science wants it.
+LIMIT="${LIMIT:-3600}"
 
 SEQ="datasets/${TAG}_seq.txt"
 EUI="datasets/${TAG}_eui.txt"
@@ -63,7 +64,10 @@ probe() {  # delta rho -> one line
     while kill -0 "$pid" 2>/dev/null; do
         if (( waited >= LIMIT )); then
             kill -9 "$pid" 2>/dev/null; wait "$pid" 2>/dev/null
-            rm -f "$out"; echo "TIMEOUT after ${LIMIT}s — too slow for the suite"; return
+            rm -f "$out"
+            # Report the limit that was hit, not a verdict: all this says is that the run needs
+            # longer than the caller allowed. Re-run with a larger LIMIT to find out how much.
+            echo "stopped at the ${LIMIT}s limit (still running; raise LIMIT to measure it)"; return
         fi
         sleep 2; (( waited += 2 ))
     done
