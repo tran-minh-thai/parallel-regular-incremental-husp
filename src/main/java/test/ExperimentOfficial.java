@@ -417,7 +417,7 @@ public class ExperimentOfficial {
         for (int w = 0; w < Math.max(1, ExpConfig.warmupRuns); w++) warm = timedRun(factory, b, d, r);
         if (warm.timedOut || warm.error != null || warm.patterns == null) {
             writeRow(scenario, dist, algo, mu, d, r, threads, b.size(), 0, warm, "");
-            System.out.printf("   [%-15s %-15s T=%-2d] %s%n", scenario, algo, threads,
+            System.out.printf("   [%-15s %-10s %-15s T=%-2d] %s%n", scenario, dist, algo, threads,
                     warm.timedOut ? "TIMEOUT" : "ERROR:" + warm.error);
             return Agg.failed();
         }
@@ -438,8 +438,10 @@ public class ExperimentOfficial {
             times[n++] = rr.runtimeMs;
         }
         long median = n > 0 ? median(Arrays.copyOf(times, n)) : -1;
-        System.out.printf("   [%-15s %-15s T=%-2d] %6d ms | %7.1f MB | HS=%d SHS=%d%s%n",
-                scenario, algo, threads, median, last.peakMb, last.count, last.shs,
+        // Include dist so S8/S11 rows show which batch count (B=4/B=64) and S7 which rho (r=...);
+        // otherwise the console shows several identical-looking lines that differ only in the CSV.
+        System.out.printf("   [%-15s %-10s %-15s T=%-2d] %6d ms | %7.1f MB | HS=%d SHS=%d%s%n",
+                scenario, dist, algo, threads, median, last.peakMb, last.count, last.shs,
                 recall.isEmpty() ? "" : " | recall=" + recall);
         return new Agg(true, median, last.count, last.shs);
     }
