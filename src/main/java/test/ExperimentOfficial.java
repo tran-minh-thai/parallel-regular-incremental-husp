@@ -210,7 +210,7 @@ public class ExperimentOfficial {
             if (ExpConfig.s6Datasets.contains(tag)) {
                 benchmark("S2-compare", "A-Uniform", "Remine-static", "static",
                         () -> ExpConfig.newRemine(), 1, bA, minUtilRatio, maxRegRatio, oracle);
-                benchmark("S2-compare", "A-Uniform", "ParRemine-RDLB", "rdlb",
+                benchmark("S2-compare", "A-Uniform", "ParRemine", "rdlb",
                         () -> ExpConfig.newParRemine(cores), cores, bA, minUtilRatio, maxRegRatio, oracle);
             }
         }
@@ -237,7 +237,7 @@ public class ExperimentOfficial {
                         () -> ExpConfig.newRIncHusp(ExpConfig.muMin), 1, bK, minUtilRatio, maxRegRatio, oracle);
                 benchmark("S11-batchcompare", lab, "RIncHusp-Fix0.9", "0.90",
                         () -> ExpConfig.newRIncHusp(ExpConfig.muFixHigh), 1, bK, minUtilRatio, maxRegRatio, oracle);
-                benchmark("S11-batchcompare", lab, "ParRemine-RDLB", "rdlb",
+                benchmark("S11-batchcompare", lab, "ParRemine", "rdlb",
                         () -> ExpConfig.newParRemine(cores), cores, bK, minUtilRatio, maxRegRatio, oracle);
                 if (nb == 4) {
                     benchmark("S11-batchcompare", lab, "Remine-static", "static",
@@ -315,7 +315,7 @@ public class ExperimentOfficial {
                 List<List<List<int[]>>> bN = ExpUtil.split(all, ExpConfig.fineRatios(nb, 0.25));
                 benchmark("S8-batchscale", "B=" + nb, "P-RIncHUSP", "trie",
                         () -> ExpConfig.newProposed(cores), cores, bN, minUtilRatio, maxRegRatio, oracle);
-                benchmark("S8-batchscale", "B=" + nb, "ParRemine-RDLB", "rdlb",
+                benchmark("S8-batchscale", "B=" + nb, "ParRemine", "rdlb",
                         () -> ExpConfig.newParRemine(cores), cores, bN, minUtilRatio, maxRegRatio, oracle);
             }
         }

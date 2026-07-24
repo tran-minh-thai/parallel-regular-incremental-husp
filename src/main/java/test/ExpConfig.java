@@ -351,7 +351,13 @@ public final class ExpConfig {
     public static AlgoParRemine newParRemine(int threads) {
         AlgoParRemine m = new AlgoParRemine();
         m.numThreads = threads;
-        m.parallelStrategy = AlgoRHUSPMinerParallel.STRAT_RDLB;   // the companion paper's best config
+        // Standard work-stealing over independent prefix branches (STRAT_STEAL), the parallel scheme
+        // whose origin is pSPADE (Zaki 2001). This is deliberately the standard primitive, not the
+        // companion study's recursive dynamic load balancing: the crossover argument holds for any
+        // competent parallel re-miner (re-mining is O(k) whatever the balancing), and a standard,
+        // published primitive is citable where an unpublished one is not. Verified to return the same
+        // pattern set as the RDLB strategy, so only the timing differs.
+        m.parallelStrategy = AlgoRHUSPMinerParallel.STRAT_STEAL;
         m.denseBuffers = true;
         return m;
     }
