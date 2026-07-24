@@ -176,8 +176,20 @@ public final class ExpConfig {
      * matters because these run unattended.
      */
     public static final double[] S6_DELTA_MULT = {1.0, 1.5, 2.0, 3.0};
-    /** ρ multipliers applied to the base ρ, giving 0.15 / 0.30 / 0.45 / 0.60: strict to loose. */
-    public static final double[] S7_RHO_MULT = {0.5, 1.0, 1.5, 2.0};
+    /**
+     * ρ multipliers applied to each dataset's own base ρ (0.03 for the text datasets, 0.06 for
+     * C8T1S5I8N5K), sweeping from strict to loose around the reported value.
+     *
+     * Capped at 1.5, not 2.0. At the new low δ the pattern space is far larger than before, and the
+     * exact miner's discovery phase holds the whole of it, so memory climbs steeply with ρ: SIGN at
+     * (δ=0.005, ρ=0.05) already needs ~1.9 GB and ρ=0.06 (the old 2.0× point) extrapolates to ~10 GB,
+     * enough to risk the definitive run. 1.5× keeps SIGN at ρ=0.045 (~320 MB) while still spanning
+     * the informative region (172 -> 830 -> 4439 patterns), and for C8T1S5I8N5K the 0.5×-1.0× range
+     * still crosses its saturation cliff. The approximate baselines do not hit this because they do
+     * not mine the full space — that memory gap is the honest cost of exactness, discussed in the
+     * limitations, not a defect to hide by shrinking the sweep further.
+     */
+    public static final double[] S7_RHO_MULT = {0.5, 1.0, 1.5};
     /**
      * Batch counts for S8, each run as D_old (25%) followed by n−1 increments. The range spans counts
      * small enough for re-mining to still be cheap through counts where it clearly is not, so the two
