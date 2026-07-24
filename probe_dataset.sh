@@ -33,6 +33,11 @@ DELTAS="${2:-0.05 0.02 0.01 0.005}"
 RHOS="${3:-0.05 0.15 0.30 0.60}"
 HEAP="${HEAP:-8g}"
 THREADS="${THREADS:-$(getconf _NPROCESSORS_ONLN)}"
+# Per-configuration wall-clock limit, seconds. The sweep runs 8 configurations per dataset and the
+# expensive end of a delta range can run for hours, so an unbounded probe is how an overnight run
+# turns out in the morning to have spent itself on one cell. A configuration slower than this is
+# too slow to use in the suite anyway: the full suite has 253 of them.
+LIMIT="${LIMIT:-600}"
 
 SEQ="datasets/${TAG}_seq.txt"
 EUI="datasets/${TAG}_eui.txt"
@@ -44,10 +49,25 @@ done
     javac --release 11 -d out $(find src/main/java -name '*.java') || exit 1
 }
 
+# macOS ships no timeout(1) — coreutils provides gtimeout, otherwise fall back to a watchdog.
 probe() {  # delta rho -> one line
-    java "-Xmx${HEAP}" -cp out test.DeltaProbe "$SEQ" "$EUI" "$1" "$2" "$THREADS" A 2>&1 \
-        | grep -oE 'HS=[0-9]+ +SHS=[0-9]+ +peak=[0-9]+ MB +time=[0-9]+ ms' \
-        || echo "no result (timeout, OOM, or zero patterns)"
+    local out; out=$(mktemp)
+    java "-Xmx${HEAP}" -cp out test.DeltaProbe "$SEQ" "$EUI" "$1" "$2" "$THREADS" A >"$out" 2>&1 &
+    local pid=$! waited=0
+    while kill -0 "$pid" 2>/dev/null; do
+        if (( waited >= LIMIT )); then
+            kill -9 "$pid" 2>/dev/null; wait "$pid" 2>/dev/null
+            rm -f "$out"; echo "TIMEOUT after ${LIMIT}s — too slow for the suite"; return
+        fi
+        sleep 2; (( waited += 2 ))
+    done
+    wait "$pid" 2>/dev/null
+    local line; line=$(grep -oE 'HS=[0-9]+ +SHS=[0-9]+ +peak=[0-9]+ MB +time=[0-9]+ ms' "$out")
+    if [[ -n "$line" ]]; then echo "$line"
+    elif grep -q 'OutOfMemoryError' "$out"; then echo "OUT OF MEMORY at heap $HEAP"
+    else echo "no result — $(tail -1 "$out" | cut -c1-60)"
+    fi
+    rm -f "$out"
 }
 
 echo "=== $TAG: delta sweep at rho = 0.30, $THREADS threads, heap $HEAP ==="
