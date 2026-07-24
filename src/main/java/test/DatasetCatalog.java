@@ -63,64 +63,61 @@ public final class DatasetCatalog {
     public static List<DatasetSpec> officialSuite() {
         List<DatasetSpec> s = new ArrayList<>();
 
-        // Dense, 730 sequences. 0.03 is a practical lower bound rather than a preference: the
-        // pattern count does rise quickly below it, but so does the memory the B-Increasing split
-        // needs, and peak memory roughly multiplies by ten per 0.001 step (0.030: 111 MB,
-        // 0.029: 1.2 GB, 0.028: over 4 GB). No lower value completes the suite; at 0.03 every
-        // scenario runs and recall is 1.0 on all four distributions.
-        s.add(new DatasetSpec("SIGN", 0.030, 0.30, ExpConfig.SCEN_A));
+        // delta and rho were probed together, not independently: they interact, because a tight rho
+        // lets the regularity pruning shrink the search space, which in turn makes a low delta
+        // affordable. The three text datasets share (delta 0.005, rho 0.03); the sweep results that
+        // fixed those values are in results of ./probe_dataset.sh. rho = 0.03 is the important change
+        // from the earlier 0.30: at 0.30 the regularity constraint pruned nothing on these datasets
+        // (S7 was flat, 30 -> 31 on SIGN across the whole sweep), so the numbers described plain
+        // high-utility mining. At 0.03 the constraint is active — tightening to 0.02 drops SIGN from
+        // 830 patterns to 172, loosening to 0.04 raises it to 4,439.
 
-        // 5,834 sequences. 0.02 is the richest value that stays light (3,320 patterns, ~215 MB).
-        // 0.01 also completes but needs ~1.8 GB and 13 s per run, which is too slow for the
-        // 64-batch re-mining baseline in S8.
-        s.add(new DatasetSpec("LEVIATHAN", 0.020, 0.30, ExpConfig.SCEN_A));
+        // Dense, 730 sequences. At (0.005, 0.03): 830 patterns, ~100 MB, under a second. The old
+        // 0.03/0.30 gave 30 patterns, too few, and its memory wall (ten-fold per 0.001 step) was an
+        // artifact of rho = 0.30 leaving the search unpruned, not a property of the data.
+        s.add(new DatasetSpec("SIGN", 0.005, 0.03, ExpConfig.SCEN_A));
 
-        // 36,369 sequences. 0.01 gives 1,349 patterns in ~2.5 s and ~265 MB. Higher values leave
-        // too few patterns to compare against (0.05 returns only five).
-        s.add(new DatasetSpec("BIBLE", 0.010, 0.30, ExpConfig.SCEN_A));
+        // 5,834 sequences. At (0.005, 0.03): 5,148 patterns, ~220 MB, ~2 s.
+        s.add(new DatasetSpec("LEVIATHAN", 0.005, 0.03, ExpConfig.SCEN_A));
 
-        // 20,450 sequences, dense and long (up to 100 events). Scalability-only: a full run takes
-        // several minutes, so the sweeps would dominate the suite.
+        // 36,369 sequences. At (0.005, 0.03): 2,141 patterns, ~350 MB, ~2.4 s.
+        s.add(new DatasetSpec("BIBLE", 0.005, 0.03, ExpConfig.SCEN_A));
+
+        // 47,133 sequences, IBM Quest synthetic. This is the one full-suite dataset whose events hold
+        // more than one item (7.96 on average, up to 23), so it is the only one that exercises the
+        // i-extension branch of the miner — every other dataset here has singleton events. rho is its
+        // own, 0.06 rather than 0.03, because the same ratio maps to a different absolute maxReg: the
+        // planted patterns' periods cluster near maxReg = 0.055*N, so the count jumps from 62 at
+        // rho = 0.05 to 5,612 at 0.06 and then saturates. At (0.001, 0.06): 5,612 patterns, ~1.2 s.
+        // Added to s6Datasets below so it runs S5-S11, not only S1.
+        s.add(new DatasetSpec("C8T1S5I8N5K", 0.001, 0.06, ExpConfig.SCEN_A));
+
+        // 20,450 sequences, dense and long (up to 100 events). Scalability-only: even at a probed
+        // threshold it costs ~76 s per run at T=1, which the batch-re-mining baselines in S8/S11
+        // multiply by the batch count. It is a real dataset of medium size, so it earns its place on
+        // the S1 speedup curve, but a full run would dominate the suite for one more s-extension
+        // point, and s-extension is already covered by SIGN/LEVIATHAN/BIBLE.
         s.add(new DatasetSpec("FIFA", 0.050, 0.30, ExpConfig.SCEN_A, true));
 
-        // 990,002 sequences; needs -Xmx16g or more. Sparse, so lowering delta buys few patterns:
-        // 0.015 yields 30, and going lower costs far more than it returns. That is still enough
-        // for the mining phase to have work to parallelise — at 0.05 (five patterns) the runtime
-        // was dominated by loading and speedup stalled near 1.6x. Scalability-only, and recall is
-        // skipped because the dataset exceeds ExpConfig.coverageMaxN, so no oracle is built.
+        // 990,002 sequences; needs -Xmx16g or more. Scalability-only for two independent reasons: it
+        // exceeds ExpConfig.coverageMaxN so no oracle can be built, which the correctness scenarios
+        // need; and it is sparse enough that delta = 0.015 yields only 30 patterns (at 0.05 just five,
+        // where loading dominates and speedup stalled near 1.6x), below which cost rises faster than
+        // the count returns.
         s.add(new DatasetSpec("KOSARAK", 0.015, 0.30, ExpConfig.SCEN_A, true));
 
-        // --- Pending: three datasets chosen to close real gaps in the current five -------------
+        // --- Datasets evaluated for the i-extension gap and rejected, kept as a record ----------
         //
-        // BMS1 (59,601 sequences, 497 items, average length 2.51) covers the short-sequence end.
-        // Nothing else here comes close: the next shortest is KOSARAK at 8.10.
-        //
-        // C8T1S5I8N5K (47,133 sequences, 68,240 items, 7.97 items per event) and
-        // ONLINE_RETAIL_II_ALL (4,383 sequences, 41,431 items, 22.78 items per event) are the only
-        // datasets in the release whose events hold more than one item. In the other six, and
-        // therefore in every number this study has published so far, an event is a singleton —
-        // which means the i-extension branch of the miner has never been exercised by an
-        // experiment. That is a wider hole than the dataset count. The two approach it from
-        // opposite shapes: C8T1S5I8N5K is synthetic with 2.36 events per sequence of five to ten
-        // items, ONLINE_RETAIL_II_ALL is real retail with 5.36 events of around 23 items. Both are
-        // in huspm-datasets v1.1 and later.
-        //
-        // All three stay commented out until probed. Guessing delta is how a dataset ends up measured
-        // outside the band where the regularity constraint binds, and MSNBC showed how quiet that
-        // failure is: it loaded, ran fast, reported full recall, and returned 196 patterns at
-        // rho = 0.01, 0.02, 0.05 and 0.30 alike, because with 17 items over sequences averaging 13
-        // events the real gaps are 1 to 3 while rho*N is already 318 at rho = 0.01. Constraint
-        // never binds, so the numbers would have described plain high-utility mining.
-        //
-        // Probe on the benchmark machine, then fill in the delta the sweep supports:
-        //     ./probe_dataset.sh BMS1
-        //     ./probe_dataset.sh C8T1S5I8N5K
-        //     ./probe_dataset.sh ONLINE_RETAIL_II_ALL
-        // The pattern count MUST rise as rho loosens; a flat column disqualifies the dataset.
-        //
-        // s.add(new DatasetSpec("BMS1",                 0.0??, 0.30, ExpConfig.SCEN_A));
-        // s.add(new DatasetSpec("C8T1S5I8N5K",          0.0??, 0.30, ExpConfig.SCEN_A));
-        // s.add(new DatasetSpec("ONLINE_RETAIL_II_ALL", 0.0??, 0.30, ExpConfig.SCEN_A));
+        // The search for a real multi-item-event dataset found that real sequence data with large
+        // itemsets carries one of two intractable traits. ONLINE_RETAIL_II_ALL has itemsets up to 275
+        // items (2^275 subsets to enumerate per itemset). MICROBLOG_PCU has itemsets of a workable 8
+        // but sequences averaging 510 items, and did not finish a single configuration in three
+        // minutes even at a high threshold. MSNBC's regularity constraint never binds (196 patterns at
+        // rho 0.01 through 0.30) because its 17 items recur in nearly every sequence. BMS1's operating
+        // band is pinched shut: high delta returns nothing, low delta explodes. So the i-extension
+        // branch is covered by the synthetic C8T1S5I8N5K, which is what the field does too — every
+        // real dataset in the HUSPM benchmark set (see HUSP-ULL, IEEE TCYB 2021) has one item per
+        // itemset, and the only multi-item dataset there is IBM Quest synthetic.
 
         return DatasetSpec.onlyAvailable(s);
     }

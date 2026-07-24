@@ -22,7 +22,7 @@ import java.util.function.Supplier;
 /**
  * Runs the experiment suite and writes one CSV row per measured run.
  *
- * <p>Every benchmark point is one warm-up run followed by {@code ExpConfig.measuredRuns} measured
+ * <p>Every benchmark point is one warm-up run followed by a tiered number of measured
  * runs, each under a 60-minute timeout. Only metrics are recorded; the patterns themselves are not
  * written out.
  *
@@ -409,7 +409,8 @@ public class ExperimentOfficial {
         return a;
     }
 
-    /** Warm-up + measure measuredRuns times; write 1 row per run; return aggregate (median, hs, shs, recall). */
+    /** Warm-up, then measure a tiered number of times (see ExpConfig.repeatsForRuntime); write 1 row
+     *  per run; return aggregate (median, hs, shs, recall). */
     static Agg benchmarkImpl(String scenario, String dist, String algo, String mu, Supplier<IncrementalHUSPMiner> factory,
                          int threads, List<List<List<int[]>>> b, double d, double r, Set<String> oracle) throws IOException {
         Run warm = null;
@@ -421,8 +422,14 @@ public class ExperimentOfficial {
             return Agg.failed();
         }
         String recall = oracle != null ? String.format("%.4f", ExpUtil.coverage(warm.patterns, oracle)) : "";
-        long[] times = new long[ExpConfig.measuredRuns]; int n = 0; Run last = warm;
-        for (int it = 1; it <= ExpConfig.measuredRuns; it++) {
+        // Repeat count is tiered by how long a run takes, not fixed. A sub-second run needs many
+        // repeats before its mean is trustworthy; a two-minute run needs few, and forcing many would
+        // dominate the suite. The warm-up run just measured the duration, so use it to pick the tier.
+        // The mean and standard deviation the paper reports are computed downstream from the per-run
+        // rows written here, so they stay correct whatever count each configuration gets.
+        int repeats = ExpConfig.repeatsForRuntime(warm.runtimeMs);
+        long[] times = new long[repeats]; int n = 0; Run last = warm;
+        for (int it = 1; it <= repeats; it++) {
             System.gc();
             Run rr = timedRun(factory, b, d, r);
             writeRow(scenario, dist, algo, mu, d, r, threads, b.size(), it, rr, recall);
@@ -442,12 +449,16 @@ public class ExperimentOfficial {
         IncrementalHUSPMiner m = factory.get();
         Callable<Run> task = () -> {
             long[] phase = new long[3];
+            // One meter for every miner (see PeakMemoryMeter). Read the peak from it, not from the
+            // miner, so the peak-memory column compares like with like.
+            PeakMemoryMeter meter = new PeakMemoryMeter();
             long t0 = System.currentTimeMillis();
             Map<String, long[]> res = ExpUtil.run(m, b, d, r, phase);
             Run rr = new Run();
             rr.runtimeMs = System.currentTimeMillis() - t0;
             rr.buildMs = phase[0]; rr.incrMs = phase[1]; rr.discMs = phase[2];
-            rr.peakMb = m.peakMemoryMB();
+            rr.peakMb = meter.peakMB();
+            meter.close();
             rr.count = res.size();
             rr.shs = m.bufferedCount();
             rr.patterns = res;

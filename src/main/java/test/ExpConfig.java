@@ -38,7 +38,32 @@ public final class ExpConfig {
 
     // ===================== Benchmark =====================
     public static int  warmupRuns   = 1;
-    public static int  measuredRuns = 5;
+
+    /**
+     * Measured repeats, tiered by how long one run takes. A short run's mean is noisy until it has
+     * many samples; a long run's is stable with few, and forcing many would dominate the suite. The
+     * thresholds follow the review guidance (CAM_NANG III.4.1): reviewers rejected a flat three-run
+     * protocol as unreliable "for measurements lasting only tens of milliseconds", and a flat high
+     * count is the opposite waste.
+     *
+     * <pre>
+     *   run time    repeats
+     *   &lt; 1 s        15
+     *   1-10 s       10
+     *   10-120 s      5
+     *   &gt; 120 s        3
+     * </pre>
+     *
+     * {@code --test} forces this to 2 via {@link #fixedRepeatsForTest} so the smoke suite stays fast.
+     */
+    public static Integer fixedRepeatsForTest = null;   // set by --test; null means use the tiers
+    public static int repeatsForRuntime(long ms) {
+        if (fixedRepeatsForTest != null) return fixedRepeatsForTest;
+        if (ms < 1_000)   return 15;
+        if (ms < 10_000)  return 10;
+        if (ms < 120_000) return 5;
+        return 3;
+    }
     /** Timeout for one measured run of one algorithm. A run past this is recorded as timed out and
      *  the suite carries on — the safety net that stops a pathological configuration from eating the
      *  night. Keep it tight. */
@@ -180,11 +205,13 @@ public final class ExpConfig {
      * loose regularity threshold on the real data can easily hide a seeding bug.
      */
     public static java.util.Set<String> s6Datasets =
-            new java.util.HashSet<>(java.util.Arrays.asList("SIGN", "LEVIATHAN", "BIBLE"));
+            new java.util.HashSet<>(java.util.Arrays.asList("SIGN", "LEVIATHAN", "BIBLE", "C8T1S5I8N5K"));
 
-    /** {@code --test}: point the sweeps at the tiny example datasets so they run in seconds. */
+    /** {@code --test}: point the sweeps at the tiny example datasets, and fix repeats at 2 so the
+     * smoke suite stays fast rather than doing 15 per sub-second run. */
     public static void enableSweepsForTestSuite() {
         s6Datasets = new java.util.HashSet<>(java.util.Arrays.asList("example", "example2"));
+        fixedRepeatsForTest = 2;
     }
 
     /**

@@ -166,7 +166,9 @@ public final class RunContext {
         try { meta.setProperty("env.host", java.net.InetAddress.getLocalHost().getHostName()); } catch (Exception ignore) {}
         meta.setProperty("env.gitCommit", gitCommit());
         meta.setProperty("config.warmupRuns", Integer.toString(ExpConfig.warmupRuns));
-        meta.setProperty("config.measuredRuns", Integer.toString(ExpConfig.measuredRuns));
+        meta.setProperty("config.measuredRuns",
+                ExpConfig.fixedRepeatsForTest != null ? ExpConfig.fixedRepeatsForTest.toString()
+                                                      : "tiered 15/10/5/3 by runtime");
         meta.setProperty("config.runTimeoutMs", Long.toString(ExpConfig.runTimeoutMs));
         meta.setProperty("config.oracleTimeoutMs", Long.toString(ExpConfig.oracleTimeoutMs));
         meta.setProperty("config.muMin", Double.toString(ExpConfig.muMin));
@@ -267,7 +269,9 @@ public final class RunContext {
               .append(':').append(s.s1Only).append(';');
         sb.append("mu=").append(ExpConfig.MU_PARTITION).append(';');       // proposed: parameter-free
         sb.append("muBase=").append(ExpConfig.muMin).append(',').append(ExpConfig.muMax).append(';');  // baselines only
-        sb.append("runs=").append(ExpConfig.warmupRuns).append(',').append(ExpConfig.measuredRuns).append(';');
+        sb.append("runs=").append(ExpConfig.warmupRuns).append(',')
+          .append(ExpConfig.fixedRepeatsForTest != null ? ExpConfig.fixedRepeatsForTest.toString() : "tiered")
+          .append(';');
         sb.append("to=").append(ExpConfig.runTimeoutMs).append(";ot=").append(ExpConfig.oracleTimeoutMs)
           .append(";cov=").append(ExpConfig.coverageMaxN).append(';');
         sb.append("S=").append(ExpConfig.runS1Scalability).append(ExpConfig.runS2Compare)
