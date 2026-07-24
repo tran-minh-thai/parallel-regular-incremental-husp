@@ -31,7 +31,13 @@ cd "$(dirname "${BASH_SOURCE[0]}")" || exit 1
 TAG="${1:?usage: ./probe_dataset.sh TAG [delta-list] [rho-list]}"
 DELTAS="${2:-0.05 0.02 0.01 0.005}"
 RHOS="${3:-0.05 0.15 0.30 0.60}"
-HEAP="${HEAP:-8g}"
+# Half of physical RAM, capped at 24g to match the suite runs. Well below RAM on purpose: if the
+# heap approaches it the JVM swaps instead of failing, which ruins every timing and can fill the
+# disk. Too small is its own failure — a probe that dies of OutOfMemory says nothing about the
+# threshold, only about the cap. Override with HEAP=.
+_ram_gb=$(( $(sysctl -n hw.memsize 2>/dev/null || echo 8589934592) / 1073741824 ))
+_half=$(( _ram_gb / 2 )); (( _half > 24 )) && _half=24; (( _half < 2 )) && _half=2
+HEAP="${HEAP:-${_half}g}"
 THREADS="${THREADS:-$(getconf _NPROCESSORS_ONLN)}"
 # Per-configuration wall-clock limit, seconds. The sweep runs 8 configurations per dataset and the
 # expensive end of a delta range can run for hours, so an unbounded probe is how an overnight run
