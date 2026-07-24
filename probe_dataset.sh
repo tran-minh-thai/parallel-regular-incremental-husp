@@ -80,15 +80,21 @@ probe() {  # delta rho -> one line
     rm -f "$out"
 }
 
-echo "=== $TAG: delta sweep at rho = 0.30, $THREADS threads, heap $HEAP ==="
+# Sweep delta at the TIGHTEST rho being considered, not at a fixed one. delta and rho interact:
+# a tight rho lets the regularity pruning do real work, which shrinks the search space and makes a
+# low delta affordable. Sweeping delta at a loose rho therefore reports a delta as infeasible when
+# it is cheap at the rho actually intended — SIGN at delta=0.005 exhausts a 16g heap at rho=0.30
+# and uses 103 MB at rho=0.03.
+RHO_FOR_DELTA=$(echo $RHOS | tr ' ' '\n' | sort -g | head -1)
+echo "=== $TAG: delta sweep at rho = $RHO_FOR_DELTA, $THREADS threads, heap $HEAP ==="
 for d in $DELTAS; do
-    printf '  delta=%-7s %s\n' "$d" "$(probe "$d" 0.30)"
+    printf '  delta=%-7s %s\n' "$d" "$(probe "$d" "$RHO_FOR_DELTA")"
 done
 
 echo
 echo "=== $TAG: is the regularity constraint active? ==="
-echo "Pick the delta from above that gave a workable count, then pass it as argument 2."
 BEST=$(echo $DELTAS | awk '{print $NF}')
+echo "at delta = $BEST (the last value given; pass a single delta as argument 2 to pin it)"
 for r in $RHOS; do
     printf '  rho=%-7s %s\n' "$r" "$(probe "$BEST" "$r")"
 done
