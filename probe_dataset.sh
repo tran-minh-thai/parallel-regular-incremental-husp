@@ -93,5 +93,18 @@ for r in $RHOS; do
     printf '  rho=%-7s %s\n' "$r" "$(probe "$BEST" "$r")"
 done
 echo
-echo "The pattern count MUST rise as rho loosens. A flat column means the constraint"
-echo "never binds on this dataset, and the dataset does not belong in the suite."
+cat <<'EOF'
+Read the rho column for where the constraint BINDS, which is not the same as whether it binds
+at the value the suite happens to use.
+
+  count rises across the range      the constraint is active here; use one of these rho values
+  count flat at the top, rises at
+    the bottom of the range         active, but saturating — probe lower and give this dataset
+                                    its own rho, the way each dataset already has its own delta
+  count flat at every rho, including
+    the tightest                    the constraint never binds; the numbers would describe plain
+                                    high-utility mining, and the dataset does not belong here
+
+A dataset measured at a rho where the count has saturated is measuring the unconstrained
+problem, whatever the paper says it is measuring.
+EOF
