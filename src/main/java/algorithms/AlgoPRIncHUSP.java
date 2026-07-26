@@ -189,6 +189,52 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
      */
     public double growthFactor = 0.0;
 
+    /**
+     * Lookahead h, in batches: retain what could become regular within the next h arrivals.
+     *
+     * <p>Replaces the growth factor, and with it the last quantity nobody can supply. A growth factor
+     * is N_final/|D_old|, so setting it means claiming to know where the feed ends; guess low and
+     * patterns are lost, guess high and the heap goes. h claims nothing about the end. It is a policy
+     * — how far ahead the caller wants covered — and it is answerable on day one.
+     *
+     * <p>The bound is {@code rho * (N_t + h * b)}, where b is the mean size of the batches actually
+     * seen. Both terms are measured. A pattern kept under it satisfies pi <= rho*(N_t + h*b), so it
+     * turns regular once the database reaches pi/rho <= N_t + h*b, which is within h batches at the
+     * observed rate. So the guarantee is stateable and provable rather than empirical:
+     * <b>complete for every pattern that becomes regular within h batches</b>. What is dropped needs
+     * longer than that, and the caller knows it going in.
+     *
+     * <p>The bound is recomputed on every batch, not frozen at seeding, which is the point: mining a
+     * later batch should use what the feed has since revealed. It is also held monotone, so a lull in
+     * arrivals cannot retract a bound already used — nothing is discarded that an earlier, wider
+     * bound had promised to keep.
+     *
+     * <p>Zero (default) keeps the growth-factor or hinted-size path.
+     */
+    public int lookaheadBatches = 0;
+
+    /**
+     * Heap budget in MB for the tracked set; 0 (default) leaves it unbounded.
+     *
+     * <p>The retention bound decides how deep to mine. This decides what to give up when that still
+     * does not fit, and it needs no threshold at all: patterns go in order of DESCENDING fixed
+     * period. That order is not a heuristic dressed up — the fixed period is exactly how much the
+     * database must still grow before the pattern can be regular, so the largest one is the worst
+     * thing to be holding under every future the feed might have.
+     *
+     * <p>Patterns that currently qualify are never evicted: they are the answer, not a cache. Only
+     * the held-but-not-qualifying remainder is given up, worst-first, until the budget is met or
+     * nothing else can go.
+     */
+    public int memoryBudgetMB = 0;
+
+    // Batch arrivals observed so far, for the mean batch size the lookahead bound needs.
+    private int observedBatches = 0;
+    private long observedBatchSeqs = 0;
+    private int retentionBound = Integer.MAX_VALUE;   // see lookaheadBatches
+    private int effectiveH = 0;                       // lookaheadBatches after clamping and adaptation
+    private int boundHighWater = 0;                   // monotone within one value of effectiveH
+
     // ----- State persistent across batches -----
     private final QSeqDatabase data = new QSeqDatabase();
     private final DEUCS deucs = new DEUCS();
@@ -335,13 +381,15 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         // seedPruneByFinalN=false is the S10 ablation, which deliberately reproduces that defect.
         // The hint is usable as long as it still covers the database. Equality is the single-batch
         // case, where ρ·N_current already IS ρ·N_final and pruning there is both sound and tightest.
-        seedMaxReg = growthFactor > 0
-                ? (int) Math.min(Integer.MAX_VALUE, growthFactor * maxRegRatio * data.numSequences)
-                : seedPruneByFinalN
-                    ? (hintedTotalN >= data.numSequences
-                            ? (int) (maxRegRatio * hintedTotalN)   // sound and tight
-                            : Integer.MAX_VALUE)                   // sound, no pruning
-                    : maxReg;                                      // ρ·N_current — approximate, ablation only
+        seedMaxReg = lookaheadBatches > 0
+                ? retentionBound
+                : growthFactor > 0
+                    ? (int) Math.min(Integer.MAX_VALUE, growthFactor * maxRegRatio * data.numSequences)
+                    : seedPruneByFinalN
+                        ? (hintedTotalN >= data.numSequences
+                                ? (int) (maxRegRatio * hintedTotalN)   // sound and tight
+                                : Integer.MAX_VALUE)                   // sound, no pruning
+                        : maxReg;                                  // ρ·N_current — approximate, ablation only
         seedThreshold0 = bufferThreshold;      // θ₀ — the discovery bound is derived from exactly this
         if (seedWithEngine05) seedWithParallelEngine(dOld);
         else staticBuild();
@@ -550,6 +598,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         if (discoverExact) { increments.addAll(deltaD); reconciled = false; }   // ΔD kept raw; new data ⇒ must re-reconcile
         long prevUD = data.totalDbUtility; int prevN = data.numSequences;
         long batchUtil = AdaptiveBuffer.batchUtility(deltaD);
+        observedBatches++; observedBatchSeqs += deltaD.size();   // history + the arrival just made
         int[] range = data.appendBatch(deltaD);        // append at tail -> [lo,hi); update totalDbUtility/numSequences
         recomputeThresholds(batchUtil, prevUD, deltaD.size(), prevN);
 
@@ -975,6 +1024,53 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
                 highUtility.put(formatPattern(p.ext, p.item), new long[]{p.utility, trueMaxPer});
             else if (p.utility >= bufferThreshold) bufferedN++; // count only — do NOT materialize a String per SHS
         }
+        enforceMemoryBudget(n);
+        adaptLookahead();
+    }
+
+    /**
+     * Give up tracked patterns, worst-first, until the heap is back inside the budget.
+     *
+     * <p>Every threshold this file has tried to set for retention needed a number about the future
+     * that nobody can supply. This needs none. The fixed period IS how much the database must still
+     * grow before a pattern can be regular, so ordering by it descending ranks exactly by how far
+     * away each pattern's chance is — an order that holds whatever the feed does next. The budget
+     * then says where to stop, and the budget is a fact about the machine rather than a claim about
+     * the data.
+     *
+     * <p>Currently-qualifying patterns are never touched. They are the answer; dropping one would
+     * change the result rather than the footprint, and this must only ever cost memory.
+     *
+     * <p>The reading is deliberately taken after the answer is built, when the transient enumeration
+     * structures are gone and what remains is close to the resident set. It cannot be exact — a
+     * collection may not have run — so the budget behaves as a high-water mark to stay under, not as
+     * a hard allocation ceiling.
+     */
+    private void enforceMemoryBudget(int n) {
+        if (memoryBudgetMB <= 0 || pats.length == 0) return;
+        Runtime rt = Runtime.getRuntime();
+        if ((rt.totalMemory() - rt.freeMemory()) / (1024.0 * 1024.0) <= memoryBudgetMB) return;
+
+        Pat[] keep = pats.clone();
+        // Descending fixed period: the furthest from ever qualifying goes first.
+        java.util.Arrays.sort(keep, (a, b) -> Integer.compare(b.maxInnerPeriod, a.maxInnerPeriod));
+        int survivors = keep.length;
+        for (int i = 0; i < keep.length && survivors > highUtility.size(); i++) {
+            Pat p = keep[i];
+            boolean answering = p.lastSeqId != -1 && p.trueMaxPer(n) <= maxReg && p.utility >= minUtil;
+            if (answering) continue;                       // part of the result, not a cache
+            keep[i] = null;
+            survivors--;
+            if ((rt.totalMemory() - rt.freeMemory()) / (1024.0 * 1024.0) <= memoryBudgetMB) break;
+        }
+        if (survivors == keep.length) return;              // nothing could be given up
+
+        Pat[] next = new Pat[survivors];
+        int w = 0;
+        for (Pat p : keep) if (p != null) next[w++] = p;
+        evictedIrregular += pats.length - survivors;
+        pats = next;
+        trieRoot = null;                                   // the maintenance trie indexes pats
     }
 
     /** Canonical pattern key {@code <(i i)(i)>}: items in the same itemset separated by a space, a new itemset by ")(". */
@@ -991,6 +1087,10 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
     private void recomputeThresholds(long batchUtil, long prevUD, int batchSize, int prevN) {
         minUtil = (long) Math.ceil(minUtilRatio * data.totalDbUtility);
         maxReg  = (int) (maxRegRatio * data.numSequences);
+        updateRetentionBound();
+        // The bound used when mining a new batch must reflect what the feed has since revealed;
+        // leaving it at its seeding value would mine every later batch against a stale database.
+        if (lookaheadBatches > 0) seedMaxReg = retentionBound;
         double bufferFactor = buffer.computeBufferFactor(batchUtil, prevUD, batchSize, prevN, minUtilRatio);
         bufferThreshold = bufferFactor * minUtil;
     }
@@ -1144,9 +1244,87 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         trieRoot = null;                                        // force a trie rebuild
     }
     /**
-     * ρ·N_final, or MAX_VALUE when the final size was never supplied. The distinction matters: only
-     * ρ·N_final is a ceiling on every future maxReg, so only it licenses dropping a pattern for good.
-     * Against ρ·N_current the same test would discard patterns that a longer database makes regular.
+     * Recompute {@code rho * (N_t + h * b)} from what has arrived, and never let it retreat.
+     *
+     * <p>The mean batch size is seeded from the initial load, since at that moment no arrival has
+     * been observed and the only evidence about a batch is the one batch there is. The first real
+     * arrival replaces that prior, and every later one refines it, so the bound is carried by
+     * measurement within a batch or two rather than by the opening guess.
+     *
+     * <p>Monotone on purpose. A quiet spell drags the mean down, and a bound that fell with it would
+     * discard patterns a wider earlier bound had already promised to keep — paying for them and then
+     * dropping them, with no new evidence that they are hopeless.
+     */
+    private void updateRetentionBound() {
+        if (lookaheadBatches <= 0) return;
+        double meanBatch = observedBatches > 0
+                ? (double) observedBatchSeqs / observedBatches
+                : data.numSequences;                 // no arrival yet: the initial load is the evidence
+        if (meanBatch < 1) meanBatch = 1;
+        if (effectiveH == 0) effectiveH = lookaheadBatches;
+
+        int prevH = effectiveH;
+        effectiveH = clampH(effectiveH, meanBatch);
+        double raw = maxRegRatio * (data.numSequences + (double) effectiveH * meanBatch);
+        int next = (int) Math.min(Integer.MAX_VALUE, Math.ceil(raw));
+        // Monotone while the lookahead holds, so a lull in arrivals cannot retract a bound already
+        // used. A DELIBERATE cut, when the budget forces the lookahead down, is different: there the
+        // caller has asked for less, and the high-water mark restarts rather than pinning the bound.
+        boundHighWater = (effectiveH < prevH) ? next : Math.max(boundHighWater, next);
+        retentionBound = boundHighWater;
+    }
+
+    /**
+     * Hold the lookahead inside the range where it still means something on THIS data.
+     *
+     * <p>Below one it covers no arrival at all, leaving {@code rho * N_t} — the bound that prunes
+     * against a threshold which later rises, and the reason the sequential baseline returns a
+     * fraction of the answer. That is a floor, not a preference.
+     *
+     * <p>The ceiling is where the bound stops pruning. A pattern's fixed period cannot exceed the
+     * database size, so once {@code rho * (N_t + h * b) >= N_t} every pattern is retained and further
+     * lookahead buys nothing but heap. Solving for h gives {@code N_t * (1 - rho) / (rho * b)}, which
+     * moves with the data: a feed delivering large batches reaches the vacuous point at a much
+     * smaller h than one trickling. So the admissible range is a property of the feed, not a constant
+     * to be written into a paper, and a caller who asks for more is given the point beyond which the
+     * request stops changing anything.
+     */
+    private int clampH(int h, double meanBatch) {
+        int hi = (int) Math.ceil(data.numSequences * (1.0 - maxRegRatio) / (maxRegRatio * meanBatch));
+        if (hi < 1) hi = 1;
+        return Math.max(1, Math.min(h, hi));
+    }
+
+    /**
+     * Let the feed and the budget correct a lookahead the caller could not have known was wrong.
+     *
+     * <p>The right h depends on how dense the data is and how fast it arrives, neither of which is
+     * knowable in advance, so a supplied value is a starting point rather than a setting. With a
+     * budget in force it is treated as one: pressure walks h down, headroom walks it back up, and
+     * memory — the one hard fact available — decides. Without a budget there is no signal to correct
+     * against and the value stands as given, clamped to the admissible range.
+     *
+     * <p>Movement is one step per batch in either direction. Larger jumps would swing the retention
+     * bound faster than the eviction that has to follow it, and the two would spend the run chasing
+     * each other.
+     */
+    private void adaptLookahead() {
+        if (lookaheadBatches <= 0 || memoryBudgetMB <= 0 || effectiveH == 0) return;
+        Runtime rt = Runtime.getRuntime();
+        double usedMB = (rt.totalMemory() - rt.freeMemory()) / (1024.0 * 1024.0);
+        if (usedMB > memoryBudgetMB) effectiveH = Math.max(1, effectiveH - 1);
+        else if (usedMB < 0.7 * memoryBudgetMB) effectiveH = effectiveH + 1;
+    }
+
+    /** The lookahead actually in force, after clamping to this feed and any budget adaptation. */
+    public int effectiveLookahead() { return effectiveH; }
+
+
+    /**
+     * The bound above which a pattern's fixed period puts it permanently out of reach, or MAX_VALUE
+     * when no such bound can be justified. Whichever of the three sources is in force —
+     * {@code rho * (N_t + h * b)} from the observed feed, a growth factor, or a supplied final size —
+     * this returns the one the mining prune is using, so retention and enumeration cannot disagree.
      */
     private int finalMaxReg() {
         // The SAME bound the seeding prune used, deliberately. Both answer one question -- can this
