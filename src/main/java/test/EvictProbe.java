@@ -43,6 +43,9 @@ public class EvictProbe {
         Set<String> oracle = ExpUtil.oracleCanon(all, delta, rho);
         System.out.println("oracle = " + oracle.size() + " patterns");
 
+        boolean noHint = System.getProperty("nohint") != null;
+        if (noHint) System.out.println("NO HINT: the final size is withheld, as in an open-ended stream");
+
         Map<String, long[]> reference = null;
         for (boolean evict : settings) {
             try {
@@ -52,7 +55,19 @@ public class EvictProbe {
                 double[] phaseMem = new double[3];
                 int[] held = new int[2];
                 PeakMemoryMeter meter = new PeakMemoryMeter();
-                Map<String, long[]> res = ExpUtil.run(m, batches, delta, rho, phase, meter, phaseMem, held);
+                Map<String, long[]> res;
+                if (noHint) {
+                    // Same sequence as ExpUtil.run, minus hintTotalSequences: the miner never learns
+                    // how much data is still to come, which is the open-ended case.
+                    m.initialBuild(batches.get(0), delta, rho);
+                    held[0] = m.trackedCount();
+                    for (int i = 1; i < batches.size(); i++) m.processBatch(batches.get(i));
+                    res = new java.util.HashMap<>(m.getHighUtilityPatterns());
+                    held[1] = m.trackedCount();
+                    m.close();
+                } else {
+                    res = ExpUtil.run(m, batches, delta, rho, phase, meter, phaseMem, held);
+                }
                 double peak = meter.peakMB();
                 meter.close();
                 System.out.printf("  evict=%-5s  HS=%-6d recall=%.4f  peak=%7.1f MB  held(seed/end)=%d/%d"

@@ -293,11 +293,25 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         data.appendBatch(dOld);
         recomputeThresholds(0, 0, dOld.size(), 0);   // first batch: μ = μ_min
         // Seeding-time regularity pruning threshold = ρ·N_final (if total N is known) — cut irregular
-        // branches early without losing patterns regular-at-final-DB. No hint -> use current maxReg
-        // (may prune slightly too aggressively).
-        seedMaxReg = (seedPruneByFinalN && hintedTotalN > data.numSequences)
-                ? (int) (maxRegRatio * hintedTotalN)     // sound (ρ·N_final) — no recall loss
-                : maxReg;                                // default ρ·N_current — strong pruning, approximate (paper)
+        // Seeding-time regularity pruning. Only a bound that holds for EVERY future batch may be used
+        // here, because the fixed period grows while maxReg = ρ·N_t also rises: a pattern irregular now
+        // can be regular later. ρ·N_final is the tightest such bound, so it prunes hardest without
+        // losing a pattern regular at the final database.
+        //
+        // WITHOUT a final size there is no valid ceiling, and the answer is then to prune NOTHING.
+        // Not pruning cannot lose a pattern; it only costs memory. Falling back to ρ·N_current would
+        // prune against a bound that later rises, which is exactly the baseline's defect and the
+        // reason its recall collapses to 0.017 — a correctness loss, not a memory saving. So exactness
+        // never depends on knowing the final size; only the memory does.
+        //
+        // seedPruneByFinalN=false is the S10 ablation, which deliberately reproduces that defect.
+        // The hint is usable as long as it still covers the database. Equality is the single-batch
+        // case, where ρ·N_current already IS ρ·N_final and pruning there is both sound and tightest.
+        seedMaxReg = seedPruneByFinalN
+                ? (hintedTotalN >= data.numSequences
+                        ? (int) (maxRegRatio * hintedTotalN)   // sound and tight
+                        : Integer.MAX_VALUE)                   // sound, no pruning
+                : maxReg;                                      // ρ·N_current — approximate, ablation only
         seedThreshold0 = bufferThreshold;      // θ₀ — the discovery bound is derived from exactly this
         if (seedWithEngine05) seedWithParallelEngine(dOld);
         else staticBuild();
