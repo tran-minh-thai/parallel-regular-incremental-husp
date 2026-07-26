@@ -190,6 +190,32 @@ public final class ExpConfig {
     public static boolean s11Mode1Only = false;
 
     /**
+     * Mine D_new once, as a single batch, with the parallel baseline. This is the cost an application
+     * pays when it needs the result only at the end of the batch sequence, and it is the opponent the
+     * proposal actually faces in that case. Without it the single-mine cost can only be bounded --
+     * from above by the baseline at k=2 and from below by its k=64 total divided by 64 -- and on a
+     * dataset where that interval straddles the proposal's runtime no conclusion follows either way.
+     */
+    public static boolean runS12SingleMine = false;
+
+    /**
+     * Run the three follow-up probes together, in one session, and nothing else: the per-batch-exact
+     * comparison (S11 restricted), the single full re-mine (S12), and the lambda sweep under the
+     * increasing distribution (S9B). They are independent questions but share a machine and a warm-up,
+     * so measuring them in one pass keeps them mutually comparable and off the reported suite.
+     */
+    public static void enableFollowupOnly() {
+        runS1Scalability = runS2Compare = runS4Distribution = false;
+        runS5FineBatch = runS6DeltaSweep = runS7RhoSweep = runS8BatchScaling = false;
+        runS9MuSweep = runS10Exactness = false;
+        runS11BatchCompare = true;
+        runS11Mode1 = true;
+        s11Mode1Only = true;
+        runS12SingleMine = true;
+        runS9BMuSweepDistB = true;
+    }
+
+    /**
      * Run ONLY the per-batch-exact comparison: P-RIncHUSP-P against ParRemine at each batch count.
      * Both are measured in the same session so the comparison does not cross runs. Everything else is
      * switched off, so this fills the gap left by the reported suite without repeating it.

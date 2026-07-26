@@ -102,6 +102,8 @@ public class ExperimentOfficial {
         if (flags.contains("--s9b")) ExpConfig.enableS9BOnly();
         // --m1: run only the per-batch-exact comparison (P-RIncHUSP-P against ParRemine).
         if (flags.contains("--m1")) ExpConfig.enableM1Only();
+        // --followup: run all three follow-up probes in one session (M1 + single re-mine + S9B).
+        if (flags.contains("--followup")) ExpConfig.enableFollowupOnly();
 
         // --only=TAG1,TAG2 restricts the suite to the named datasets, each keeping its own settings.
         // Useful after changing one dataset's threshold: re-run that dataset alone, then merge the
@@ -258,6 +260,18 @@ public class ExperimentOfficial {
                             () -> ExpConfig.newRemine(), 1, bK, minUtilRatio, maxRegRatio, oracle);
                 }
             }
+        }
+
+        // ---------- S12: one full re-mine of D_new ----------
+        // The whole database arrives as a single batch, so initialBuild mines it once and no
+        // incremental step runs. This is what an application pays when it needs the answer only at
+        // the end of the sequence, and it is therefore the baseline the proposal must beat in that
+        // case -- as opposed to the per-batch re-mining that S8 and S11 measure.
+        if (ExpConfig.runS12SingleMine && !s1Only && ExpConfig.s6Datasets.contains(tag)) {
+            System.out.println("-- S12 single full re-mine of D_new (best T=" + cores + ") --");
+            List<List<List<int[]>>> b1 = ExpUtil.split(all, new double[]{1.0});
+            benchmark("S12-singlemine", "k=1", "ParRemine", "rdlb",
+                    () -> ExpConfig.newParRemine(cores), cores, b1, minUtilRatio, maxRegRatio, oracle);
         }
 
         // ---------- S4: Robustness across 4 distributions ----------
