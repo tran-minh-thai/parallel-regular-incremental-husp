@@ -52,16 +52,28 @@ public final class ExpUtil {
      *  [1]=cumulative incremental (processBatch) ms — the per-phase cost decomposition (C11). */
     public static Map<String, long[]> run(IncrementalHUSPMiner m, List<List<List<int[]>>> b,
                                           double minUtilRatio, double maxRegRatio, long[] phaseOut) {
+        return run(m, b, minUtilRatio, maxRegRatio, phaseOut, null, null);
+    }
+
+    /** As {@link #run}, but also marks {@code meter} at each phase boundary and fills {@code memOut}
+     *  with [0]=peak during seeding, [1]=peak during the incremental phase, [2]=peak during the
+     *  query-time discovery. Pass nulls to skip; the meter's whole-run peak is unaffected either way. */
+    public static Map<String, long[]> run(IncrementalHUSPMiner m, List<List<List<int[]>>> b,
+                                          double minUtilRatio, double maxRegRatio, long[] phaseOut,
+                                          PeakMemoryMeter meter, double[] memOut) {
         try {
             int totalN = 0; for (List<List<int[]>> batch : b) totalN += batch.size();
             m.hintTotalSequences(totalN);              // ρ·N_final for sound regularity pruning at seeding time
             long t0 = System.currentTimeMillis();
             m.initialBuild(b.get(0), minUtilRatio, maxRegRatio);
             long buildMs = System.currentTimeMillis() - t0;
+            if (meter != null && memOut != null && memOut.length >= 1) memOut[0] = meter.markPhaseMB();
             long incrMs = 0;
             for (int i = 1; i < b.size(); i++) incrMs += m.processBatch(b.get(i));  // processBatch returns its ms
+            if (meter != null && memOut != null && memOut.length >= 2) memOut[1] = meter.markPhaseMB();
             // getHighUtilityPatterns triggers the query-time discovery, so read discoveryMs() AFTER it
             Map<String, long[]> res = new java.util.HashMap<>(m.getHighUtilityPatterns());
+            if (meter != null && memOut != null && memOut.length >= 3) memOut[2] = meter.markPhaseMB();
             if (phaseOut != null && phaseOut.length >= 2) { phaseOut[0] = buildMs; phaseOut[1] = incrMs; }
             if (phaseOut != null && phaseOut.length >= 3) phaseOut[2] = m.discoveryMs();
             return res;  // copied BEFORE close() (which frees shared resources/pool)

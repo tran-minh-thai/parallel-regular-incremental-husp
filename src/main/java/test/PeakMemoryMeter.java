@@ -21,15 +21,18 @@ final class PeakMemoryMeter implements AutoCloseable {
 
     private final Thread sampler;
     private volatile boolean running = true;
-    private volatile long peakBytes;
+    private volatile long peakBytes;         // whole run; never reset, so the total column is unaffected
+    private volatile long windowPeakBytes;   // since the last phase mark
 
     PeakMemoryMeter() {
         Runtime rt = Runtime.getRuntime();
         peakBytes = rt.totalMemory() - rt.freeMemory();   // count what is already resident at the start
+        windowPeakBytes = peakBytes;
         sampler = new Thread(() -> {
             while (running) {
                 long cur = rt.totalMemory() - rt.freeMemory();
                 if (cur > peakBytes) peakBytes = cur;
+                if (cur > windowPeakBytes) windowPeakBytes = cur;
                 try { Thread.sleep(INTERVAL_MS); } catch (InterruptedException e) { return; }
             }
         }, "peak-memory-meter");
@@ -41,6 +44,31 @@ final class PeakMemoryMeter implements AutoCloseable {
         long cur = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         if (cur > peakBytes) peakBytes = cur;             // one final reading in case the peak is now
         return peakBytes / (1024.0 * 1024.0);
+    }
+
+    /**
+     * Peak since the previous mark (or since construction), after which the window restarts from the
+     * heap's current level. Called at each phase boundary, this splits one run's peak into per-phase
+     * peaks and answers which phase actually needs the heap — the single whole-run figure cannot,
+     * and a cell that dies of exhaustion leaves no breakdown at all.
+     *
+     * <p>The value is the highest level reached DURING the window, not the phase's own contribution:
+     * memory still held from an earlier phase counts toward it. That is the intended reading, since
+     * what has to fit is the level, not the increment. It follows that the phase figures do not sum
+     * to the total; each is bounded by it, and the largest of them approaches it.
+     *
+     * <p>{@link #peakMB()} is unaffected — the whole-run accumulator is never reset — so the existing
+     * peak column keeps its meaning across this change.
+     */
+    double markPhaseMB() {
+        long cur = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+        // The reading here is fresh, so it can exceed anything the sampler has recorded in the up-to
+        // INTERVAL_MS since its last pass. Feed it to the whole-run accumulator as well, or a phase
+        // figure can come out ABOVE the total it is part of.
+        if (cur > peakBytes) peakBytes = cur;
+        long p = Math.max(windowPeakBytes, cur);
+        windowPeakBytes = cur;              // restart the window from what is resident now
+        return p / (1024.0 * 1024.0);
     }
 
     /** Stops the sampler; call {@link #peakMB()} first if the value is still needed. */

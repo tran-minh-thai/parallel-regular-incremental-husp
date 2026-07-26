@@ -75,7 +75,7 @@ public class ExperimentOfficial {
     static BufferedWriter csv;
 
     static final String HEADER =
-        "dataset,scenario,distribution,algorithm,mu,minUtilRatio,maxRegRatio,threads,n_batches,iteration,runtime_ms,build_ms,incr_ms,disc_ms,peak_mb,hs_count,shs_count,recall,status\n";
+        "dataset,scenario,distribution,algorithm,mu,minUtilRatio,maxRegRatio,threads,n_batches,iteration,runtime_ms,build_ms,incr_ms,disc_ms,peak_mb,hs_count,shs_count,recall,status,seed_mb,incr_mb,disc_mb\n";
 
     /** Provenance + crash-resume state for the suite run (null in single-dataset mode). */
     static RunContext ctx;
@@ -498,14 +498,16 @@ public class ExperimentOfficial {
         IncrementalHUSPMiner m = factory.get();
         Callable<Run> task = () -> {
             long[] phase = new long[3];
+            double[] phaseMem = new double[3];
             // One meter for every miner (see PeakMemoryMeter). Read the peak from it, not from the
             // miner, so the peak-memory column compares like with like.
             PeakMemoryMeter meter = new PeakMemoryMeter();
             long t0 = System.currentTimeMillis();
-            Map<String, long[]> res = ExpUtil.run(m, b, d, r, phase);
+            Map<String, long[]> res = ExpUtil.run(m, b, d, r, phase, meter, phaseMem);
             Run rr = new Run();
             rr.runtimeMs = System.currentTimeMillis() - t0;
             rr.buildMs = phase[0]; rr.incrMs = phase[1]; rr.discMs = phase[2];
+            rr.seedMb = phaseMem[0]; rr.incrMb = phaseMem[1]; rr.discMb = phaseMem[2];
             rr.peakMb = meter.peakMB();
             meter.close();
             rr.count = res.size();
@@ -527,7 +529,7 @@ public class ExperimentOfficial {
     static void writeRow(String scenario, String dist, String algo, String mu, double d, double r,
                          int threads, int nb, int iter, Run run, String recall) throws IOException {
         String status = run.timedOut ? "TIMEOUT" : (run.error != null ? "ERROR" : "OK");
-        csv.write(String.format("%s,%s,%s,%s,%s,%s,%s,%d,%d,%d,%d,%d,%d,%d,%.2f,%d,%d,%s,%s%n",
+        csv.write(String.format("%s,%s,%s,%s,%s,%s,%s,%d,%d,%d,%d,%d,%d,%d,%.2f,%d,%d,%s,%s,%.2f,%.2f,%.2f%n",
                 tag, scenario, dist, algo, mu, d, r, threads, nb, iter,
                 run.timedOut ? -1 : run.runtimeMs,
                 run.timedOut ? -1 : run.buildMs,
@@ -536,7 +538,10 @@ public class ExperimentOfficial {
                 run.timedOut ? 0.0 : run.peakMb,
                 run.timedOut ? -1 : run.count,
                 run.timedOut ? -1 : run.shs,
-                recall, status));
+                recall, status,
+                run.timedOut ? 0.0 : run.seedMb,
+                run.timedOut ? 0.0 : run.incrMb,
+                run.timedOut ? 0.0 : run.discMb));
         csv.flush();
     }
 
@@ -567,6 +572,7 @@ public class ExperimentOfficial {
 
     static final class Run {
         long runtimeMs; long buildMs; long incrMs; long discMs; double peakMb; int count; int shs;
+        double seedMb; double incrMb; double discMb;   // peak reached DURING each phase; see PeakMemoryMeter
         Map<String, long[]> patterns;
         boolean timedOut = false; String error = null;
     }
