@@ -170,6 +170,40 @@ public final class ExpConfig {
     public static boolean runS9BMuSweepDistB = false;
 
     /**
+     * Include P-RIncHUSP-P in the S11 comparison. The two variants answer different questions and
+     * cannot be read off one another:
+     * <ul>
+     *   <li>P-RIncHUSP (coarse, two-part split) is exact when the result is QUERIED. Between queries
+     *       it answers from the maintained set alone, at recall 0.93-0.97. Its discovery phase runs
+     *       once per query over the whole accumulated increment.</li>
+     *   <li>P-RIncHUSP-P (fine, k-part split) is exact after EVERY batch, because each batch is mined
+     *       once at its own natural threshold. Total mining work is one pass over the data no matter
+     *       how many batches; the price is candidates, since a small part has a small absolute
+     *       threshold and admits patterns that are locally strong but globally negligible.</li>
+     * </ul>
+     * The reported comparison against a baseline that re-mines per batch only holds at equal
+     * correctness if the per-batch-exact variant is the one measured, so S11 carries both.
+     */
+    public static boolean runS11Mode1 = true;
+
+    /** S11 runs only the two algorithms the per-batch-exact comparison needs. Set by {@link #enableM1Only()}. */
+    public static boolean s11Mode1Only = false;
+
+    /**
+     * Run ONLY the per-batch-exact comparison: P-RIncHUSP-P against ParRemine at each batch count.
+     * Both are measured in the same session so the comparison does not cross runs. Everything else is
+     * switched off, so this fills the gap left by the reported suite without repeating it.
+     */
+    public static void enableM1Only() {
+        runS1Scalability = runS2Compare = runS4Distribution = false;
+        runS5FineBatch = runS6DeltaSweep = runS7RhoSweep = runS8BatchScaling = false;
+        runS9MuSweep = runS10Exactness = runS9BMuSweepDistB = false;
+        runS11BatchCompare = true;
+        runS11Mode1 = true;
+        s11Mode1Only = true;
+    }
+
+    /**
      * Run ONLY the S9B probe: the lambda sweep under the increasing batch distribution. Everything
      * else is switched off so the run finishes in minutes and writes one scenario into results.csv,
      * which keeps it out of the way of the suite the paper reports.

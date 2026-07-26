@@ -62,6 +62,7 @@ import java.util.function.Supplier;
  *   java -cp out test.ExperimentOfficial --only=SIGN,BIBLE   # a subset of the suite
  *   java -cp out test.ExperimentOfficial --resume            # continue the newest unfinished run
  *   java -cp out test.ExperimentOfficial --s9b               # only the lambda sweep on distribution B
+ *   java -cp out test.ExperimentOfficial --m1                # only the per-batch-exact comparison
  *   java -cp out test.ExperimentOfficial seq.txt eutil.txt [delta] [rho] [out.csv]   # one dataset
  * </pre>
  * Suite runs create {@code results/run_<timestamp>_<id>/} holding the CSV, the dataset statistics
@@ -99,6 +100,8 @@ public class ExperimentOfficial {
         if (testMode) ExpConfig.enableSweepsForTestSuite();   // exercise S6-S10 too, in seconds
         // --s9b: run only the follow-up lambda sweep under the increasing distribution.
         if (flags.contains("--s9b")) ExpConfig.enableS9BOnly();
+        // --m1: run only the per-batch-exact comparison (P-RIncHUSP-P against ParRemine).
+        if (flags.contains("--m1")) ExpConfig.enableM1Only();
 
         // --only=TAG1,TAG2 restricts the suite to the named datasets, each keeping its own settings.
         // Useful after changing one dataset's threshold: re-run that dataset alone, then merge the
@@ -232,17 +235,25 @@ public class ExperimentOfficial {
             for (int nb : ExpConfig.S11_BATCH_COUNTS) {
                 List<List<List<int[]>>> bK = ExpUtil.split(all, ExpConfig.fineRatios(nb, 0.25));
                 String lab = "B=" + nb;
-                benchmark("S11-batchcompare", lab, "P-RIncHUSP", "trie",
-                        () -> ExpConfig.newProposed(cores), cores, bK, minUtilRatio, maxRegRatio, oracle);
-                benchmark("S11-batchcompare", lab, "P-RIncHUSP-seq", "trie",
-                        () -> ExpConfig.newProposed(1), 1, bK, minUtilRatio, maxRegRatio, oracle);
-                benchmark("S11-batchcompare", lab, "RIncHusp-Fix0.4", "0.40",
-                        () -> ExpConfig.newRIncHusp(ExpConfig.muMin), 1, bK, minUtilRatio, maxRegRatio, oracle);
-                benchmark("S11-batchcompare", lab, "RIncHusp-Fix0.9", "0.90",
-                        () -> ExpConfig.newRIncHusp(ExpConfig.muFixHigh), 1, bK, minUtilRatio, maxRegRatio, oracle);
+                if (!ExpConfig.s11Mode1Only) {
+                    benchmark("S11-batchcompare", lab, "P-RIncHUSP", "trie",
+                            () -> ExpConfig.newProposed(cores), cores, bK, minUtilRatio, maxRegRatio, oracle);
+                    benchmark("S11-batchcompare", lab, "P-RIncHUSP-seq", "trie",
+                            () -> ExpConfig.newProposed(1), 1, bK, minUtilRatio, maxRegRatio, oracle);
+                    benchmark("S11-batchcompare", lab, "RIncHusp-Fix0.4", "0.40",
+                            () -> ExpConfig.newRIncHusp(ExpConfig.muMin), 1, bK, minUtilRatio, maxRegRatio, oracle);
+                    benchmark("S11-batchcompare", lab, "RIncHusp-Fix0.9", "0.90",
+                            () -> ExpConfig.newRIncHusp(ExpConfig.muFixHigh), 1, bK, minUtilRatio, maxRegRatio, oracle);
+                }
+                // Exact after every batch, so this is the variant that answers at the same correctness
+                // as a baseline re-mining per batch. Measured alongside ParRemine in the same session.
+                if (ExpConfig.runS11Mode1) {
+                    benchmark("S11-batchcompare", lab, "P-RIncHUSP-P", "partition",
+                            () -> ExpConfig.newProposedPartition(cores), cores, bK, minUtilRatio, maxRegRatio, oracle);
+                }
                 benchmark("S11-batchcompare", lab, "ParRemine", "rdlb",
                         () -> ExpConfig.newParRemine(cores), cores, bK, minUtilRatio, maxRegRatio, oracle);
-                if (nb == 4) {
+                if (nb == 4 && !ExpConfig.s11Mode1Only) {
                     benchmark("S11-batchcompare", lab, "Remine-static", "static",
                             () -> ExpConfig.newRemine(), 1, bK, minUtilRatio, maxRegRatio, oracle);
                 }
