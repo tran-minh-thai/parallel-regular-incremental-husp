@@ -140,8 +140,12 @@ public class AlgoRHUSPMinerParallel {
      * TRAILING-gap test ({@code numSeq - lastSeqId <= maxRegularity}) must NOT be applied: a pattern
      * whose last occurrence sits far from the end of {@code D_old} may still become regular once later
      * batches arrive (a new occurrence shrinks that gap). Applying it here would silently drop such
-     * seeds and cost recall. The INNER-gap prune stays active — it is anti-monotone in both settings
-     * (extensions occur in a subset of sequences, so inner gaps only grow).
+     * seeds and cost recall. The INNER-gap prune stays active, but not because inner gaps are
+     * monotone under extension — they are not: a pattern at SIDs {1,10} with N=20 has an inner gap
+     * of 9, while an extension surviving only at {1} has an inner gap of 1, because dropping the
+     * last occurrence turns an inner gap into a trailing one. The prune is safe for a different
+     * reason: maxPer (trailing gap included) IS anti-monotone, and inner gap ≤ maxPer, so an inner
+     * gap already past the bound puts maxPer past it too, for the pattern and for every extension.
      */
     public boolean seedMode = false;
 

@@ -980,7 +980,14 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
      * the one that crosses it three batches later. Dropping it would re-open the ceiling.
      */
     private void discoverFrom(List<List<int[]>> part, double threshold) {
-        if (part.isEmpty() || threshold <= 0) return;          // θ ≥ minUtil ⟹ nothing can be missed
+        // threshold = minUtil - θ₀. When it drops to zero or below, θ₀ has caught up with minUtil and
+        // the partition lemma stops saying anything: its second branch, u(α,ΔD) ≥ minUtil - θ₀, becomes
+        // true for every pattern, so completeness would require enumerating all of ΔD rather than
+        // skipping it. Returning here is therefore a cost guard, NOT a soundness argument — a pattern
+        // absent from D_old and high-utility only in ΔD would be missed. Unreachable in the reported
+        // runs (D_old is a quarter of the data and λ ≤ 3, so the threshold stays positive), but a
+        // λ large enough to invert it must either widen the seed or mine ΔD unpruned.
+        if (part.isEmpty() || threshold <= 0) return;
 
         AlgoRHUSPMinerParallel eng = new AlgoRHUSPMinerParallel();
         eng.numThreads = numThreads;

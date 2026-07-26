@@ -13,8 +13,12 @@ abstract: >
   phase) whose buffer factor is fixed by a partition lemma rather than tuned.
 authors:
   - family-names: "Tran"
-    given-names: "Minh Thai"
-    email: "minhthai.tran@icloud.com"
+    given-names: "Thai"
+    email: "thaitm@huflit.edu.vn"
+    orcid: "https://orcid.org/0000-0002-7671-4785"
+    affiliation: "Faculty of Information Technology, Ho Chi Minh City University of Foreign Languages - Information Technology"
+    city: "Ho Chi Minh City"
+    country: "VN"
 keywords:
   - high-utility sequential pattern mining
   - regularity constraint
