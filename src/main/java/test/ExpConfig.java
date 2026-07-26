@@ -159,6 +159,27 @@ public final class ExpConfig {
     public static boolean runS7RhoSweep    = true;   // ρ-sensitivity sweep (light datasets only)
     public static boolean runS8BatchScaling = true;  // batch-count scaling against re-mining
     public static boolean runS9MuSweep     = true;   // buffer factor sweep
+    /**
+     * S9B repeats the λ sweep under the INCREASING batch distribution instead of the uniform one.
+     * It exists to answer a specific question: raising λ lifts θ₀ and lowers the discovery threshold
+     * by the same amount, so it shifts memory from seeding into discovery. Under the uniform split
+     * seeding dominates and raising λ helps; under the increasing split D_old is smallest and the
+     * increment carries almost everything, so discovery dominates and the useful direction should
+     * reverse. Off by default: it is a follow-up probe, not part of the reported suite.
+     */
+    public static boolean runS9BMuSweepDistB = false;
+
+    /**
+     * Run ONLY the S9B probe: the lambda sweep under the increasing batch distribution. Everything
+     * else is switched off so the run finishes in minutes and writes one scenario into results.csv,
+     * which keeps it out of the way of the suite the paper reports.
+     */
+    public static void enableS9BOnly() {
+        runS1Scalability = runS2Compare = runS4Distribution = runS11BatchCompare = false;
+        runS5FineBatch = runS6DeltaSweep = runS7RhoSweep = runS8BatchScaling = false;
+        runS9MuSweep = runS10Exactness = false;
+        runS9BMuSweepDistB = true;
+    }
     public static boolean runS10Exactness  = true;   // 2x2 ablation of the two seed bounds
 
     /**

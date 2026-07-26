@@ -61,6 +61,7 @@ import java.util.function.Supplier;
  *   java -cp out test.ExperimentOfficial --test              # small datasets; finishes in seconds
  *   java -cp out test.ExperimentOfficial --only=SIGN,BIBLE   # a subset of the suite
  *   java -cp out test.ExperimentOfficial --resume            # continue the newest unfinished run
+ *   java -cp out test.ExperimentOfficial --s9b               # only the lambda sweep on distribution B
  *   java -cp out test.ExperimentOfficial seq.txt eutil.txt [delta] [rho] [out.csv]   # one dataset
  * </pre>
  * Suite runs create {@code results/run_<timestamp>_<id>/} holding the CSV, the dataset statistics
@@ -96,6 +97,8 @@ public class ExperimentOfficial {
         boolean testMode = flags.contains("--test");
         List<DatasetSpec> suite = testMode ? DatasetCatalog.testSuite() : DatasetCatalog.officialSuite();
         if (testMode) ExpConfig.enableSweepsForTestSuite();   // exercise S6-S10 too, in seconds
+        // --s9b: run only the follow-up lambda sweep under the increasing distribution.
+        if (flags.contains("--s9b")) ExpConfig.enableS9BOnly();
 
         // --only=TAG1,TAG2 restricts the suite to the named datasets, each keeping its own settings.
         // Useful after changing one dataset's threshold: re-run that dataset alone, then merge the
@@ -322,15 +325,34 @@ public class ExperimentOfficial {
 
         // ---------- S9: θ₀ sweep — why μ=1 is not a tuned constant ----------
         // Two claims, one table. (a) recall is 1.0000 at EVERY μ: exactness does not depend on θ₀, exactly
-        // as the partition lemma says. (b) cost is U-shaped — the seed gets cheaper as θ₀ rises, discovery
-        // gets more expensive — and the minimum sits at μ=1, where each part is mined at its own natural
-        // threshold (θ₀=δ·U(D_old), θ_disc=δ·U(ΔD)). μ=0.4 is the inherited RIncHusp buffer value.
+        // as the partition lemma says. (b) cost moves with μ — the seed gets cheaper as θ₀ rises while
+        // discovery gets more expensive — but the SHAPE is dataset-dependent, not a U with its floor at
+        // μ=1: the measured minima sit at μ=3 (SIGN), μ=0.4 (LEVIATHAN), μ=1.5 (C8T1) and μ=1 (BIBLE
+        // alone). μ=1 is the value the partition lemma makes canonical, each part mined at its own
+        // natural threshold (θ₀=δ·U(D_old), θ_disc=δ·U(ΔD)) — not the cheapest one.
+        // μ=0.4 is the inherited RIncHusp buffer value.
         if (ExpConfig.runS9MuSweep && ExpConfig.s6Datasets.contains(tag)) {
             System.out.println("-- S9 θ₀ sweep (distribution A, best T=" + cores + ") --");
             for (double mu : ExpConfig.S9_MUS) {
                 final double m = mu;
                 benchmark("S9-musweep", String.format("mu=%.1f", m), "P-RIncHUSP", String.format("%.2f", m),
                         () -> ExpConfig.newProposedMu(cores, m), cores, bA, minUtilRatio, maxRegRatio, oracle);
+            }
+        }
+
+        // ---------- S9B: the same λ sweep under the INCREASING distribution ----------
+        // Raising μ lifts θ₀ and lowers minUtil−θ₀ by the same amount, so it moves work from seeding
+        // into discovery. Under SCEN_A the two phases are comparable; under SCEN_B, D_old is 10% of the
+        // data and the increment carries the rest, so discovery dominates and the helpful direction
+        // should invert. Opt-in: this is a follow-up probe, not part of the reported suite.
+        if (ExpConfig.runS9BMuSweepDistB && ExpConfig.s6Datasets.contains(tag)) {
+            List<List<List<int[]>>> bB = ExpUtil.split(all, ExpConfig.SCEN_B);
+            System.out.println("-- S9B θ₀ sweep (distribution B-Increasing, best T=" + cores + ") --");
+            for (double mu : ExpConfig.S9_MUS) {
+                final double m = mu;
+                benchmark("S9B-musweep-distB", String.format("mu=%.1f", m), "P-RIncHUSP",
+                        String.format("%.2f", m), () -> ExpConfig.newProposedMu(cores, m),
+                        cores, bB, minUtilRatio, maxRegRatio, oracle);
             }
         }
 
