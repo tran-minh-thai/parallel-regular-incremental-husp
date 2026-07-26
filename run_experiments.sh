@@ -168,6 +168,26 @@ section "P-RIncHUSP experiment runner"
 echo "Project root  : $PROJ_ROOT"
 echo "Experiment    : $EXPERIMENT  ->  $MAIN_CLASS"
 echo "Heap / Stack  : -Xmx${HEAP}  /  -Xss${STACK}"
+
+# Refuse to start a measurement the machine cannot carry. The project is shared between two Macs
+# through the same synced folder, so the checkout looks identical on both and only the hardware
+# tells them apart. Asking for more heap than the box physically has means either the wrong machine
+# or the wrong flag, and either way the numbers would not be comparable with the reported run.
+# --dry-run and --test are exempt: both exist to exercise the pipeline anywhere.
+if (( DRY_RUN == 0 && TEST_SUITE == 0 )) && [[ "$(uname -s)" == "Darwin" ]]; then
+    heap_gb="${HEAP%[gG]}"
+    if [[ "$heap_gb" =~ ^[0-9]+$ ]]; then
+        ram_gb=$(( $(sysctl -n hw.memsize) / 1073741824 ))
+        if (( heap_gb > ram_gb )); then
+            echo
+            echo "STOP: -Xmx${HEAP} exceeds this machine's ${ram_gb} GB of RAM."
+            echo "      Host $(hostname -s), $(sysctl -n hw.ncpu) cores. The benchmark machine has 10 cores"
+            echo "      and 32 GB; results from anywhere else do not compare with the reported run."
+            echo "      Use --test to exercise the pipeline here, or run this on the benchmark machine."
+            exit 3
+        fi
+    fi
+fi
 if (( NO_MAVEN == 1 )); then
     echo "Build / Run   : javac + java  (no Maven, no network needed)"
     echo "javac / java  : $(command -v javac)  /  $(command -v java)"
