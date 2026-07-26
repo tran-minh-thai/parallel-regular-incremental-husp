@@ -161,6 +161,34 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
      */
     public boolean evictPermanentlyIrregular = false;
 
+    /**
+     * Growth factor nu: the regularity bound becomes {@code nu * rho * N_current} instead of
+     * {@code rho * N_final}, so nothing about the future has to be known — only how far the database
+     * may still grow.
+     *
+     * <p>The seeding bound must hold for every future batch, because maxReg = rho*N_t rises while a
+     * pattern's fixed period also rises. rho*N_final is the tightest such bound, but it asks the
+     * caller for the eventual size, which an open-ended feed cannot supply. Requiring instead that
+     * {@code N_final <= nu * N_t} gives {@code nu * rho * N_t >= rho * N_final}, so the bound is
+     * sound under a claim about the GROWTH RATE rather than the final size. That claim is weaker,
+     * and it is self-correcting: N_t rises with every batch, so a fixed nu covers more absolute
+     * growth as the run proceeds.
+     *
+     * <p>The two ends of the range are the two existing algorithms. At nu = 1 the bound is
+     * rho*N_current, which prunes against a threshold that later rises — the baseline's rule, and
+     * its recall. As nu rises the bound loosens toward retaining everything, which is exact and
+     * unbounded in memory. Between them nu trades recall for memory ON THE AXIS WHERE THE LOSS
+     * ACTUALLY IS: measured here, closing the regularity ceiling is worth about 0.95 of recall while
+     * closing the utility ceiling is worth about 0.02, and the buffer factor the baselines tune sits
+     * on the second one.
+     *
+     * <p>It also subsumes the reported configuration rather than replacing it: seeding on a quarter
+     * of the data makes nu = 4 exactly rho*N_final, so those runs are the nu = 4 case.
+     *
+     * <p>Zero (default) keeps the hinted-final-size path.
+     */
+    public double growthFactor = 0.0;
+
     // ----- State persistent across batches -----
     private final QSeqDatabase data = new QSeqDatabase();
     private final DEUCS deucs = new DEUCS();
@@ -307,11 +335,13 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         // seedPruneByFinalN=false is the S10 ablation, which deliberately reproduces that defect.
         // The hint is usable as long as it still covers the database. Equality is the single-batch
         // case, where ρ·N_current already IS ρ·N_final and pruning there is both sound and tightest.
-        seedMaxReg = seedPruneByFinalN
-                ? (hintedTotalN >= data.numSequences
-                        ? (int) (maxRegRatio * hintedTotalN)   // sound and tight
-                        : Integer.MAX_VALUE)                   // sound, no pruning
-                : maxReg;                                      // ρ·N_current — approximate, ablation only
+        seedMaxReg = growthFactor > 0
+                ? (int) Math.min(Integer.MAX_VALUE, growthFactor * maxRegRatio * data.numSequences)
+                : seedPruneByFinalN
+                    ? (hintedTotalN >= data.numSequences
+                            ? (int) (maxRegRatio * hintedTotalN)   // sound and tight
+                            : Integer.MAX_VALUE)                   // sound, no pruning
+                    : maxReg;                                      // ρ·N_current — approximate, ablation only
         seedThreshold0 = bufferThreshold;      // θ₀ — the discovery bound is derived from exactly this
         if (seedWithEngine05) seedWithParallelEngine(dOld);
         else staticBuild();
@@ -1119,6 +1149,11 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
      * Against ρ·N_current the same test would discard patterns that a longer database makes regular.
      */
     private int finalMaxReg() {
+        // Under a growth claim the ceiling travels with the database: nu*rho*N_t is at or above
+        // rho*N_final for as long as the claim holds, so it licenses the same permanent eviction
+        // without anyone naming the final size.
+        if (growthFactor > 0)
+            return (int) Math.min(Integer.MAX_VALUE, growthFactor * maxRegRatio * data.numSequences);
         // The hint must still be AHEAD of the database. Once N_t has caught up with it the hint was
         // wrong -- an unannounced batch, or a caller that never supplied one -- and ρ·hintedTotalN is
         // no longer a ceiling on the future ρ·N_t. Evicting against a bound that later rises would
