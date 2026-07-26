@@ -30,6 +30,7 @@ SKIP_BUILD=0
 DRY_RUN=0
 RESUME=0          # --resume: continue the newest unfinished run (skip cells already done)
 TEST_SUITE=0      # --test:   run the tiny testSuite (example datasets) — seconds, for a smoke check
+MODE1_ONLY=0      # --m1:     run only the per-batch-exact comparison (P-RIncHUSP-P vs ParRemine)
 NO_MAVEN=0        # --no-maven: build with javac + run with java (no Maven, no network)
 NO_CAFFEINATE=0   # macOS only: prevent idle sleep during the run (auto-detected)
 
@@ -72,6 +73,11 @@ Options:
       --resume              (full suite) Continue the newest UNFINISHED run: skip datasets/cells
                             already completed, redo only what is missing. Safe to re-invoke after a
                             crash/OOM/kill. A run is finished when its results/run_*/ has a DONE file.
+      --m1                  (full suite) Run ONLY the per-batch-exact comparison: P-RIncHUSP-P
+                            against ParRemine at each batch count. Both answer completely as each
+                            batch lands, so this is the pair to compare when the application needs a
+                            full result set after every batch rather than at query time. Writes one
+                            scenario and leaves the reported suite untouched.
       --no-caffeinate       (macOS) do NOT wrap mvn with `caffeinate -i`.
                             By default, on macOS the run is wrapped in
                             `caffeinate -i` so the Mac stays awake until
@@ -91,6 +97,7 @@ while [[ $# -gt 0 ]]; do
         --no-caffeinate) NO_CAFFEINATE=1; shift ;;
         --resume)        RESUME=1; shift ;;
         --test)          TEST_SUITE=1; shift ;;
+        --m1)            MODE1_ONLY=1; shift ;;
         --no-maven)      NO_MAVEN=1; shift ;;
         --dry-run)       DRY_RUN=1; shift ;;
         -h|--help)       print_help; exit 0 ;;
@@ -232,6 +239,10 @@ fi
 if (( RESUME == 1 )); then
     if (( SUITE_MODE == 1 )); then PROG_ARGS+=(--resume); HAVE_ARGS=1
     else echo "Note: --resume only applies to the full suite; ignored for '$EXP_KEY'." >&2; fi
+fi
+if (( MODE1_ONLY == 1 )); then
+    if (( SUITE_MODE == 1 )); then PROG_ARGS+=(--m1); HAVE_ARGS=1
+    else echo "Note: --m1 only applies to the full suite; ignored for '$EXP_KEY'." >&2; fi
 fi
 
 if (( NO_MAVEN == 1 )); then
