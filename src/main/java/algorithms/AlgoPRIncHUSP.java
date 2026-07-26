@@ -984,9 +984,17 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         // the partition lemma stops saying anything: its second branch, u(α,ΔD) ≥ minUtil - θ₀, becomes
         // true for every pattern, so completeness would require enumerating all of ΔD rather than
         // skipping it. Returning here is therefore a cost guard, NOT a soundness argument — a pattern
-        // absent from D_old and high-utility only in ΔD would be missed. Unreachable in the reported
-        // runs (D_old is a quarter of the data and λ ≤ 3, so the threshold stays positive), but a
-        // λ large enough to invert it must either widen the seed or mine ΔD unpruned.
+        // absent from D_old and high-utility only in ΔD would be missed.
+        //
+        // WHEN IT FIRES DEPENDS ON THE CALLER'S QUERY POINT, not on λ alone. θ₀ is frozen at seeding
+        // while minUtil grows with the data, so the threshold is SMALLEST at the FIRST query and only
+        // widens after. The condition is λ < U(D at the query)/U(D_old): with the uniform split
+        // (D_old = 25%) that ceiling is 2 after the first batch, 3 after the second and 4 after the
+        // third. The reported runs query once, at the end, so the ceiling is 4 and λ ≤ 3 never trips
+        // it. A caller who queries after EVERY batch faces the ceiling of 2, where λ = 3 trips it and
+        // this method returns having mined nothing — silently, since a cost guard cannot report a
+        // correctness loss. Query per batch with λ > 1 and the answer is no longer exact; use
+        // partitionMine for that access pattern, or keep λ below the first query's ceiling.
         if (part.isEmpty() || threshold <= 0) return;
 
         AlgoRHUSPMinerParallel eng = new AlgoRHUSPMinerParallel();

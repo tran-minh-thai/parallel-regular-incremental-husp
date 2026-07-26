@@ -243,10 +243,13 @@ public final class ExpConfig {
     public static boolean runS10Exactness  = true;   // 2x2 ablation of the two seed bounds
 
     /**
-     * Buffer factors swept by S9, where θ₀ = μ·δ·U(D_old). The sweep is what shows μ = 1 to be the
-     * cost minimum rather than a tuned constant: recall holds at 1.0 throughout, since exactness does
-     * not depend on θ₀, while cost traces a U — the seed shrinks as μ rises and discovery grows to
-     * match. 0.4 is the value the sequential baselines use and is included for that comparison.
+     * Buffer factors swept by S9, where θ₀ = μ·δ·U(D_old). Recall holds at 1.0 at every μ, since
+     * exactness does not depend on θ₀. Cost does move with μ — the seed shrinks as θ₀ rises while
+     * discovery has to mine ΔD at a lower threshold — but the shape is dataset-dependent, NOT a U
+     * with its floor at μ=1: the measured time minima sit at μ=3 (SIGN), μ=0.4 (LEVIATHAN), μ=1.5
+     * (C8T1S5I8N5K) and μ=1 (BIBLE alone), and for peak memory μ=2 is at or below μ=1 on all four.
+     * μ=1 is canonical because the partition lemma makes it so — each part mined at its own natural
+     * threshold — not because it is cheapest. 0.4 is the value the sequential baselines use.
      */
     public static final double[] S9_MUS = {0.4, 0.7, 1.0, 1.5, 2.0, 3.0};
 
@@ -276,6 +279,12 @@ public final class ExpConfig {
      * small enough for re-mining to still be cheap through counts where it clearly is not, so the two
      * cost curves cross inside the plot: re-mining is linear in the number of updates, incremental
      * maintenance is close to flat.
+     * <p>
+     * Read the flatness for what it measures. The harness queries once, after the last batch, so a
+     * run costs one seeding plus k maintenance steps plus ONE discovery, and only the maintenance
+     * term scales with k. A caller that queries after every batch pays discovery every time and the
+     * total is no longer flat — {@code newProposedPartition} is the variant for that access pattern,
+     * since it mines each batch once as the batch lands.
      */
     public static final int[] S8_BATCH_COUNTS = {2, 4, 8, 16, 32, 64};
 
