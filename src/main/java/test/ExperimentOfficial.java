@@ -63,6 +63,7 @@ import java.util.function.Supplier;
  *   java -cp out test.ExperimentOfficial --resume            # continue the newest unfinished run
  *   java -cp out test.ExperimentOfficial --s9b               # only the lambda sweep on distribution B
  *   java -cp out test.ExperimentOfficial --m1                # only the per-batch-exact comparison
+ *   java -cp out test.ExperimentOfficial --followup          # every follow-up probe, one session
  *   java -cp out test.ExperimentOfficial seq.txt eutil.txt [delta] [rho] [out.csv]   # one dataset
  * </pre>
  * Suite runs create {@code results/run_<timestamp>_<id>/} holding the CSV, the dataset statistics
@@ -75,7 +76,7 @@ public class ExperimentOfficial {
     static BufferedWriter csv;
 
     static final String HEADER =
-        "dataset,scenario,distribution,algorithm,mu,minUtilRatio,maxRegRatio,threads,n_batches,iteration,runtime_ms,build_ms,incr_ms,disc_ms,peak_mb,hs_count,shs_count,recall,status,seed_mb,incr_mb,disc_mb\n";
+        "dataset,scenario,distribution,algorithm,mu,minUtilRatio,maxRegRatio,threads,n_batches,iteration,runtime_ms,build_ms,incr_ms,disc_ms,peak_mb,hs_count,shs_count,recall,status,seed_mb,incr_mb,disc_mb,tracked_seed,tracked\n";
 
     /** Provenance + crash-resume state for the suite run (null in single-dataset mode). */
     static RunContext ctx;
@@ -499,11 +500,12 @@ public class ExperimentOfficial {
         Callable<Run> task = () -> {
             long[] phase = new long[3];
             double[] phaseMem = new double[3];
+            int[] held = new int[2];
             // One meter for every miner (see PeakMemoryMeter). Read the peak from it, not from the
             // miner, so the peak-memory column compares like with like.
             PeakMemoryMeter meter = new PeakMemoryMeter();
             long t0 = System.currentTimeMillis();
-            Map<String, long[]> res = ExpUtil.run(m, b, d, r, phase, meter, phaseMem);
+            Map<String, long[]> res = ExpUtil.run(m, b, d, r, phase, meter, phaseMem, held);
             Run rr = new Run();
             rr.runtimeMs = System.currentTimeMillis() - t0;
             rr.buildMs = phase[0]; rr.incrMs = phase[1]; rr.discMs = phase[2];
@@ -512,6 +514,7 @@ public class ExperimentOfficial {
             meter.close();
             rr.count = res.size();
             rr.shs = m.bufferedCount();
+            rr.trackedSeed = held[0]; rr.tracked = held[1];
             rr.patterns = res;
             return rr;
         };
@@ -529,7 +532,7 @@ public class ExperimentOfficial {
     static void writeRow(String scenario, String dist, String algo, String mu, double d, double r,
                          int threads, int nb, int iter, Run run, String recall) throws IOException {
         String status = run.timedOut ? "TIMEOUT" : (run.error != null ? "ERROR" : "OK");
-        csv.write(String.format("%s,%s,%s,%s,%s,%s,%s,%d,%d,%d,%d,%d,%d,%d,%.2f,%d,%d,%s,%s,%.2f,%.2f,%.2f%n",
+        csv.write(String.format("%s,%s,%s,%s,%s,%s,%s,%d,%d,%d,%d,%d,%d,%d,%.2f,%d,%d,%s,%s,%.2f,%.2f,%.2f,%d,%d%n",
                 tag, scenario, dist, algo, mu, d, r, threads, nb, iter,
                 run.timedOut ? -1 : run.runtimeMs,
                 run.timedOut ? -1 : run.buildMs,
@@ -541,7 +544,9 @@ public class ExperimentOfficial {
                 recall, status,
                 run.timedOut ? 0.0 : run.seedMb,
                 run.timedOut ? 0.0 : run.incrMb,
-                run.timedOut ? 0.0 : run.discMb));
+                run.timedOut ? 0.0 : run.discMb,
+                run.timedOut ? -1 : run.trackedSeed,
+                run.timedOut ? -1 : run.tracked));
         csv.flush();
     }
 
@@ -573,6 +578,7 @@ public class ExperimentOfficial {
     static final class Run {
         long runtimeMs; long buildMs; long incrMs; long discMs; double peakMb; int count; int shs;
         double seedMb; double incrMb; double discMb;   // peak reached DURING each phase; see PeakMemoryMeter
+        int trackedSeed; int tracked;                  // patterns HELD after seeding / at the end
         Map<String, long[]> patterns;
         boolean timedOut = false; String error = null;
     }

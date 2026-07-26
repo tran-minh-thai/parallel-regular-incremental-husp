@@ -33,6 +33,20 @@ public interface IncrementalHUSPMiner {
     /** Number of patterns currently held in the buffer (0 if the algorithm uses no buffer). */
     default int bufferedCount() { return 0; }
 
+    /**
+     * How many patterns the miner is actually holding, as opposed to how many it returns.
+     *
+     * <p>The answer set and the tracked set are not the same thing, and only the first was ever
+     * reported. A pattern that fails the regularity test is dropped from the output but stays in the
+     * tracked set, because a later batch can make it regular again; discovery likewise keeps every
+     * candidate it raises, since the partition lemma only promises a pattern surfaces in SOME part.
+     * So the tracked set is a superset of the answer, it never shrinks, and nothing measured it —
+     * which left the peak-memory figures with no quantity to correlate against.
+     *
+     * @return the number of tracked patterns, or -1 if the miner does not distinguish the two sets
+     */
+    default int trackedCount() { return -1; }
+
     /** Wall-clock spent in the query-time discovery/reconcile phase (0 if the algorithm has none).
      *  Reported separately from build (seeding) and incremental (maintenance) so the per-phase cost
      *  breakdown can show discovery, which for this miner is a distinct and often dominant phase. */

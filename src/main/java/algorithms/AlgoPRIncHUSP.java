@@ -1047,6 +1047,9 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         trieRoot = null;                                        // force a trie rebuild
     }
     @Override public int bufferedCount() { return bufferedN; }
+    /** Size of the tracked set, which classify() only ever reads: irregular patterns are withheld
+     *  from the output but retained here, and discovery appends to it. Always ≥ the answer size. */
+    @Override public int trackedCount() { return pats.length; }
     @Override public long discoveryMs() { return discMs; }
     @Override public double peakMemoryMB() { return peakMB; }
     public long getMinUtil() { return minUtil; }
