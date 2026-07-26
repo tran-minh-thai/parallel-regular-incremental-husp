@@ -135,6 +135,32 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
      */
     public boolean partitionMine = false;
 
+    /**
+     * Drop a tracked pattern once its FIXED period exceeds ρ·N_final, at which point it can never be
+     * regular again and is dead weight.
+     *
+     * <p>Retention and output use different criteria today. A pattern below minUtil is kept because a
+     * later batch can lift it, and that is right. The same reasoning is then applied to regularity,
+     * where it does not hold: {@code maxPer_N = max(π, τ_N)} and π — the leading gap plus the inner
+     * gaps — is NON-DECREASING as sequences are appended, since a new occurrence turns the current
+     * tail into an inner gap. So for every future {@code N' ≤ N_final},
+     * {@code maxPer_{N'} ≥ π_{N'} ≥ π_now > ρ·N_final ≥ ρ·N'}: irregular then, and at every point
+     * after. Nothing brings such a pattern back, and holding it only costs heap. This is the same
+     * bound Theorem 2 already justifies for seed pruning, applied to RETENTION as well.
+     *
+     * <p>It bites hardest exactly where the increment dominates. Discovery enumerates ΔD in window
+     * mode, which prunes on consecutive-occurrence gaps only — necessarily, because a pattern's
+     * leading gap inside ΔD is not its leading gap in the database. The true π is known a moment
+     * later, once the fresh candidates are re-matched over the whole database in ascending sequence
+     * order, and that is where this test belongs. Under the increasing split ΔD starts at 0.10·N
+     * while ρ·N_final is 0.03·N, so every pattern occurring only in ΔD is already dead on arrival.
+     *
+     * <p>Off by default: it changes which patterns are held, so the reported run stays reproducible.
+     * It cannot change the ANSWER — every pattern it drops is one classify() already withholds — but
+     * that is a claim to verify against the oracle, not to assume.
+     */
+    public boolean evictPermanentlyIrregular = false;
+
     // ----- State persistent across batches -----
     private final QSeqDatabase data = new QSeqDatabase();
     private final DEUCS deucs = new DEUCS();
@@ -881,6 +907,22 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         highUtility.clear();
         bufferedN = 0;
         final int n = data.numSequences;
+        // A seeded pattern's fixed period grows as batches land: a new occurrence turns the current
+        // tail into an inner gap. Once it passes ρ·N_final the pattern is irregular at this batch and
+        // at every later one, so it is dropped here rather than carried to the end. Patterns still
+        // short on UTILITY stay — that is the retention this must not disturb.
+        if (evictPermanentlyIrregular) {
+            int bound = finalMaxReg();
+            if (bound != Integer.MAX_VALUE) {
+                int w = 0;
+                for (int i = 0; i < pats.length; i++) if (pats[i].maxInnerPeriod <= bound) pats[w++] = pats[i];
+                if (w < pats.length) {
+                    evictedIrregular += pats.length - w;
+                    pats = java.util.Arrays.copyOf(pats, w);
+                    trieRoot = null;                    // the maintenance trie indexes pats
+                }
+            }
+        }
         for (Pat p : pats) {
             if (p.lastSeqId == -1) continue;
             int trueMaxPer = p.trueMaxPer(n);
@@ -1040,12 +1082,43 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
             highUtility.put(formatPattern(p.ext, p.item), new long[]{p.utility, trueMaxPer});
             discAccepted++;
         }
-        // KEEP ALL of them — see the javadoc above.
-        Pat[] np = java.util.Arrays.copyOf(pats, pats.length + fresh.size());
-        for (int i = 0; i < fresh.size(); i++) np[pats.length + i] = fresh.get(i);
+        // Keep every candidate whose UTILITY is still short — a later batch can lift it, and the lemma
+        // only promises a pattern surfaces in some part. Regularity is the other matter: a fixed
+        // period already past ρ·N_final can never come back, so those are dropped rather than carried.
+        List<Pat> keep = fresh;
+        if (evictPermanentlyIrregular) {
+            int bound = finalMaxReg();
+            if (bound != Integer.MAX_VALUE) {
+                keep = new ArrayList<>(fresh.size());
+                for (Pat p : fresh) if (p.maxInnerPeriod <= bound) keep.add(p);
+                evictedIrregular += fresh.size() - keep.size();
+            }
+        }
+        Pat[] np = java.util.Arrays.copyOf(pats, pats.length + keep.size());
+        for (int i = 0; i < keep.size(); i++) np[pats.length + i] = keep.get(i);
         pats = np;
         trieRoot = null;                                        // force a trie rebuild
     }
+    /**
+     * ρ·N_final, or MAX_VALUE when the final size was never supplied. The distinction matters: only
+     * ρ·N_final is a ceiling on every future maxReg, so only it licenses dropping a pattern for good.
+     * Against ρ·N_current the same test would discard patterns that a longer database makes regular.
+     */
+    private int finalMaxReg() {
+        // The hint must still be AHEAD of the database. Once N_t has caught up with it the hint was
+        // wrong -- an unannounced batch, or a caller that never supplied one -- and ρ·hintedTotalN is
+        // no longer a ceiling on the future ρ·N_t. Evicting against a bound that later rises would
+        // discard patterns a longer database makes regular, which is precisely the baseline's defect.
+        // Returning MAX_VALUE disables eviction instead, giving up memory rather than correctness.
+        return (hintedTotalN > 0 && hintedTotalN >= data.numSequences)
+                ? (int) (maxRegRatio * hintedTotalN)
+                : Integer.MAX_VALUE;
+    }
+
+    /** How many patterns the permanent-irregularity test removed; 0 when the test is off. */
+    public int evictedCount() { return evictedIrregular; }
+    private int evictedIrregular = 0;
+
     @Override public int bufferedCount() { return bufferedN; }
     /** Size of the tracked set, which classify() only ever reads: irregular patterns are withheld
      *  from the output but retained here, and discovery appends to it. Always ≥ the answer size. */
