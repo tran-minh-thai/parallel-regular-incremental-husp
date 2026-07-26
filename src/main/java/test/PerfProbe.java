@@ -9,7 +9,7 @@ import java.util.Map;
 /**
  * Compact PERFORMANCE probe: run P-RIncHUSP ONCE (4 batches, distribution A) on one dataset, print
  * runtime / peak memory / #HS / #SHS / #explored nodes. Use to quickly measure the impact of an
- * optimization (without running the full S1–S4 suite). Arguments: [seq] [eui] [δ] [ρ] [threads].
+ * optimization (without running the full S1–S11 suite). Arguments: [seq] [eui] [δ] [ρ] [threads].
  */
 public class PerfProbe {
     public static void main(String[] args) throws Exception {

@@ -24,6 +24,8 @@ test_output/
 # is the extraction target: pull the tarball into it, and everything landing there stays
 # untracked. See RUNNING.md for the command and the checksum step.
 datasets/*.txt
+datasets/MANIFEST.sha256
+datasets/*.tar.gz
 
 # Exception: the four example files are TEST FIXTURES, not benchmark data. --test runs on
 # them, they are a few KB, and they are deliberately absent from the release, so they are

@@ -283,17 +283,23 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         sampleMemory();
     }
 
-    /**
-     * Enumerate patterns with PEU bound >= θ on D_old, parallel over root branches (prefix equivalence
-     * classes). Each thread traverses one root branch via sequential DFS with VUL scratch reused per
-     * depth, so no contention and no per-node allocation. Patterns with {@code totalUtility >= θ} are
-     * added to {@code patsQueue}.
+    /*
+     * Seeding has two interchangeable paths, selected by {@link #seedWithEngine05}.
+     *
+     * In-house enumeration walks D_old itself, parallel over root branches (prefix equivalence
+     * classes): each thread takes one branch by sequential DFS, reusing VUL scratch space per depth,
+     * so there is no contention and no per-node allocation. Patterns whose totalUtility reaches θ go
+     * into patsQueue.
+     *
+     * The method below instead delegates to the standalone parallel miner, which is the path all
+     * reported numbers use.
      */
+
     /**
-     * Seed with the companion study's parallel engine (see {@link #seedWithEngine05}). Runs it in
-     * {@code seedMode} at the exact buffer threshold θ and the seeding regularity bound, then converts
-     * each returned pattern into a {@link Pat} carrying the state needed to continue incrementally
-     * (utility, lastSeqId, maxInnerPeriod).
+     * Seed D_old by delegating to {@link AlgoRHUSPMinerParallel}. It runs in {@code seedMode} at the
+     * buffer threshold θ and the seeding regularity bound, and each pattern it returns becomes a
+     * {@link Pat} carrying the state incremental maintenance needs: utility, lastSeqId and
+     * maxInnerPeriod.
      */
     private void seedWithParallelEngine(List<List<int[]>> dOld) {
         AlgoRHUSPMinerParallel eng = new AlgoRHUSPMinerParallel();

@@ -152,7 +152,7 @@ public class ExperimentOfficial {
     }
 
     /**
-     * Run S1–S4 for one dataset. The oracle (RHusp over the full DB) does NOT change with the batch
+     * Run every configured scenario for one dataset. The oracle (RHusp over the full DB) does NOT change with the batch
      * distribution → computed once.
      * {@code s1Only=true} (HEAVY datasets: FIFA/KOSARAK) → run S1 scalability only, skip S2/S4 (avoid hours).
      */

@@ -61,5 +61,5 @@ done
 echo ""
 echo "VALID   = has DONE (the suite finished).  PARTIAL = no DONE (aborted -> ./run_experiments.sh --resume)."
 echo "OK/ERR  = so o (cell x iteration) THANH CONG / bi LOI (ERROR/TIMEOUT/OOM)."
-echo "STATUS co dau '*'  = run XONG nhung CO o loi -> KIEM TRA cot OK/ERR truoc khi lay so lieu!"
+echo "STATUS marked '*'  = the run finished but some cells errored -> check the OK/ERR columns before using its numbers"
 echo "Different SIGNATURE = different CONFIGURATION -> never mix their numbers in one table."

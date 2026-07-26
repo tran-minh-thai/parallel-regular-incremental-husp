@@ -2,7 +2,7 @@
 #
 # run_experiments.sh - Compile and run a P-RIncHUSP experiment (macOS/Linux).
 #
-# Default (no args) runs the full official benchmark suite (S1-S4) on every
+# Default (no args) runs the full official benchmark suite (S1-S11) on every
 # dataset declared in DatasetCatalog.officialSuite().
 #
 # Pipeline:

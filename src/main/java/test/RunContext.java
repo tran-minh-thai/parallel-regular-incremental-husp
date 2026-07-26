@@ -28,7 +28,7 @@ import java.util.Set;
  *       per-run timeout; scenario switches) + {@code config.signature} + {@code status}.</li>
  *   <li><b>results.csv</b> — one row per (dataset, scenario, distribution, algorithm, threads, iteration).</li>
  *   <li><b>completed.txt</b> — one line per FINISHED benchmark cell (append + flush): the resume authority.</li>
- *   <li><b>datasets_done.txt</b> — one line per dataset whose S1–S4 all finished (lets resume skip the
+ *   <li><b>datasets_done.txt</b> — one line per dataset whose scenarios all finished (lets resume skip the
  *       expensive re-load + oracle of a fully-done dataset).</li>
  *   <li><b>DONE</b> — empty marker written IFF the whole suite finished. Its ABSENCE ⇒ aborted/partial.</li>
  * </ul>

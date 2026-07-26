@@ -12,11 +12,22 @@ The benchmark datasets are not in this repository. Pull them from the pinned rel
 [huspm-datasets](https://github.com/tran-minh-thai/huspm-datasets) into `datasets/`:
 
 ```bash
-VERSION=v1.1-seed42-lognormal
-curl -fLO https://github.com/tran-minh-thai/huspm-datasets/releases/download/$VERSION/huspm-datasets-$VERSION.tar.gz
-tar xzf huspm-datasets-$VERSION.tar.gz -C datasets/
-shasum -a 256 -c MANIFEST.sha256        # Linux: sha256sum -c MANIFEST.sha256
+bash fetch_datasets.sh          # download, extract into datasets/, verify checksums
 ```
+
+That script is the whole step. If you would rather run it by hand:
+
+```bash
+VERSION=v1.1-seed42-lognormal
+REPO=https://github.com/tran-minh-thai/huspm-datasets
+curl -fLO $REPO/releases/download/$VERSION/huspm-datasets-$VERSION.tar.gz
+tar xzf huspm-datasets-$VERSION.tar.gz -C datasets/
+curl -fsSL -o datasets/MANIFEST.sha256 https://raw.githubusercontent.com/tran-minh-thai/huspm-datasets/main/MANIFEST.sha256
+(cd datasets && shasum -a 256 -c MANIFEST.sha256)   # Linux: sha256sum -c MANIFEST.sha256
+```
+
+The manifest lives in the dataset repository rather than inside the tarball, and it lists bare
+filenames, so it has to be fetched separately and checked from inside `datasets/`.
 
 **Pull the release; do not regenerate the data.** The utilities are synthetic, and more than one
 version of `SPMF_Converter` is in circulation. The releases were produced by the version that
