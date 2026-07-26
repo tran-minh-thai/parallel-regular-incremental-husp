@@ -1149,19 +1149,18 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
      * Against ρ·N_current the same test would discard patterns that a longer database makes regular.
      */
     private int finalMaxReg() {
-        // Under a growth claim the ceiling travels with the database: nu*rho*N_t is at or above
-        // rho*N_final for as long as the claim holds, so it licenses the same permanent eviction
-        // without anyone naming the final size.
-        if (growthFactor > 0)
-            return (int) Math.min(Integer.MAX_VALUE, growthFactor * maxRegRatio * data.numSequences);
-        // The hint must still be AHEAD of the database. Once N_t has caught up with it the hint was
-        // wrong -- an unannounced batch, or a caller that never supplied one -- and ρ·hintedTotalN is
-        // no longer a ceiling on the future ρ·N_t. Evicting against a bound that later rises would
-        // discard patterns a longer database makes regular, which is precisely the baseline's defect.
-        // Returning MAX_VALUE disables eviction instead, giving up memory rather than correctness.
-        return (hintedTotalN > 0 && hintedTotalN >= data.numSequences)
-                ? (int) (maxRegRatio * hintedTotalN)
-                : Integer.MAX_VALUE;
+        // The SAME bound the seeding prune used, deliberately. Both answer one question -- can this
+        // pattern still become regular -- so two different answers would be incoherent: an eviction
+        // bound looser than the enumeration bound withholds patterns the search already refused to
+        // generate, and a tighter one discards what the search was told to keep.
+        //
+        // It also fixes the anchor. seedMaxReg is computed once, against the database as it stood at
+        // seeding, so under a growth claim it means nu * rho * |D_old| and stays put. Recomputing it
+        // against the current size would let the ceiling drift upward batch by batch, pruning less
+        // for no gain: the binding case is the seeding prune either way, so the drift buys no
+        // soundness, only heap. A rolling anchor is the right reading only when the seed itself is
+        // periodically rebuilt, where each epoch re-anchors and nu means growth since the last seed.
+        return seedMaxReg;
     }
 
     /** How many patterns the permanent-irregularity test removed; 0 when the test is off. */
