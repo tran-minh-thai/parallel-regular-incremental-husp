@@ -28,6 +28,19 @@ import algorithms.AlgoRemine;
 public final class ExpConfig {
     private ExpConfig() {}
 
+    /**
+     * Absolute-maxReg mode (--absolute): the regularity constraint is a per-dataset DECLARED constant
+     * B -- a pattern is regular when it recurs at least every B sequences, at every point in time.
+     * B is part of the problem statement, like delta: a given number, never derived from any database
+     * size. With nothing drifting, the pruning a full re-mine enjoys is sound in every phase, and the
+     * retention band whose width exhausted the heap under the relative rule does not exist. The
+     * benchmark's declared values (DatasetCatalog) are calibrated to coincide with the relative
+     * study's final bounds, so both suites answer with the same oracle -- a comparability choice,
+     * not a definition. {@link ExperimentOfficial#benchmark} sets {@link #absoluteB} per cell.
+     */
+    public static boolean absoluteMode = false;
+    public static int absoluteB = 0;
+
     /** θ₀ = μ·δ·U(D_old). μ=1 ⟹ θ₀ = δ·U(D_old) and θ_disc = δ·U(ΔD): the partition-lemma value. */
     public static final double MU_PARTITION = 1.0;
 
@@ -368,6 +381,14 @@ public final class ExpConfig {
         // the prune only under a sound ceiling bound.
         String fp = System.getProperty("floorPrune");
         m.floorPruneSeeds = fp != null && !fp.equalsIgnoreCase("false");
+        if (absoluteB > 0) {
+            m.setAbsoluteMaxReg(absoluteB);
+            // Under a constant bound both mechanisms are exactness-preserving by the floor lemma,
+            // and they are the point of the reformulation: what can never qualify is pruned at the
+            // enumeration and evicted from the tracked set, with nothing about the future assumed.
+            m.floorPruneSeeds = true;
+            m.evictPermanentlyIrregular = true;
+        }
         m.buffer.strategy = AdaptiveBuffer.Strategy.FIX;
         m.buffer.fixedMu = MU_PARTITION;             // θ₀ = δ·U(D_old)
         m.buffer.bufferFactorMin = MU_PARTITION;
@@ -447,11 +468,16 @@ public final class ExpConfig {
     public static AlgoRIncHUSP newRIncHusp(double mu) {
         AlgoRIncHUSP m = new AlgoRIncHUSP();
         m.bufferFactor = mu;
+        if (absoluteB > 0) m.setAbsoluteMaxReg(absoluteB);
         return m;
     }
 
     /** Naive baseline: re-mine the full DB from scratch each batch, SEQUENTIAL static miner. */
-    public static AlgoRemine newRemine() { return new AlgoRemine(); }
+    public static AlgoRemine newRemine() {
+        AlgoRemine m = new AlgoRemine();
+        if (absoluteB > 0) m.setAbsoluteMaxReg(absoluteB);
+        return m;
+    }
 
     /**
      * DECISIVE baseline: the companion study's PARALLEL static RHUSP engine (RDLB scheduler) re-run
@@ -469,6 +495,7 @@ public final class ExpConfig {
         // pattern set as the RDLB strategy, so only the timing differs.
         m.parallelStrategy = AlgoRHUSPMinerParallel.STRAT_STEAL;
         m.denseBuffers = true;
+        if (absoluteB > 0) m.setAbsoluteMaxReg(absoluteB);
         return m;
     }
 }

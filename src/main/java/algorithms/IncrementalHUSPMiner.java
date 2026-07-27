@@ -47,6 +47,19 @@ public interface IncrementalHUSPMiner {
      */
     default int trackedCount() { return -1; }
 
+    /**
+     * Switch the regularity constraint to an ABSOLUTE bound: a pattern is regular when its maximum
+     * period is at most {@code b} sequences, at every point in time, regardless of how large the
+     * database grows. Zero (the default everywhere) keeps the relative bound maxReg = rho * N.
+     *
+     * <p>The distinction carries the whole memory story. The relative bound RISES with N, so every
+     * incremental phase must protect patterns against a future, looser test -- a retention band that
+     * is provably unprunable and whose width, N_final/|slice|, is what exhausted the heap. A constant
+     * bound has no future to protect against: the same pruning a full re-mine enjoys becomes sound
+     * in every phase, permanently.
+     */
+    default void setAbsoluteMaxReg(int b) {}
+
     /** Wall-clock spent in the query-time discovery/reconcile phase (0 if the algorithm has none).
      *  Reported separately from build (seeding) and incremental (maintenance) so the per-phase cost
      *  breakdown can show discovery, which for this miner is a distinct and often dominant phase. */

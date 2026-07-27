@@ -264,6 +264,7 @@ public final class RunContext {
      *  dir is a DIFFERENT algorithm with different recall and must never be resumed into. */
     private static String signature(List<DatasetSpec> suite) {
         StringBuilder sb = new StringBuilder("v5;algo=eng05seed+trie+exact;");
+        if (ExpConfig.absoluteMode) sb.append("maxReg=ABSOLUTE;");   // never resume-match a relative run
         for (DatasetSpec s : suite)
             sb.append(s.tag).append(':').append(s.minUtilRatio).append(':').append(s.maxRegRatio)
               .append(':').append(s.s1Only).append(';');

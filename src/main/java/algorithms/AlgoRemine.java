@@ -17,6 +17,10 @@ import java.util.Map;
  */
 public class AlgoRemine implements IncrementalHUSPMiner {
 
+    /** Absolute regularity bound; 0 = relative. */
+    public int absoluteMaxReg = 0;
+    @Override public void setAbsoluteMaxReg(int b) { this.absoluteMaxReg = b; }
+
     private final List<List<int[]>> db = new ArrayList<>();
     private double minUtilRatio, maxRegRatio;
     private Map<String, long[]> result = new HashMap<>();
@@ -46,7 +50,7 @@ public class AlgoRemine implements IncrementalHUSPMiner {
         long totalUtil = 0;
         for (List<int[]> s : db) for (int[] e : s) for (int k = 1; k < e.length; k += 2) totalUtil += e[k];
         long minUtil = (long) Math.ceil(minUtilRatio * totalUtil);
-        int maxReg = (int) (maxRegRatio * db.size());
+        int maxReg = absoluteMaxReg > 0 ? absoluteMaxReg : (int) (maxRegRatio * db.size());
         AlgoRHUSP m = new AlgoRHUSP(); m.parallel = false;
         result = m.mine(db, minUtil, maxReg);
     }

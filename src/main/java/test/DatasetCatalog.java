@@ -54,8 +54,8 @@ public final class DatasetCatalog {
     /** Small datasets used by {@code --test}: a few sequences each, so the whole suite runs in seconds. */
     public static List<DatasetSpec> testSuite() {
         List<DatasetSpec> s = new ArrayList<>();
-        s.add(new DatasetSpec("example",  0.10, 0.60, ExpConfig.SCEN_A));   // running example, 9 sequences
-        s.add(new DatasetSpec("example2", 0.10, 0.60, ExpConfig.SCEN_A));   // 12 short sequences
+        s.add(new DatasetSpec("example",  0.10, 0.60, ExpConfig.SCEN_A, 5));   // running example, 9 sequences
+        s.add(new DatasetSpec("example2", 0.10, 0.60, ExpConfig.SCEN_A, 7));   // 12 short sequences
         return DatasetSpec.onlyAvailable(s);
     }
 
@@ -75,13 +75,17 @@ public final class DatasetCatalog {
         // Dense, 730 sequences. At (0.005, 0.03): 830 patterns, ~100 MB, under a second. The old
         // 0.03/0.30 gave 30 patterns, too few, and its memory wall (ten-fold per 0.001 step) was an
         // artifact of rho = 0.30 leaving the search unpruned, not a property of the data.
-        s.add(new DatasetSpec("SIGN", 0.005, 0.03, ExpConfig.SCEN_A));
+        // absB values below are DECLARED constants for the --absolute suite. They are calibrated to
+        // coincide with the relative study's bound at its final size, so the two suites answer with
+        // the same oracle and stay comparable -- that is a benchmarking choice, stated here once;
+        // the algorithms receive B as a given number and never derive it from any database size.
+        s.add(new DatasetSpec("SIGN", 0.005, 0.03, ExpConfig.SCEN_A, 21));
 
         // 5,834 sequences. At (0.005, 0.03): 5,148 patterns, ~220 MB, ~2 s.
-        s.add(new DatasetSpec("LEVIATHAN", 0.005, 0.03, ExpConfig.SCEN_A));
+        s.add(new DatasetSpec("LEVIATHAN", 0.005, 0.03, ExpConfig.SCEN_A, 175));
 
         // 36,369 sequences. At (0.005, 0.03): 2,141 patterns, ~350 MB, ~2.4 s.
-        s.add(new DatasetSpec("BIBLE", 0.005, 0.03, ExpConfig.SCEN_A));
+        s.add(new DatasetSpec("BIBLE", 0.005, 0.03, ExpConfig.SCEN_A, 1091));
 
         // 47,133 sequences, IBM Quest synthetic. This is the one full-suite dataset whose events hold
         // more than one item (7.96 on average, up to 23), so it is the only one that exercises the
@@ -90,7 +94,7 @@ public final class DatasetCatalog {
         // planted patterns' periods cluster near maxReg = 0.055*N, so the count jumps from 62 at
         // rho = 0.05 to 5,612 at 0.06 and then saturates. At (0.001, 0.06): 5,612 patterns, ~1.2 s.
         // Added to s6Datasets below so it runs S5-S11, not only S1.
-        s.add(new DatasetSpec("C8T1S5I8N5K", 0.001, 0.06, ExpConfig.SCEN_A));
+        s.add(new DatasetSpec("C8T1S5I8N5K", 0.001, 0.06, ExpConfig.SCEN_A, 2827));
 
         // 20,450 sequences, dense and long (up to 100 events). Scalability-only: even at a probed
         // threshold it costs ~76 s per run at T=1, which the batch-re-mining baselines in S8/S11

@@ -73,6 +73,17 @@ public class ExperimentOfficial {
 
     static List<List<int[]>> all;
     static String tag;
+    static int specAbsB = 0;        // declared absolute bound of the dataset being benchmarked
+    static double specBaseR = 1;    // its base rho, so sweep multipliers scale B coherently
+
+    /** The declared B scaled by a sweep's multiplier, truncating like every bound in this study —
+     *  declared numbers only, and the SAME value goes to the miners and to the cell's oracle, since
+     *  a bound the two sides disagree on answers two different questions. Zero when not absolute. */
+    static int scaledAbsB(double r) {
+        return ExpConfig.absoluteMode && specAbsB > 0
+                ? Math.max(1, (int) (specAbsB * (r / specBaseR)))
+                : 0;
+    }
     static BufferedWriter csv;
 
     static final String HEADER =
@@ -105,6 +116,8 @@ public class ExperimentOfficial {
         if (flags.contains("--m1")) ExpConfig.enableM1Only();
         // --followup: run all three follow-up probes in one session (M1 + single re-mine + S9B).
         if (flags.contains("--followup")) ExpConfig.enableFollowupOnly();
+        // --absolute: constant per-dataset regularity bound B = floor(rho * N_final); see ExpConfig.
+        if (flags.contains("--absolute")) ExpConfig.absoluteMode = true;
 
         // --only=TAG1,TAG2 restricts the suite to the named datasets, each keeping its own settings.
         // Useful after changing one dataset's threshold: re-run that dataset alone, then merge the
@@ -143,6 +156,7 @@ public class ExperimentOfficial {
                 continue;
             }
             try {
+                specAbsB = s.absB; specBaseR = s.maxRegRatio;   // the DECLARED bound travels with the spec
                 benchmarkDataset(s.tag, s.seqFile, s.euiFile, s.minUtilRatio, s.maxRegRatio, s.s1Only);
                 ctx.recordDataset(s.tag);   // reached only if the dataset finished (no crash / uncaught error)
             } catch (Throwable e) {
@@ -173,6 +187,9 @@ public class ExperimentOfficial {
         final int cores = ExpConfig.bestT();           // PINNED best-T (not availableProcessors) — see ExpConfig
         Set<String> oracle = oracleOrNull(minUtilRatio, maxRegRatio);
 
+        if (ExpConfig.absoluteMode)
+            System.out.printf("%n### ABSOLUTE maxReg: B = %d sequences (declared; constant at every batch) ###%n",
+                    specAbsB);
         System.out.printf("%n========== %s%s | %d sequences | δ=%.4f ρ=%.2f | %s | best T=%d (machine has %d) ==========%n",
                 tag, s1Only ? " [S1 ONLY]" : "", all.size(), minUtilRatio, maxRegRatio,
                 oracle != null ? "oracle(RHusp)=" + oracle.size() : "recall=SKIPPED (N>" + ExpConfig.coverageMaxN + ")",
@@ -434,7 +451,13 @@ public class ExperimentOfficial {
     static Set<String> oracleOrNull(double d, double r) {
         if (all.size() > ExpConfig.coverageMaxN) return null;
         ExecutorService ex = Executors.newSingleThreadExecutor(daemon());
-        Future<Set<String>> f = ex.submit(() -> ExpUtil.oracleCanon(all, d, r));
+        // In absolute mode the oracle mines at the DECLARED (scaled) B: the bound defines the
+        // problem, and an oracle bound derived from the ratio would answer a different question
+        // than the miners were asked -- off by one after truncation, hidden by recall's direction.
+        final int oracleAbsB = scaledAbsB(r);
+        Future<Set<String>> f = ex.submit(() -> oracleAbsB > 0
+                ? ExpUtil.oracleCanon(all, d, oracleAbsB)
+                : ExpUtil.oracleCanon(all, d, r));
         try { return f.get(ExpConfig.oracleTimeoutMs, TimeUnit.MILLISECONDS); }
         catch (Throwable t) { f.cancel(true); return null; }
         finally { ex.shutdownNow(); }
@@ -444,6 +467,11 @@ public class ExperimentOfficial {
      *  speed-up table stays correct); otherwise run it and record completion in {@code completed.txt}. */
     static Agg benchmark(String scenario, String dist, String algo, String mu, Supplier<IncrementalHUSPMiner> factory,
                          int threads, List<List<List<int[]>>> b, double d, double r, Set<String> oracle) throws IOException {
+        // One choke point for the absolute bound: the DECLARED per-dataset constant, scaled by the
+        // same multiplier a sweep applies to rho so swept cells stay coherent. Declared numbers only;
+        // the database size is never consulted -- deriving B from it would smuggle back the final-size
+        // knowledge the absolute formulation exists to remove.
+        ExpConfig.absoluteB = scaledAbsB(r);
         String cell = tag + "|" + scenario + "|" + dist + "|" + algo + "|" + threads;
         if (ctx != null && ctx.isCellDone(cell)) {
             long[] pa = ctx.priorAgg(cell);

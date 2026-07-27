@@ -228,6 +228,10 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
      */
     public boolean floorPruneSeeds = false;
 
+    /** Absolute regularity bound; 0 = relative mode. See {@link IncrementalHUSPMiner#setAbsoluteMaxReg}. */
+    public int absoluteMaxReg = 0;
+    @Override public void setAbsoluteMaxReg(int b) { this.absoluteMaxReg = b; }
+
     private int horizonMaxReg = Integer.MAX_VALUE;    // bound from the growth/hint chain, fixed at seeding
     private int minEvictedFloor = Integer.MAX_VALUE;  // smallest FLOOR ever given up under the budget
 
@@ -378,13 +382,17 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         // seedPruneByFinalN=false is the S10 ablation, which deliberately reproduces that defect.
         // The hint is usable as long as it still covers the database. Equality is the single-batch
         // case, where ρ·N_current already IS ρ·N_final and pruning there is both sound and tightest.
-        horizonMaxReg = growthFactor > 0
-                ? (int) Math.min(Integer.MAX_VALUE, growthFactor * maxRegRatio * data.numSequences)
-                : seedPruneByFinalN
-                    ? (hintedTotalN >= data.numSequences
-                            ? (int) (maxRegRatio * hintedTotalN)   // sound and tight
-                            : Integer.MAX_VALUE)                   // sound, no pruning
-                    : maxReg;                                      // ρ·N_current — approximate, ablation only
+        // Under an absolute bound there is no horizon to assume: B itself is the ceiling on every
+        // future test, known on day one, and the whole hint/growth chain becomes moot.
+        horizonMaxReg = absoluteMaxReg > 0
+                ? absoluteMaxReg
+                : growthFactor > 0
+                    ? (int) Math.min(Integer.MAX_VALUE, growthFactor * maxRegRatio * data.numSequences)
+                    : seedPruneByFinalN
+                        ? (hintedTotalN >= data.numSequences
+                                ? (int) (maxRegRatio * hintedTotalN)   // sound and tight
+                                : Integer.MAX_VALUE)                   // sound, no pruning
+                        : maxReg;                                  // ρ·N_current — approximate, ablation only
         seedMaxReg = horizonMaxReg;
         seedThreshold0 = bufferThreshold;      // θ₀ — the discovery bound is derived from exactly this
         if (seedWithEngine05) seedWithParallelEngine(dOld);
@@ -1095,7 +1103,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
 
     private void recomputeThresholds(long batchUtil, long prevUD, int batchSize, int prevN) {
         minUtil = (long) Math.ceil(minUtilRatio * data.totalDbUtility);
-        maxReg  = (int) (maxRegRatio * data.numSequences);
+        maxReg  = absoluteMaxReg > 0 ? absoluteMaxReg : (int) (maxRegRatio * data.numSequences);
         // Mine later batches only as deep as the budget has shown it can keep. Anything past the
         // emergent bound would be evicted on arrival, so enumerating it is pure cost. Monotone by
         // construction: the bound is a running minimum, so it can only tighten.
@@ -1291,7 +1299,8 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
 
     /** The mining bound is a genuine ceiling only from these sources; the ablation's ρ·N_current is not. */
     private boolean soundCeilingBound() {
-        return growthFactor > 0 || memoryBudgetMB > 0 || (seedPruneByFinalN && hintedTotalN > 0);
+        return absoluteMaxReg > 0 || growthFactor > 0 || memoryBudgetMB > 0
+                || (seedPruneByFinalN && hintedTotalN > 0);
     }
 
     /** Walk the cause chain for the engine's budget abort; pool wrappers may nest it. */

@@ -52,6 +52,8 @@ public class EvictProbe {
                 AlgoPRIncHUSP m = ExpConfig.newProposed(Runtime.getRuntime().availableProcessors());
                 m.evictPermanentlyIrregular = evict;
                 m.floorPruneSeeds = System.getProperty("floorPrune") != null;
+                int absB = Integer.getInteger("absB", 0);            // a GIVEN number, e.g. -DabsB=21
+                if (absB > 0) m.setAbsoluteMaxReg(absB);
                 long[] phase = new long[3];
                 double[] phaseMem = new double[3];
                 int[] held = new int[2];

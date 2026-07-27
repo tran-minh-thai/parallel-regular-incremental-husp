@@ -31,6 +31,10 @@ public class AlgoParRemine implements IncrementalHUSPMiner {
 
     private final List<List<int[]>> db = new ArrayList<>();
     private double minUtilRatio, maxRegRatio;
+
+    /** Absolute regularity bound; 0 = relative. */
+    public int absoluteMaxReg = 0;
+    @Override public void setAbsoluteMaxReg(int b) { this.absoluteMaxReg = b; }
     private Map<String, long[]> result = new HashMap<>();
     private double peakMB = 0;
     /** Cumulative PURE mining time as reported by the engine itself (excludes CSR construction). */
@@ -61,6 +65,7 @@ public class AlgoParRemine implements IncrementalHUSPMiner {
         m.useEUCS = true;
         m.boundMode = AlgoRHUSPMinerParallel.BOUND_LA_PEU;
         m.useRegPruning = true;
+        if (absoluteMaxReg > 0) m.forcedMaxReg = absoluteMaxReg;
         m.runAlgorithmInMemory(db, minUtilRatio, maxRegRatio);
 
         Map<String, long[]> out = new HashMap<>(m.finalPatterns.size() * 2);

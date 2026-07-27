@@ -32,6 +32,7 @@ RESUME=0          # --resume: continue the newest unfinished run (skip cells alr
 TEST_SUITE=0      # --test:   run the tiny testSuite (example datasets) — seconds, for a smoke check
 MODE1_ONLY=0      # --m1:     run only the per-batch-exact comparison (P-RIncHUSP-P vs ParRemine)
 FOLLOWUP=0        # --followup: run all three follow-up probes in one session
+ABSOLUTE=0        # --absolute: constant per-dataset regularity bound B = floor(rho*N_final)
 NO_MAVEN=0        # --no-maven: build with javac + run with java (no Maven, no network)
 NO_CAFFEINATE=0   # macOS only: prevent idle sleep during the run (auto-detected)
 
@@ -83,6 +84,12 @@ Options:
                             comparison, one full re-mine of D_new, and the lambda sweep under the
                             increasing distribution. Use this rather than three separate runs -- the
                             probes then share a machine and a warm-up and stay mutually comparable.
+      --absolute            (full suite) Regularity as a DECLARED per-dataset constant B: a pattern
+                            is regular when it recurs at least every B sequences, at every point in
+                            time. B is a given number like delta, never derived from a database size.
+                            The benchmark's B values are calibrated so final answers and the oracle
+                            coincide with the relative suite's, keeping the two comparable. This is
+                            the reformulated problem the manuscript pivots to.
       --no-caffeinate       (macOS) do NOT wrap mvn with `caffeinate -i`.
                             By default, on macOS the run is wrapped in
                             `caffeinate -i` so the Mac stays awake until
@@ -104,6 +111,7 @@ while [[ $# -gt 0 ]]; do
         --test)          TEST_SUITE=1; shift ;;
         --m1)            MODE1_ONLY=1; shift ;;
         --followup)      FOLLOWUP=1; shift ;;
+        --absolute)      ABSOLUTE=1; shift ;;
         --no-maven)      NO_MAVEN=1; shift ;;
         --dry-run)       DRY_RUN=1; shift ;;
         -h|--help)       print_help; exit 0 ;;
@@ -273,6 +281,10 @@ fi
 if (( FOLLOWUP == 1 )); then
     if (( SUITE_MODE == 1 )); then PROG_ARGS+=(--followup); HAVE_ARGS=1
     else echo "Note: --followup only applies to the full suite; ignored for '$EXP_KEY'." >&2; fi
+fi
+if (( ABSOLUTE == 1 )); then
+    if (( SUITE_MODE == 1 )); then PROG_ARGS+=(--absolute); HAVE_ARGS=1
+    else echo "Note: --absolute only applies to the full suite; ignored for '$EXP_KEY'." >&2; fi
 fi
 
 if (( NO_MAVEN == 1 )); then

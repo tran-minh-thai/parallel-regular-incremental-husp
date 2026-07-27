@@ -89,10 +89,16 @@ public final class ExpUtil {
 
     /** Exact RHusp oracle over the full DB; returns CANONICALIZED keys. */
     public static Set<String> oracleCanon(List<List<int[]>> all, double minUtilRatio, double maxRegRatio) {
+        return oracleCanon(all, minUtilRatio, (int) (maxRegRatio * all.size()));
+    }
+
+    /** As {@link #oracleCanon}, at an EXPLICIT absolute regularity bound. In absolute mode the
+     *  declared B defines the problem, so the oracle must be mined at exactly that number — deriving
+     *  its bound from a ratio would answer a different question than the miners were asked. */
+    public static Set<String> oracleCanon(List<List<int[]>> all, double minUtilRatio, int maxReg) {
         long totalDbUtility = 0;
         for (List<int[]> s : all) for (int[] e : s) for (int k = 1; k < e.length; k += 2) totalDbUtility += e[k];
         long minUtil = (long) Math.ceil(minUtilRatio * totalDbUtility);
-        int maxReg = (int) (maxRegRatio * all.size());
         AlgoRHUSP m = new AlgoRHUSP(); m.parallel = false;
         TreeSet<String> set = new TreeSet<>();
         for (String k : m.mine(all, minUtil, maxReg).keySet()) set.add(SeqConverter.canonical(k));

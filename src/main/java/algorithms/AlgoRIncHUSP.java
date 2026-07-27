@@ -56,6 +56,12 @@ public class AlgoRIncHUSP implements IncrementalHUSPMiner {
      */
     public double bufferFactor = 0.4;
 
+    /** Absolute regularity bound; 0 = relative. With a constant bound the per-batch pruning that
+     *  loses patterns under the relative rule becomes sound, so this baseline's remaining loss is
+     *  the utility ceiling alone -- the honest comparison the reformulation calls for. */
+    public int absoluteMaxReg = 0;
+    @Override public void setAbsoluteMaxReg(int b) { this.absoluteMaxReg = b; }
+
     private double minUtilRatio, maxRegRatio;
     private long minUtil, totalUD;
     private int numSequences, maxReg;
@@ -209,7 +215,7 @@ public class AlgoRIncHUSP implements IncrementalHUSPMiner {
             for (int[] ev : seq)
                 for (int k = 1; k < ev.length; k += 2) totalUD += ev[k];
         minUtil = (long) Math.ceil(minUtilRatio * totalUD);
-        maxReg = (int) (maxRegRatio * numSequences);
+        maxReg = absoluteMaxReg > 0 ? absoluteMaxReg : (int) (maxRegRatio * numSequences);
         if (bufferThreshold == 0) bufferThreshold = bufferFactor * minUtil;
     }
 
