@@ -96,6 +96,22 @@ public class AlgoRHUSPMinerParallel {
     public long timeoutMs = -1;
     private volatile long deadlineMillis = Long.MAX_VALUE;
 
+    /**
+     * Cooperative heap valve, mirroring the timeout above: 0 (default) is off; when set, every
+     * worker compares the used heap against it once per mining node and aborts the whole run by
+     * throwing {@link HeapBudgetExceeded}, which leaves through the same path the timeout uses.
+     * The point is to stop ALLOCATING once the budget is breached, not merely to notice afterwards
+     * -- an enumeration that only measures its peak on the way out has already paid it. When off,
+     * the cost is one field read and a branch per node, so measured configurations are unaffected.
+     */
+    public long abortHeapBytes = 0;
+
+    /** Thrown from a worker when {@link #abortHeapBytes} is breached; caller tightens and retries. */
+    public static final class HeapBudgetExceeded extends RuntimeException {
+        private static final long serialVersionUID = 1L;
+        HeapBudgetExceeded() { super(null, null, false, false); }
+    }
+
     private static final ThreadMXBean THREAD_MX = ManagementFactory.getThreadMXBean();
     private volatile boolean samplerRunning = false;
     private Thread memorySampler;
@@ -905,6 +921,10 @@ public class AlgoRHUSPMinerParallel {
      * locality. paper §4.3
      */
     private void mine(MiningContext ctx, InstanceList projected, int lastItem) {
+        if (abortHeapBytes > 0) {
+            Runtime rt = Runtime.getRuntime();
+            if (rt.totalMemory() - rt.freeMemory() > abortHeapBytes) throw new HeapBudgetExceeded();
+        }
         if (projected.size == 0) return;
 
         int laStamp = 0;
