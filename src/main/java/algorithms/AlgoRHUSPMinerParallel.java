@@ -175,6 +175,19 @@ public class AlgoRHUSPMinerParallel {
      */
     public boolean windowMode = false;
 
+    /**
+     * FLOOR prune for the relaxed modes. The trailing gap as a component can shrink -- a recurrence
+     * resets it -- which is why the relaxed modes switch the trailing-gap prune off. But the floor
+     * max(inner, trailing) cannot shrink: the same recurrence crystallizes an inner gap at least as
+     * long as the trailing gap it replaces, and with no recurrence the trailing gap only grows. So
+     * when the caller's bound is a ceiling on every future test (rho * N_final, a growth claim, or a
+     * declared completeness class), a node whose floor exceeds it is out in every future, and its
+     * subtree with it -- extensions only lose occurrences, so the floor only grows. This is the
+     * strongest prune the engine has, and the relaxed modes previously ran with it off entirely,
+     * which is where their memory went. Off by default; the caller asserts the bound's validity.
+     */
+    public boolean floorPrune = false;
+
     // ----- Tier 0 / EUCS (immutable after Phase 1) -----
     private int[] itemToDense;
     private int[] denseToItem;
@@ -898,6 +911,9 @@ public class AlgoRHUSPMinerParallel {
         int finalPer = numSeq - prevSid;
         // The trailing gap must not prune when seeding/windowing -- later data can shrink it.
         if (!relaxed && useRegPruning && finalPer > maxRegularity) { prunedRegularityA.increment(); return; }
+        // The FLOOR may prune even then -- see floorPrune. Inner gaps are already pruned above, so
+        // testing the trailing component here completes max(inner, trailing) > bound.
+        if (relaxed && floorPrune && useRegPruning && finalPer > maxRegularity) { prunedRegularityA.increment(); return; }
         if (finalPer > maxPeriod) maxPeriod = finalPer;
         boolean isRegular = maxPeriod <= maxRegularity;
 

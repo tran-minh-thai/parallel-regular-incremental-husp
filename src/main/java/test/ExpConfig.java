@@ -360,6 +360,14 @@ public final class ExpConfig {
         m.seedPruneByFinalN = true;                  // regularity bound at seeding: ρ·N_final
         m.discoverExact = true;                      // recover from ΔD what D_old was too weak to seed
         m.forkSeed = false;                          // in-house enumeration is unused when seeding externally
+        // -DfloorPrune lets ANY harness run enable the floor prune without a code edit. Presence of
+        // the property is what enables it -- a bare -DfloorPrune sets the EMPTY string, which
+        // Boolean.getBoolean would read as false, and that mismatch already produced one probe run
+        // that measured nothing. Absent the property this stays false, so every reported
+        // configuration is unchanged; the ablation stays out either way, since the miner engages
+        // the prune only under a sound ceiling bound.
+        String fp = System.getProperty("floorPrune");
+        m.floorPruneSeeds = fp != null && !fp.equalsIgnoreCase("false");
         m.buffer.strategy = AdaptiveBuffer.Strategy.FIX;
         m.buffer.fixedMu = MU_PARTITION;             // θ₀ = δ·U(D_old)
         m.buffer.bufferFactorMin = MU_PARTITION;

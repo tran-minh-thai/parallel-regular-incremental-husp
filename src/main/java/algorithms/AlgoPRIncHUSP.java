@@ -217,6 +217,17 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
      */
     public int memoryBudgetMB = 0;
 
+    /**
+     * Let seeding and discovery prune on the FLOOR max(inner period, current trailing gap) inside the
+     * enumeration, instead of only evicting by it afterwards. Sound exactly when the mining bound is
+     * a genuine ceiling -- rho * N_final under a horizon, or the emergent bound under a budget, where
+     * dropping means leaving the declared class, which is what the class already says. It is the same
+     * lemma the eviction uses, moved from "generate, then discard" to "never generate": the
+     * difference between managing the explosion and preventing it. Off by default so every reported
+     * configuration is unchanged; the S10 ablation path (seedPruneByFinalN=false) never engages it.
+     */
+    public boolean floorPruneSeeds = false;
+
     private int horizonMaxReg = Integer.MAX_VALUE;    // bound from the growth/hint chain, fixed at seeding
     private int minEvictedFloor = Integer.MAX_VALUE;  // smallest FLOOR ever given up under the budget
 
@@ -414,6 +425,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
             e.boundMode = AlgoRHUSPMinerParallel.BOUND_LA_PEU;
             e.useRegPruning = true;
             e.seedMode = true;                                   // keep seeds with a large trailing gap
+            e.floorPrune = floorPruneSeeds && soundCeilingBound();
             e.forcedMinUtil = (long) Math.ceil(bufferThreshold); // θ = μ_min · minUtil
             return e;
         };
@@ -1190,6 +1202,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
             e.useRegPruning = true;
             e.windowMode = true;                               // a mid-stream part: neither leading nor
                                                                // trailing gap is a real gap of α in D
+            e.floorPrune = floorPruneSeeds && soundCeilingBound();
             e.forcedMinUtil = (long) Math.ceil(threshold);
             return e;
         };
@@ -1274,6 +1287,11 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
             try { Thread.sleep(50); } catch (InterruptedException ie) { Thread.currentThread().interrupt(); return; }
             if (rt.totalMemory() - rt.freeMemory() < target * 3 / 4) return;
         }
+    }
+
+    /** The mining bound is a genuine ceiling only from these sources; the ablation's ρ·N_current is not. */
+    private boolean soundCeilingBound() {
+        return growthFactor > 0 || memoryBudgetMB > 0 || (seedPruneByFinalN && hintedTotalN > 0);
     }
 
     /** Walk the cause chain for the engine's budget abort; pool wrappers may nest it. */
