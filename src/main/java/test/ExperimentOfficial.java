@@ -51,6 +51,8 @@ import java.util.function.Supplier;
  *       k batches, which locates the point where incremental work becomes the cheaper option.</li>
  *   <li><b>S9</b> — buffer factor sweep: recall is independent of mu, cost is not.</li>
  *   <li><b>S10</b> — exactness ablation: the two seed bounds switched on and off.</li>
+ *   <li><b>S11</b> — the S2 comparison repeated at several batch counts, so the ranking is a trend
+ *       rather than a point.</li>
  * </ul>
  * S5 to S10 run only on datasets small enough to have an oracle; the heavy ones are marked
  * scalability-only in {@link DatasetCatalog}.
@@ -64,6 +66,7 @@ import java.util.function.Supplier;
  *   java -cp out test.ExperimentOfficial --s9b               # only the lambda sweep on distribution B
  *   java -cp out test.ExperimentOfficial --m1                # only the per-batch-exact comparison
  *   java -cp out test.ExperimentOfficial --followup          # every follow-up probe, one session
+ *   java -cp out test.ExperimentOfficial --absolute          # declared constant B per dataset
  *   java -cp out test.ExperimentOfficial seq.txt eutil.txt [delta] [rho] [out.csv]   # one dataset
  * </pre>
  * Suite runs create {@code results/run_<timestamp>_<id>/} holding the CSV, the dataset statistics
@@ -87,7 +90,7 @@ public class ExperimentOfficial {
     static BufferedWriter csv;
 
     static final String HEADER =
-        "dataset,scenario,distribution,algorithm,mu,minUtilRatio,maxRegRatio,threads,n_batches,iteration,runtime_ms,build_ms,incr_ms,disc_ms,peak_mb,hs_count,shs_count,recall,status,seed_mb,incr_mb,disc_mb,tracked_seed,tracked,oracle_size,oracle_hits\n";
+        "dataset,scenario,distribution,algorithm,mu,minUtilRatio,maxRegRatio,threads,n_batches,iteration,runtime_ms,build_ms,incr_ms,disc_ms,peak_mb,hs_count,shs_count,recall,status,seed_mb,incr_mb,disc_mb,tracked_seed,tracked,oracle_size,oracle_hits,abs_b\n";
 
     /** Provenance + crash-resume state for the suite run (null in single-dataset mode). */
     static RunContext ctx;
@@ -116,7 +119,7 @@ public class ExperimentOfficial {
         if (flags.contains("--m1")) ExpConfig.enableM1Only();
         // --followup: run all three follow-up probes in one session (M1 + single re-mine + S9B).
         if (flags.contains("--followup")) ExpConfig.enableFollowupOnly();
-        // --absolute: constant per-dataset regularity bound B = floor(rho * N_final); see ExpConfig.
+        // --absolute: the regularity constraint becomes each dataset's DECLARED constant B; see ExpConfig.
         if (flags.contains("--absolute")) ExpConfig.absoluteMode = true;
 
         // --only=TAG1,TAG2 restricts the suite to the named datasets, each keeping its own settings.
@@ -574,7 +577,7 @@ public class ExperimentOfficial {
                          int threads, int nb, int iter, Run run, String recall,
                          int oracleSize, int oracleHits) throws IOException {
         String status = run.timedOut ? "TIMEOUT" : (run.error != null ? "ERROR" : "OK");
-        csv.write(String.format("%s,%s,%s,%s,%s,%s,%s,%d,%d,%d,%d,%d,%d,%d,%.2f,%d,%d,%s,%s,%.2f,%.2f,%.2f,%d,%d,%d,%d%n",
+        csv.write(String.format("%s,%s,%s,%s,%s,%s,%s,%d,%d,%d,%d,%d,%d,%d,%.2f,%d,%d,%s,%s,%.2f,%.2f,%.2f,%d,%d,%d,%d,%d%n",
                 tag, scenario, dist, algo, mu, d, r, threads, nb, iter,
                 run.timedOut ? -1 : run.runtimeMs,
                 run.timedOut ? -1 : run.buildMs,
@@ -589,7 +592,8 @@ public class ExperimentOfficial {
                 run.timedOut ? 0.0 : run.discMb,
                 run.timedOut ? -1 : run.trackedSeed,
                 run.timedOut ? -1 : run.tracked,
-                oracleSize, oracleHits));
+                oracleSize, oracleHits,
+                ExpConfig.absoluteB));
         csv.flush();
     }
 

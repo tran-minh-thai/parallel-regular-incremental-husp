@@ -183,6 +183,7 @@ public final class RunContext {
         StringBuilder sb = new StringBuilder();
         for (DatasetSpec s : suite)
             sb.append(s.tag).append("(d=").append(s.minUtilRatio).append(",r=").append(s.maxRegRatio)
+              .append(ExpConfig.absoluteMode && s.absB > 0 ? ",B=" + s.absB : "")
               .append(s.s1Only ? ",S1only" : "").append(") ");
         meta.setProperty("config.suite", sb.toString().trim());
         saveMeta();
@@ -267,7 +268,8 @@ public final class RunContext {
         if (ExpConfig.absoluteMode) sb.append("maxReg=ABSOLUTE;");   // never resume-match a relative run
         for (DatasetSpec s : suite)
             sb.append(s.tag).append(':').append(s.minUtilRatio).append(':').append(s.maxRegRatio)
-              .append(':').append(s.s1Only).append(';');
+              .append(':').append(s.s1Only)
+              .append(ExpConfig.absoluteMode ? ":B" + s.absB : "").append(';');
         sb.append("mu=").append(ExpConfig.MU_PARTITION).append(';');       // proposed: parameter-free
         sb.append("muBase=").append(ExpConfig.muMin).append(',').append(ExpConfig.muMax).append(';');  // baselines only
         sb.append("runs=").append(ExpConfig.warmupRuns).append(',')
