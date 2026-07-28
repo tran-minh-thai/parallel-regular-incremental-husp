@@ -87,7 +87,7 @@ public class ExperimentOfficial {
     static BufferedWriter csv;
 
     static final String HEADER =
-        "dataset,scenario,distribution,algorithm,mu,minUtilRatio,maxRegRatio,threads,n_batches,iteration,runtime_ms,build_ms,incr_ms,disc_ms,peak_mb,hs_count,shs_count,recall,status,seed_mb,incr_mb,disc_mb,tracked_seed,tracked\n";
+        "dataset,scenario,distribution,algorithm,mu,minUtilRatio,maxRegRatio,threads,n_batches,iteration,runtime_ms,build_ms,incr_ms,disc_ms,peak_mb,hs_count,shs_count,recall,status,seed_mb,incr_mb,disc_mb,tracked_seed,tracked,oracle_size,oracle_hits\n";
 
     /** Provenance + crash-resume state for the suite run (null in single-dataset mode). */
     static RunContext ctx;
@@ -187,9 +187,14 @@ public class ExperimentOfficial {
         final int cores = ExpConfig.bestT();           // PINNED best-T (not availableProcessors) — see ExpConfig
         Set<String> oracle = oracleOrNull(minUtilRatio, maxRegRatio);
 
-        if (ExpConfig.absoluteMode)
-            System.out.printf("%n### ABSOLUTE maxReg: B = %d sequences (declared; constant at every batch) ###%n",
-                    specAbsB);
+        if (ExpConfig.absoluteMode) {
+            if (specAbsB > 0)
+                System.out.printf("%n### ABSOLUTE maxReg: B = %d sequences (declared; constant at every batch) ###%n",
+                        specAbsB);
+            else
+                System.out.printf("%n### !! %s has NO declared B -- this dataset runs in RELATIVE mode inside an"
+                        + " absolute run; its rows are labeled by what they measure, not by the flag ###%n", tag);
+        }
         System.out.printf("%n========== %s%s | %d sequences | δ=%.4f ρ=%.2f | %s | best T=%d (machine has %d) ==========%n",
                 tag, s1Only ? " [S1 ONLY]" : "", all.size(), minUtilRatio, maxRegRatio,
                 oracle != null ? "oracle(RHusp)=" + oracle.size() : "recall=SKIPPED (N>" + ExpConfig.coverageMaxN + ")",
@@ -492,12 +497,20 @@ public class ExperimentOfficial {
         Run warm = null;
         for (int w = 0; w < Math.max(1, ExpConfig.warmupRuns); w++) warm = timedRun(factory, b, d, r);
         if (warm.timedOut || warm.error != null || warm.patterns == null) {
-            writeRow(scenario, dist, algo, mu, d, r, threads, b.size(), 0, warm, "");
+            writeRow(scenario, dist, algo, mu, d, r, threads, b.size(), 0, warm, "", -1, -1);
             System.out.printf("   [%-15s %-10s %-15s T=%-2d] %s%n", scenario, dist, algo, threads,
                     warm.timedOut ? "TIMEOUT" : "ERROR:" + warm.error);
             return Agg.failed();
         }
         String recall = oracle != null ? String.format("%.4f", ExpUtil.coverage(warm.patterns, oracle)) : "";
+        // Recall is blind to spurious patterns: a result containing every oracle pattern scores 1.0
+        // no matter how much it also returns that it should not. The absolute-mode runs surfaced
+        // exactly that -- the sequential baseline returning supersets with recall 1.0 -- so the row
+        // now carries the oracle's size and the hit count, from which precision follows. hs_count
+        // alone cannot expose a superset, and a table that prints recall without precision beside a
+        // larger hs_count is telling half the truth.
+        int oracleSize = oracle != null ? oracle.size() : -1;
+        int oracleHits = oracle != null ? ExpUtil.hits(warm.patterns, oracle) : -1;
         // Repeat count is tiered by how long a run takes, not fixed. A sub-second run needs many
         // repeats before its mean is trustworthy; a two-minute run needs few, and forcing many would
         // dominate the suite. The warm-up run just measured the duration, so use it to pick the tier.
@@ -508,7 +521,7 @@ public class ExperimentOfficial {
         for (int it = 1; it <= repeats; it++) {
             System.gc();
             Run rr = timedRun(factory, b, d, r);
-            writeRow(scenario, dist, algo, mu, d, r, threads, b.size(), it, rr, recall);
+            writeRow(scenario, dist, algo, mu, d, r, threads, b.size(), it, rr, recall, oracleSize, oracleHits);
             last = rr;
             if (rr.timedOut) break;
             times[n++] = rr.runtimeMs;
@@ -558,9 +571,10 @@ public class ExperimentOfficial {
     }
 
     static void writeRow(String scenario, String dist, String algo, String mu, double d, double r,
-                         int threads, int nb, int iter, Run run, String recall) throws IOException {
+                         int threads, int nb, int iter, Run run, String recall,
+                         int oracleSize, int oracleHits) throws IOException {
         String status = run.timedOut ? "TIMEOUT" : (run.error != null ? "ERROR" : "OK");
-        csv.write(String.format("%s,%s,%s,%s,%s,%s,%s,%d,%d,%d,%d,%d,%d,%d,%.2f,%d,%d,%s,%s,%.2f,%.2f,%.2f,%d,%d%n",
+        csv.write(String.format("%s,%s,%s,%s,%s,%s,%s,%d,%d,%d,%d,%d,%d,%d,%.2f,%d,%d,%s,%s,%.2f,%.2f,%.2f,%d,%d,%d,%d%n",
                 tag, scenario, dist, algo, mu, d, r, threads, nb, iter,
                 run.timedOut ? -1 : run.runtimeMs,
                 run.timedOut ? -1 : run.buildMs,
@@ -574,7 +588,8 @@ public class ExperimentOfficial {
                 run.timedOut ? 0.0 : run.incrMb,
                 run.timedOut ? 0.0 : run.discMb,
                 run.timedOut ? -1 : run.trackedSeed,
-                run.timedOut ? -1 : run.tracked));
+                run.timedOut ? -1 : run.tracked,
+                oracleSize, oracleHits));
         csv.flush();
     }
 

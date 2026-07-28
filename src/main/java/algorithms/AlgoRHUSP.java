@@ -124,7 +124,12 @@ public class AlgoRHUSP {
             if (iExt) { newPat.get(newPat.size() - 1).add(item); Collections.sort(newPat.get(newPat.size() - 1)); }
             else { List<Integer> ne = new ArrayList<>(); ne.add(item); newPat.add(ne); }
 
-            if (totalUtil >= minUtil) results.put(format(newPat), new long[]{totalUtil, maxPeriod});
+            // The third field is the TRUE last occurrence. It exists because a consumer that seeds
+            // incremental state from this map needs it: a placeholder there once collapsed the gap
+            // spanning the seed boundary from a SUM of two components into their MAX, understating
+            // periods and letting patterns past the bound -- the false positives that recall, which
+            // only looks at the intersection, can never show.
+            if (totalUtil >= minUtil) results.put(format(newPat), new long[]{totalUtil, maxPeriod, lastSeqId});
 
             for (int c : candidates(next, true,  minUtil, db, ruDB))
                 processExtension(newPat, next, c, true,  minUtil, maxReg, db, ruDB, numSequences, results);

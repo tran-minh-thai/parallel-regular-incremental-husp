@@ -197,7 +197,12 @@ public final class ExpConfig {
      * The reported comparison against a baseline that re-mines per batch only holds at equal
      * correctness if the per-batch-exact variant is the one measured, so S11 carries both.
      */
-    public static boolean runS11Mode1 = true;
+    // SUPERSEDED as a suite member (author's decision, 2026-07-28): the two-part lambda split with
+    // query-time discovery is the adopted design, verified exact; this variant answered the M1
+    // question and the answer is on record -- never competitive at k=4, out of memory from k=16 on
+    // every dataset, under the relative AND the absolute bound alike. Off by default so suite runs
+    // stop paying its OOM cells; --m1 can still switch it on to reproduce the verdict.
+    public static boolean runS11Mode1 = false;
 
     /** S11 runs only the two algorithms the per-batch-exact comparison needs. Set by {@link #enableM1Only()}. */
     public static boolean s11Mode1Only = false;

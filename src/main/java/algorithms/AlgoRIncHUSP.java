@@ -87,7 +87,14 @@ public class AlgoRIncHUSP implements IncrementalHUSPMiner {
         long seedThreshold = (long) Math.ceil(bufferFactor * minUtil);
         Map<String, long[]> seeds = staticMiner.mine(db, seedThreshold, maxReg);
         for (Map.Entry<String, long[]> e : seeds.entrySet())
-            insertPath(parse(e.getKey()), e.getValue()[0], (int) e.getValue()[1], numSequences - 1);
+            // Seed the TRUE last occurrence, never a placeholder. Seeding numSequences-1 here once
+            // made the first post-seed recurrence compute its gap from the END of D_old instead of
+            // from the pattern's real last occurrence: the boundary-spanning gap became max(tail
+            // within D_old, distance into the new data) where the truth is their SUM, periods came
+            // out understated, and patterns beyond the bound leaked into the answer -- up to 30 on
+            // SIGN under the absolute bound, invisible to recall. This baseline can lose patterns by
+            // design; it must never invent them.
+            insertPath(parse(e.getKey()), e.getValue()[0], (int) e.getValue()[1], (int) e.getValue()[2]);
         initialized = true;
         classify();
         sampleMemory();

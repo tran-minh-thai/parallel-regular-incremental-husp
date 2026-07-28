@@ -101,14 +101,14 @@ public final class DatasetCatalog {
         // multiply by the batch count. It is a real dataset of medium size, so it earns its place on
         // the S1 speedup curve, but a full run would dominate the suite for one more s-extension
         // point, and s-extension is already covered by SIGN/LEVIATHAN/BIBLE.
-        s.add(new DatasetSpec("FIFA", 0.050, 0.30, ExpConfig.SCEN_A, true));
+        s.add(new DatasetSpec("FIFA", 0.050, 0.30, ExpConfig.SCEN_A, true, 6135));
 
         // 990,002 sequences; needs -Xmx16g or more. Scalability-only for two independent reasons: it
         // exceeds ExpConfig.coverageMaxN so no oracle can be built, which the correctness scenarios
         // need; and it is sparse enough that delta = 0.015 yields only 30 patterns (at 0.05 just five,
         // where loading dominates and speedup stalled near 1.6x), below which cost rises faster than
         // the count returns.
-        s.add(new DatasetSpec("KOSARAK", 0.015, 0.30, ExpConfig.SCEN_A, true));
+        s.add(new DatasetSpec("KOSARAK", 0.015, 0.30, ExpConfig.SCEN_A, true, 297000));
 
         // --- Datasets evaluated for the i-extension gap and rejected, kept as a record ----------
         //
