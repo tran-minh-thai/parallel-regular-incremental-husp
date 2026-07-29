@@ -45,8 +45,9 @@ import java.util.List;
  * 10% of the data, so the discovery phase must mine the remaining 90% at a rich threshold. SIGN
  * shows how sharp that limit can be — see the note on its line.
  *
- * <p>To retune a dataset, sweep it with {@link DeltaProbe} (or {@link KosarakDeltaProbe} for
- * KOSARAK, which has memory guards), on the B distribution rather than the default A.
+ * <p>To retune a dataset, sweep candidate thresholds on the B-Increasing distribution rather than
+ * the default A: the increasing split is where a threshold that looks safe under A runs out of
+ * memory, so it is the split that decides.
  */
 public final class DatasetCatalog {
     private DatasetCatalog() {}

@@ -180,8 +180,8 @@ public class AlgoRHUSPMinerParallel {
      * resets it -- which is why the relaxed modes switch the trailing-gap prune off. But the floor
      * max(inner, trailing) cannot shrink: the same recurrence crystallizes an inner gap at least as
      * long as the trailing gap it replaces, and with no recurrence the trailing gap only grows. So
-     * when the caller's bound is a ceiling on every future test (rho * N_final, a growth claim, or a
-     * declared completeness class), a node whose floor exceeds it is out in every future, and its
+     * when the caller's bound is a ceiling on every future test (rho * N_final, an absolute declared
+     * bound, or a declared completeness class), a node whose floor exceeds it is out in every future, and its
      * subtree with it -- extensions only lose occurrences, so the floor only grows. This is the
      * strongest prune the engine has, and the relaxed modes previously ran with it off entirely,
      * which is where their memory went. Off by default; the caller asserts the bound's validity.

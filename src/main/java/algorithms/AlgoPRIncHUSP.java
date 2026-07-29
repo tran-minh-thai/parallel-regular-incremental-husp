@@ -161,33 +161,6 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
      */
     public boolean evictPermanentlyIrregular = false;
 
-    /**
-     * Growth factor nu: the regularity bound becomes {@code nu * rho * N_current} instead of
-     * {@code rho * N_final}, so nothing about the future has to be known — only how far the database
-     * may still grow.
-     *
-     * <p>The seeding bound must hold for every future batch, because maxReg = rho*N_t rises while a
-     * pattern's fixed period also rises. rho*N_final is the tightest such bound, but it asks the
-     * caller for the eventual size, which an open-ended feed cannot supply. Requiring instead that
-     * {@code N_final <= nu * N_t} gives {@code nu * rho * N_t >= rho * N_final}, so the bound is
-     * sound under a claim about the GROWTH RATE rather than the final size. That claim is weaker,
-     * and it is self-correcting: N_t rises with every batch, so a fixed nu covers more absolute
-     * growth as the run proceeds.
-     *
-     * <p>The two ends of the range are the two existing algorithms. At nu = 1 the bound is
-     * rho*N_current, which prunes against a threshold that later rises — the baseline's rule, and
-     * its recall. As nu rises the bound loosens toward retaining everything, which is exact and
-     * unbounded in memory. Between them nu trades recall for memory ON THE AXIS WHERE THE LOSS
-     * ACTUALLY IS: measured here, closing the regularity ceiling is worth about 0.95 of recall while
-     * closing the utility ceiling is worth about 0.02, and the buffer factor the baselines tune sits
-     * on the second one.
-     *
-     * <p>It also subsumes the reported configuration rather than replacing it: seeding on a quarter
-     * of the data makes nu = 4 exactly rho*N_final, so those runs are the nu = 4 case.
-     *
-     * <p>Zero (default) keeps the hinted-final-size path.
-     */
-    public double growthFactor = 0.0;
 
     /**
      * Heap budget in MB for the tracked set; 0 (default) leaves it unbounded.
@@ -220,7 +193,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
     /**
      * Let seeding and discovery prune on the FLOOR max(inner period, current trailing gap) inside the
      * enumeration, instead of only evicting by it afterwards. Sound exactly when the mining bound is
-     * a genuine ceiling -- rho * N_final under a horizon, or the emergent bound under a budget, where
+     * a genuine ceiling -- rho * N_final under a horizon, the declared absolute bound, or the emergent bound under a budget, where
      * dropping means leaving the declared class, which is what the class already says. It is the same
      * lemma the eviction uses, moved from "generate, then discard" to "never generate": the
      * difference between managing the explosion and preventing it. Off by default so every reported
@@ -386,13 +359,11 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         // future test, known on day one, and the whole hint/growth chain becomes moot.
         horizonMaxReg = absoluteMaxReg > 0
                 ? absoluteMaxReg
-                : growthFactor > 0
-                    ? (int) Math.min(Integer.MAX_VALUE, growthFactor * maxRegRatio * data.numSequences)
-                    : seedPruneByFinalN
-                        ? (hintedTotalN >= data.numSequences
-                                ? (int) (maxRegRatio * hintedTotalN)   // sound and tight
-                                : Integer.MAX_VALUE)                   // sound, no pruning
-                        : maxReg;                                  // ρ·N_current — approximate, ablation only
+                : seedPruneByFinalN
+                    ? (hintedTotalN >= data.numSequences
+                            ? (int) (maxRegRatio * hintedTotalN)   // sound and tight
+                            : Integer.MAX_VALUE)                   // sound, no pruning
+                    : maxReg;                                  // ρ·N_current — approximate, ablation only
         seedMaxReg = horizonMaxReg;
         seedThreshold0 = bufferThreshold;      // θ₀ — the discovery bound is derived from exactly this
         if (seedWithEngine05) seedWithParallelEngine(dOld);
@@ -1299,8 +1270,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
 
     /** The mining bound is a genuine ceiling only from these sources; the ablation's ρ·N_current is not. */
     private boolean soundCeilingBound() {
-        return absoluteMaxReg > 0 || growthFactor > 0 || memoryBudgetMB > 0
-                || (seedPruneByFinalN && hintedTotalN > 0);
+        return absoluteMaxReg > 0 || memoryBudgetMB > 0 || (seedPruneByFinalN && hintedTotalN > 0);
     }
 
     /** Walk the cause chain for the engine's budget abort; pool wrappers may nest it. */
@@ -1383,7 +1353,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         // generate, and a tighter one discards what the search was told to keep.
         //
         // It also fixes the anchor. seedMaxReg is computed once, against the database as it stood at
-        // seeding, so under a growth claim it means nu * rho * |D_old| and stays put. Recomputing it
+        // seeding and stays put. Recomputing it
         // against the current size would let the ceiling drift upward batch by batch, pruning less
         // for no gain: the binding case is the seeding prune either way, so the drift buys no
         // soundness, only heap. A rolling anchor is the right reading only when the seed itself is

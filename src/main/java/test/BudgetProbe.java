@@ -65,11 +65,6 @@ public class BudgetProbe {
                 AlgoPRIncHUSP m = ExpConfig.newProposed(Runtime.getRuntime().availableProcessors());
                 m.memoryBudgetMB = mb;                 // the single input; no hint is ever supplied
                 m.floorPruneSeeds = System.getProperty("floorPrune") != null;
-                // -DstartBound=22 pins the FIRST rung, so a run can be replayed with no failed
-                // attempts before it -- the discriminating experiment between "the aborted rungs
-                // leave corrupt state behind" and "steady-state budget mode itself loses patterns".
-                int sb = Integer.getInteger("startBound", 0);
-                if (sb > 0) m.growthFactor = sb / (rho * batches.get(0).size());
                 PeakMemoryMeter meter = new PeakMemoryMeter();
                 long t0 = System.currentTimeMillis();
                 m.initialBuild(batches.get(0), delta, rho);

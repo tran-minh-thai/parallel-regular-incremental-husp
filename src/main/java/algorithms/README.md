@@ -117,5 +117,5 @@ work.
 - `common` — the `Sequence`/`Pattern` model used by the reference baselines.
 - `test` — everything experimental: the runners (`ExperimentOfficial`, `ExperimentTest`), the
   configuration (`ExpConfig`, `DatasetCatalog`, `DatasetSpec`), shared helpers (`ExpUtil`,
-  `RunContext`), and the probes and benches used to size parameters (`DeltaProbe`,
-  `KosarakDeltaProbe`, `SeedBench`, `MaintainBench`, and others).
+  `RunContext`), and the probes and benches used to verify mechanisms and size parameters
+  (`BaselineProbe`, `BudgetProbe`, `EvictProbe`, `SeedBench`, `MaintainBench`, and others).
