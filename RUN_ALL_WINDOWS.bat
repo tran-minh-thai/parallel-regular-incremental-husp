@@ -8,6 +8,9 @@ REM    - open a Command Prompt in the project folder and type:  RUN_ALL_WINDOWS.
 REM
 REM  Arguments (optional, any order):
 REM    <number>   heap in GB, e.g.  RUN_ALL_WINDOWS.bat 32   (default: 3/4 of RAM)
+REM    absolute   run the suite the study reports: each dataset's regularity bound is its
+REM               declared constant B (see DatasetCatalog), not the relative rho*N:
+REM               RUN_ALL_WINDOWS.bat absolute    (combine:  RUN_ALL_WINDOWS.bat 24 absolute)
 REM    resume     continue an interrupted run, skipping work already finished:
 REM               RUN_ALL_WINDOWS.bat resume      (combine:  RUN_ALL_WINDOWS.bat 32 resume)
 REM
@@ -42,8 +45,11 @@ if errorlevel 1 (
 )
 
 REM ---- 2) Read arguments: 'resume' anywhere, heap = first numeric argument ----
+set "PROGARGS="
+echo %*| findstr /i "absolute" >nul 2>&1 && set "PROGARGS=--absolute"
+echo %*| findstr /i "resume" >nul 2>&1 && set "PROGARGS=%PROGARGS% --resume"
 set "RESUMEARG="
-echo %*| findstr /i "resume" >nul 2>&1 && set "RESUMEARG=-Dprog.args=--resume"
+if defined PROGARGS set RESUMEARG=-D"prog.args=%PROGARGS%"
 
 set "HEAPG="
 for %%A in (%*) do (echo %%A| findstr /r "^[0-9][0-9]*$" >nul 2>&1 && if not defined HEAPG set "HEAPG=%%A")
@@ -60,7 +66,8 @@ if %HEAPG% LSS 4 set HEAPG=4
 echo Directory  : %CD%
 echo CPU cores  : %NUMBER_OF_PROCESSORS%
 echo Heap (Xmx) : %HEAPG%g     ^| Stack (Xss): 4m
-if defined RESUMEARG echo Resume     : ON ^(skips work already finished^)
+echo %*| findstr /i "absolute" >nul 2>&1 && echo Mode       : ABSOLUTE ^(declared per-dataset bound B^)
+echo %*| findstr /i "resume" >nul 2>&1 && echo Resume     : ON ^(skips work already finished^)
 echo.
 java -version
 echo.
