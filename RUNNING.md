@@ -3,6 +3,19 @@
 How to reproduce the reported numbers, in the order you would do it. `README.md` covers what the
 project is; this covers running it.
 
+## The two regularity modes
+
+The suite runs in one of two modes. `--absolute` is the mode the study reports: each dataset
+declares a constant bound `B` in `DatasetCatalog` (`absB`), a pattern is regular when it recurs at
+least every `B` sequences, and nothing about the bound changes as batches arrive. Without the flag,
+the suite runs the relative mode inherited from the sequential line of work, `maxReg = ρ·N`,
+recomputed per batch. The declared `B` values are calibrated so both modes answer with the same
+oracle at the final size, which keeps their result sets directly comparable. Runs of the two modes
+carry different `config.signature` values, so `--resume` can never mix them. To retune a dataset's
+`B`, edit `absB` in the catalog — it is a given number, part of the problem statement like δ, and
+nothing derives it from the data.
+
+
 ## 1. Before you start
 
 You need a JDK (11 or later). Maven is optional — there are no runtime dependencies, so `javac`

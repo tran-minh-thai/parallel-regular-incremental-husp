@@ -6,6 +6,13 @@ A Java implementation of P-RIncHUSP: it mines high-utility sequential patterns t
 *regularly* — no gap between occurrences larger than a bound — over a database that keeps growing,
 without re-mining the history on every update.
 
+The regularity bound comes in two modes. In the **absolute** mode (`--absolute`, the mode the study
+reports) each dataset declares a constant `B`: a pattern is regular when it recurs at least every
+`B` sequences, at every point in time — a given number, like the utility threshold, never derived
+from any database size. The **relative** mode (`maxReg = ρ·N`, the definition inherited from the
+sequential line of work) is kept for comparison; its bound rises as the database grows, which is
+where that formulation's memory pathologies come from.
+
 ## What it does
 
 The result is **exact**: the pattern set equals what a full re-mine of the updated database would
@@ -14,20 +21,22 @@ not have to.
 
 | | |
 |---|---|
-| **Exact incremental result** | Two bounds close two independent gaps: regularity is pruned at `ρ·N_final` while seeding, and a discovery phase mines the increment at `minUtil − θ₀`. A partition lemma fixes the buffer factor at `μ = 1` instead of leaving it to be tuned. |
+| **Exact incremental result** | Two independent gaps get two bounds: regularity is pruned at the declared `B` (in relative mode, at `ρ·N_final`) while seeding, and a discovery phase mines the increment at `minUtil − θ₀`. A partition lemma fixes the seed-split factor at 1 instead of leaving it to be tuned. |
 | **Parallel and deterministic** | Independent prefix subtrees run on a thread pool; the result never depends on the thread count. |
 | **Content-driven maintenance** | A shared prefix is matched once on behalf of every pattern extending it, over disjoint sequence ranges. |
 | **Exact max-measure utility** | A multi-position vertical utility list, so incremental utilities agree exactly with a re-mine. |
 
 Being exact does not cost speed. Maintenance is nearly flat in the number of update batches while
-re-mining is linear in it, so past a small crossover — between one and a half and six batches,
-depending on the dataset — the incremental method is also the faster one. At thirty-two batches it
-leads the same parallel engine re-mining every batch by 11.9x (SIGN), 5.2x (LEVIATHAN), 22.3x
-(BIBLE) and 12.6x (C8T1S5I8N5K).
+re-mining is linear in it, so past a small crossover — below two batches on BIBLE, between two and
+eight on the others — the incremental method is also the faster one. At thirty-two batches it leads
+the same parallel engine re-mining every batch by 14.3x (SIGN), 7.5x (LEVIATHAN), 37.1x (BIBLE) and
+11.5x (C8T1S5I8N5K), and the gap keeps widening with the batch count.
 
-What it costs instead is memory: holding the raw increment and re-mining it at the lowered threshold
-takes roughly 5.6x the peak memory of re-mining on SIGN, and about 1.6-1.7x on LEVIATHAN and BIBLE.
-That trade is the price of exactness, and it is worth knowing before choosing the method.
+Under the declared bound, peak memory is comparable to per-batch re-mining on the reported
+configurations — equal on SIGN and C8T1S5I8N5K at sixty-four batches, within about 1.5x on
+LEVIATHAN and BIBLE. The honest boundary is dense data under a loose bound: four cells of the suite
+exhaust a 24 GB heap there, for every algorithm alike, and the run records them as errors rather
+than hiding them.
 
 ## Requirements
 
@@ -43,6 +52,9 @@ javac --release 11 -d out $(find src/main/java -name '*.java')
 # Smoke test: every scenario on the tiny example datasets that ship with the repository
 java -Xmx2g -cp out test.ExperimentOfficial --test
 
+# The same smoke test under the declared absolute bound (the reported mode)
+java -Xmx2g -cp out test.ExperimentOfficial --test --absolute
+
 # Fetch the benchmark datasets (about 30 MB) before running anything on real data
 bash fetch_datasets.sh
 
@@ -57,7 +69,8 @@ miss patterns with either bound alone, and `S3 HS invariance` must report `OK`.
 ## Running the full suite
 
 ```bash
-java -Xmx16g -cp out test.ExperimentOfficial              # every dataset
+java -Xmx24g -cp out test.ExperimentOfficial --absolute   # the suite the study reports
+java -Xmx16g -cp out test.ExperimentOfficial              # the relative-mode suite
 java -Xmx16g -cp out test.ExperimentOfficial --only=SIGN  # one dataset
 java -Xmx16g -cp out test.ExperimentOfficial --resume     # continue an aborted run
 ```
@@ -65,7 +78,7 @@ java -Xmx16g -cp out test.ExperimentOfficial --resume     # continue an aborted 
 Wrapper scripts handle building, logging, and — on macOS — keeping the machine awake:
 
 ```bash
-./run_experiments.sh              # full suite; --help lists the options
+./run_experiments.sh --absolute   # the reported suite; --help lists every option
 ./run_experiments.sh --no-maven   # build with javac rather than Maven, so no network is needed
 ./results_status.sh               # which run directories are complete
 ```
@@ -92,14 +105,17 @@ bash fetch_datasets.sh          # download, extract into datasets/, verify check
 Pull the pinned release rather than regenerating the utilities — `RUNNING.md` explains why the
 regenerated bytes may differ.
 
-| Dataset | Sequences | δ | ρ | Notes |
-|---|---|---|---|---|
-| SIGN | 730 | 0.005 | 0.03 | Dense and small; the heaviest per-sequence workload |
-| LEVIATHAN | 5,834 | 0.005 | 0.03 | |
-| BIBLE | 36,369 | 0.005 | 0.03 | |
-| C8T1S5I8N5K | 47,132 | 0.001 | 0.06 | Synthetic, ~8 items per event — the only dataset that exercises the i-extension branch. Published by SPMF as `data.slen_8.tlen_1.seq.patlen_5.lit.patlen_8.nitems_5000_spmf.txt`; the short name encodes the same generator parameters |
-| FIFA | 20,450 | 0.050 | 0.30 | Dense, long sequences; scalability scenario only |
-| KOSARAK | 990,002 | 0.015 | 0.30 | Sparse and large; scalability only. Recall is measured by a separate probe, since building an oracle at this size costs about 95 minutes |
+| Dataset | Sequences | δ | ρ | B | Notes |
+|---|---|---|---|---|---|
+| SIGN | 730 | 0.005 | 0.03 | 21 | Dense and small; the heaviest per-sequence workload |
+| LEVIATHAN | 5,834 | 0.005 | 0.03 | 175 | |
+| BIBLE | 36,369 | 0.005 | 0.03 | 1,091 | |
+| C8T1S5I8N5K | 47,132 | 0.001 | 0.06 | 2,827 | Synthetic, ~8 items per event — the only dataset that exercises the i-extension branch. Published by SPMF as `data.slen_8.tlen_1.seq.patlen_5.lit.patlen_8.nitems_5000_spmf.txt`; the short name encodes the same generator parameters |
+| FIFA | 20,450 | 0.050 | 0.30 | 6,135 | Dense, long sequences; scalability scenario only |
+| KOSARAK | 990,002 | 0.015 | 0.30 | 297,000 | Sparse and large; scalability only. Recall is measured by a separate probe, since building an oracle at this size costs about 95 minutes |
+
+The declared `B` values are calibrated so that the absolute suite answers with the same oracle as
+the relative one — a comparability choice, recorded in `DatasetCatalog` beside the values.
 
 Neither threshold transfers between datasets: δ too high leaves too few patterns to compare against,
 too low exhausts memory, and ρ too loose makes the regularity constraint vacuous — it then stops
@@ -124,8 +140,12 @@ Configured in `ExpConfig`, implemented in `ExperimentOfficial`.
 | S7 | How sensitive is it to the regularity threshold ρ, and where does the approximate variant fail? |
 | S8 | Past how many batches does incremental maintenance beat re-mining? |
 | S9 | Does the seed-split factor affect correctness, and where is it cheapest? |
-| S10 | Which seed bound closes which gap? |
+| S10 | Which seed bound closes which gap? Under `--absolute` the two regularity cells coincide — that axis closes by definition, and the table shows it |
 | S11 | Does the baseline comparison hold as the number of update batches grows? (k ∈ {4, 16, 64}) |
+
+Under `--absolute`, the S7 sweep scales the declared `B` by the same multipliers it applies to ρ.
+The per-batch-exact variant (`partitionMine`) is not part of the default suite — its verdict is
+settled and `--m1` reproduces it.
 
 FIFA and KOSARAK run S1 only — the rest would cost hours at their size.
 
@@ -158,8 +178,17 @@ CSV columns:
 
 ```
 dataset,scenario,distribution,algorithm,mu,minUtilRatio,maxRegRatio,threads,n_batches,
-iteration,runtime_ms,build_ms,incr_ms,peak_mb,hs_count,shs_count,recall,status
+iteration,runtime_ms,build_ms,incr_ms,disc_ms,peak_mb,hs_count,shs_count,recall,status,
+seed_mb,incr_mb,disc_mb,tracked_seed,tracked,oracle_size,oracle_hits,abs_b
 ```
+
+Beyond the timing and count columns: `seed_mb`/`incr_mb`/`disc_mb` are the peak heap DURING each
+phase (levels, not increments — they include state still held from earlier phases, so they do not
+sum to `peak_mb`); `tracked_seed`/`tracked` count the patterns the miner HOLDS, a superset of what
+it returns; `oracle_size`/`oracle_hits` make precision computable — recall alone counts only the
+intersection and cannot show a result that returns more than it should; and `abs_b` is the declared
+bound the cell actually ran at, zero in relative mode. Every parameter a table needs is in the row
+or in `meta.properties` — nothing has to be looked up in the source.
 
 `./results_status.sh` lists each run directory as complete or aborted. Runs whose
 `config.signature` differs came from different configurations — never mix their numbers.
@@ -183,13 +212,15 @@ reported separately and never enters the recall comparison.
 
 | Code | Paper | Meaning |
 |---|---|---|
-| `minUtilRatio` | δ | `minUtil = δ × totalDbUtility` |
-| `maxRegRatio` | ρ | `maxReg = ρ × numSequences` |
+| `minUtilRatio` | δ | `minUtil = δ × totalDbUtility`, recomputed as the database grows |
+| `absB` | B | Declared absolute regularity bound (`--absolute`): regular ⇔ recurs at least every B sequences, constant at every batch |
+| `maxRegRatio` | ρ | Relative mode only: `maxReg = ρ × numSequences`, recomputed per batch |
 | `bufferFactor` | μ | Seed threshold `= μ × minUtil`; 1 for the proposed miner, 0.4 and 0.9 for the baselines |
 | `numThreads` | T | Worker threads |
 
-Thresholds are ratios rather than absolute values, so they scale as the database grows; they are
-recomputed on every batch.
+The utility threshold is a ratio in both modes — utility is additive, and the partition lemma
+handles its growth exactly. The regularity bound is the one that differs: a ratio that rises with
+the database in relative mode, a declared constant in absolute mode.
 
 ## Layout
 
