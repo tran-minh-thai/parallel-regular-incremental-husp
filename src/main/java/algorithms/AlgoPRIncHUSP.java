@@ -14,15 +14,15 @@ import java.util.function.IntConsumer;
 import java.util.stream.IntStream;
 
 /**
- * <h1>P-RIncHUSP — Parallel Regular Incremental High-Utility Sequential Pattern miner</h1>
+ * <h1>P-RIncHUSP: Parallel Regular Incremental High-Utility Sequential Pattern miner</h1>
  *
  * Proposed algorithm. Mechanism: <b>SHS maintenance + promotion</b>, in two phases:
  * <ul>
  *   <li>{@link #initialBuild} (D_old): enumerate patterns by PEU bound (parallel over root branches),
- *       keeping only SHS/HS patterns — i.e. {@code totalUtility >= θ} — into the flat list {@code pats}.
- *       The enumeration tree exists only temporarily during recursion (VUL "scratch" reused per depth,
- *       so no per-node allocation), hence millions of useless PEU-promising nodes are not retained
- *       (a major optimization).</li>
+ *       keeping only SHS/HS patterns (those with {@code totalUtility >= θ}) into the flat list
+ *       {@code pats}. The enumeration tree exists only temporarily during recursion (VUL "scratch"
+ *       reused per depth, so no per-node allocation), hence millions of useless PEU-promising nodes
+ *       are not retained (a major optimization).</li>
  *   <li>{@link #processBatch} (ΔD): for each kept SHS/HS pattern, re-match on the new sequences
  *       (max-measure, same semantics as at build time) to add utility + update regularity; then
  *       reclassify (SHS reaching {@code minUtil} is promoted to HS). Each pattern is independent,
@@ -44,9 +44,9 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
     /**
      * Maintain strategy. {@code false} (default) = per-pattern re-match (each kept pattern DP-matched
      * against its candidate sequences). {@code true} = content-driven: build a prefix trie over the
-     * kept patterns and, per new sequence, traverse the trie guided by the sequence's items —
-     * matching a shared prefix once serves all patterns extending it, parallelized over disjoint
-     * ascending sequence ranges. This is what the proposed miner uses.
+     * kept patterns and, per new sequence, traverse the trie guided by the sequence's items. Matching
+     * a shared prefix once serves all patterns extending it, parallelized over disjoint ascending
+     * sequence ranges. This is what the proposed miner uses.
      */
     public boolean trieMaintain = false;
 
@@ -56,13 +56,13 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
     /**
      * Which regularity threshold to prune with while seeding.
      * <ul>
-     *   <li>{@code true} — ρ·N_final, the tightest bound that stays sound, so no pattern is lost.
+     *   <li>{@code true}: ρ·N_final, the tightest bound that stays sound, so no pattern is lost.
      *       A gap inside {@code D_old} survives unchanged when later batches are appended, while the
      *       threshold itself grows with N, so a pattern can be irregular now and regular once the
      *       database is complete. Needs the final sequence count as a hint, and prunes little when
      *       {@code D_old} is a small fraction of the data. This is what the proposed configuration
      *       uses; see {@code ExpConfig.newProposed}.</li>
-     *   <li>{@code false} (default) — ρ·N_current, as in the sequential predecessor. It prunes harder
+     *   <li>{@code false} (default): ρ·N_current, as in the sequential predecessor. It prunes harder
      *       and so keeps low δ on dense data affordable, but it drops exactly those patterns that
      *       become regular later, which costs recall. Kept for the ablation in S10.</li>
      * </ul>
@@ -70,7 +70,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
     public boolean seedPruneByFinalN = false;
 
     /**
-     * Fork-join work-stealing for the D_old seeding enumeration (the 94–97% cost). Root-level
+     * Fork-join work-stealing for the D_old seeding enumeration (the 94-97% cost). Root-level
      * partitioning alone leaves threads idle under skewed subtree sizes (few productive branches on
      * BIBLE, one giant branch on FIFA); forking large subtrees lets idle workers steal them. A subtree
      * with a VUL smaller than {@link #seedGrain} occurrences runs SEQUENTIALLY (reusing depth-scratch,
@@ -89,7 +89,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
      * <p>
      * The engine runs in {@code seedMode} at the buffer threshold and returns, for each pattern, the
      * {@code lastSeqId} and {@code maxInnerPeriod} needed to keep accumulating regularity across later
-     * batches. Its output matches the in-house enumeration — the semantics are the same.
+     * batches. Its output matches the in-house enumeration, since the semantics are the same.
      */
     public boolean seedWithEngine05 = false;
 
@@ -108,10 +108,10 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
      * therefore surfaces it.
      * <p>
      * The threshold is not a free parameter. μ = 1 gives θ₀ = δ·U(D_old) and hence a discovery
-     * threshold of δ·U(D) − δ·U(D_old) = δ·U(ΔD), so each part is mined at its own natural threshold —
-     * the condition the partition lemma in {@link #discoverFrom} needs. It is also the cost minimum in
-     * practice: seeding grows cheaper as θ₀ rises while discovery grows dearer, and the two cross
-     * there.
+     * threshold of δ·U(D) − δ·U(D_old) = δ·U(ΔD), so each part is mined at its own natural threshold.
+     * That is the condition the partition lemma in {@link #discoverFrom} needs. It is also the cost
+     * minimum in practice: seeding grows cheaper as θ₀ rises while discovery grows dearer, and the two
+     * cross there.
      */
     public boolean discoverExact = false;
 
@@ -127,7 +127,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
      *       candidates, but the answer is exact only at query time, and querying after every batch
      *       re-mines an increment that keeps growing.</li>
      *   <li>{@code partitionMine} mines each sequence exactly once, ever, and leaves the answer exact
-     *       after every batch — but k parts mined at the same δ yield roughly k times the candidates
+     *       after every batch. But k parts mined at the same δ yield roughly k times the candidates
      *       of a single part, since a small part has a small absolute threshold and so admits patterns
      *       that are locally strong yet globally negligible.</li>
      * </ul>
@@ -140,24 +140,23 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
      * regular again and is dead weight.
      *
      * <p>Retention and output use different criteria today. A pattern below minUtil is kept because a
-     * later batch can lift it, and that is right. The same reasoning is then applied to regularity,
-     * where it does not hold: {@code maxPer_N = max(π, τ_N)} and π — the leading gap plus the inner
-     * gaps — is NON-DECREASING as sequences are appended, since a new occurrence turns the current
-     * tail into an inner gap. So for every future {@code N' ≤ N_final},
-     * {@code maxPer_{N'} ≥ π_{N'} ≥ π_now > ρ·N_final ≥ ρ·N'}: irregular then, and at every point
-     * after. Nothing brings such a pattern back, and holding it only costs heap. This is the same
-     * bound Theorem 2 already justifies for seed pruning, applied to RETENTION as well.
+     * later batch can lift it, which is correct. Applying the same reasoning to regularity is not,
+     * because {@code maxPer_N = max(π, τ_N)} and π (the leading gap plus the inner gaps) is
+     * NON-DECREASING as sequences are appended: a new occurrence turns the current tail into an inner
+     * gap. So for every future {@code N' ≤ N_final}, {@code maxPer_{N'} ≥ π_{N'} ≥ π_now > ρ·N_final
+     * ≥ ρ·N'}. Such a pattern is irregular then and at every point after, so holding it only costs
+     * heap. This is the bound Theorem 2 justifies for seed pruning, applied to RETENTION as well.
      *
-     * <p>It bites hardest exactly where the increment dominates. Discovery enumerates ΔD in window
-     * mode, which prunes on consecutive-occurrence gaps only — necessarily, because a pattern's
-     * leading gap inside ΔD is not its leading gap in the database. The true π is known a moment
-     * later, once the fresh candidates are re-matched over the whole database in ascending sequence
-     * order, and that is where this test belongs. Under the increasing split ΔD starts at 0.10·N
-     * while ρ·N_final is 0.03·N, so every pattern occurring only in ΔD is already dead on arrival.
+     * <p>The effect is largest where the increment dominates. Discovery enumerates ΔD in window mode,
+     * which necessarily prunes on consecutive-occurrence gaps only, because a pattern's leading gap
+     * inside ΔD is not its leading gap in the database. The true π is known once the fresh candidates
+     * are re-matched over the whole database in ascending sequence order, which is where this test
+     * belongs. Under the increasing split ΔD starts at 0.10·N while ρ·N_final is 0.03·N, so every
+     * pattern occurring only in ΔD is already irregular when it arrives.
      *
      * <p>Off by default: it changes which patterns are held, so the reported run stays reproducible.
-     * It cannot change the ANSWER — every pattern it drops is one classify() already withholds — but
-     * that is a claim to verify against the oracle, not to assume.
+     * It should not change the ANSWER, since every pattern it drops is one classify() already
+     * withholds, but that is verified against the oracle rather than assumed.
      */
     public boolean evictPermanentlyIrregular = false;
 
@@ -165,39 +164,39 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
     /**
      * Heap budget in MB for the tracked set; 0 (default) leaves it unbounded.
      *
-     * <p>This is the only knob left, and it is a fact about the machine rather than a claim about
-     * the data. Every retention threshold tried before it — the final size, a growth factor over the
-     * initial load, a lookahead in batches — was the same unknowable number wearing a new name:
-     * each asked how much data is still to come. The budget asks nothing. It inverts the question:
-     * instead of the caller declaring a bound and the memory following from it, the memory is fixed
-     * and the bound EMERGES from what fits.
+     * <p>This is the only remaining knob, and it states a fact about the machine rather than a claim
+     * about the data. The retention thresholds tried before it (the final size, a growth factor over
+     * the initial load, a lookahead in batches) all required the same unknown quantity: how much data
+     * is still to come. The budget does not. Instead of the caller declaring a bound and the memory
+     * following from it, the memory is fixed and the bound EMERGES from what fits.
      *
      * <p>Under pressure, patterns are given up in order of DESCENDING fixed period. The fixed period
-     * is exactly how much the database must still grow before a pattern can be regular, so that
-     * order ranks patterns by how far away their chance is — a ranking that is read off the data at
-     * hand and holds under every future the feed might have. Patterns currently qualifying are never
-     * touched: they are the answer, not a cache.
+     * is how much the database must still grow before a pattern can be regular, so this order ranks
+     * patterns by how far off that point is. The ranking is computed from the data at hand and holds
+     * for any future the feed might have. Patterns currently qualifying are never evicted, since they
+     * are part of the answer rather than a cache.
      *
      * <p>The smallest fixed period ever evicted defines the emergent bound B: everything with a
      * fixed period below it is still held, so the result is <b>complete for the class
-     * {@code maxPer <= B}</b> — provable, and checkable against an oracle. B is REPORTED to the
-     * caller rather than asked of them ({@link #emergentBound()}), and later batches are mined only
-     * to depth B, since anything deeper would be evicted on arrival. B only tightens over a run.
+     * {@code maxPer <= B}</b>, which is provable and checkable against an oracle. B is REPORTED to
+     * the caller rather than asked of them ({@link #emergentBound()}), and later batches are mined
+     * only to depth B, since anything deeper would be evicted on arrival. B only tightens over a run.
      *
      * <p>The budget binds the tracked set from the first classification onward. The transient inside
-     * the seeding enumeration itself is not yet bounded — it lives in the delegated static engine —
-     * and the per-phase memory columns are what measure that residual exposure.
+     * the seeding enumeration is not yet bounded, since it lives in the delegated static engine. The
+     * per-phase memory columns measure that residual exposure.
      */
     public int memoryBudgetMB = 0;
 
     /**
      * Let seeding and discovery prune on the FLOOR max(inner period, current trailing gap) inside the
      * enumeration, instead of only evicting by it afterwards. Sound exactly when the mining bound is
-     * a genuine ceiling -- rho * N_final under a horizon, the declared absolute bound, or the emergent bound under a budget, where
-     * dropping means leaving the declared class, which is what the class already says. It is the same
-     * lemma the eviction uses, moved from "generate, then discard" to "never generate": the
-     * difference between managing the explosion and preventing it. Off by default so every reported
-     * configuration is unchanged; the S10 ablation path (seedPruneByFinalN=false) never engages it.
+     * a genuine ceiling: rho * N_final under a horizon, the declared absolute bound, or the emergent
+     * bound under a budget. In those cases dropping a pattern means leaving the declared class, which
+     * is what the class already states. It is the same lemma the eviction uses, moved from "generate,
+     * then discard" to "never generate", so the candidates are never materialized at all. Off by
+     * default so every reported configuration is unchanged; the S10 ablation path
+     * (seedPruneByFinalN=false) never engages it.
      */
     public boolean floorPruneSeeds = false;
 
@@ -222,7 +221,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
     private int enumMaxReg;              // regularity prune bound (seedMaxReg at seeding; maxReg at discovery)
     private boolean enumUseIntraGap;     // false: prune on maxInnerPeriod (full-DB seeding, counts the gap
                                          // from seq 0); true: prune on maxIntraGap only (window enumeration
-                                         // at discovery — consecutive-occurrence gaps inside [lo,hi) are
+                                         // at discovery: consecutive-occurrence gaps inside [lo,hi) are
                                          // true global gaps, so the prune stays sound and anti-monotone)
     private int enumCap;                 // candidate cap for the current enumeration (MAX_VALUE at seeding)
     private final java.util.concurrent.atomic.AtomicInteger enumCount = new java.util.concurrent.atomic.AtomicInteger();
@@ -248,11 +247,11 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
     private long minUtil;
     private int maxReg;
     private int seedMaxReg;                           // seeding-time regularity threshold = ρ·N_final (safe pruning)
-    private int hintedTotalN = 0;                     // total N (if hinted by harness) — see hintTotalSequences
+    private int hintedTotalN = 0;                     // total N (if hinted by harness); see hintTotalSequences
     private double bufferThreshold;                  // θ(t) = μ(t)·minUtil
 
     private final Map<String, long[]> highUtility = new ConcurrentHashMap<>();
-    // SHS (buffered) count only — we never enumerate the buffered patterns, so store an int, NOT a
+    // SHS (buffered) count only. We never enumerate the buffered patterns, so store an int, NOT a
     // Set<String>. Materializing a formatPattern() String per SHS pattern (rebuilt every batch in
     // classify) was the dominant memory sink when the SHS set explodes on dense data + skewed batch
     // distributions (millions of Strings), and is pure waste since only the COUNT is ever read.
@@ -308,7 +307,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         VerticalUtilityList[] vul = new VerticalUtilityList[16];
         int[] ext = new int[16];
         int[] item = new int[16];
-        // reused maps for localCandidates (clear instead of allocating per node) — reduces heavy GC churn under multithreading
+        // reused maps for localCandidates (clear instead of allocating per node); reduces GC churn under multithreading
         final IntHashSet promising = new IntHashSet(16);
         final IntLongHashMap lapeu = new IntLongHashMap(16);
         // per-sequence end-position dedup when building multi-position VUL (buildInto); 2 frontiers for matchPatternUtil DP
@@ -329,7 +328,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
     }
 
     // =====================================================================
-    //  INITIALIZATION — enumerate D_old, keep SHS/HS patterns (totalUtility >= θ)
+    //  INITIALIZATION: enumerate D_old, keep SHS/HS patterns (totalUtility >= θ)
     // =====================================================================
     @Override
     public void initialBuild(List<List<int[]>> dOld, double minUtilRatio, double maxRegRatio) {
@@ -340,7 +339,6 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         }
         data.appendBatch(dOld);
         recomputeThresholds(0, 0, dOld.size(), 0);   // first batch: μ = μ_min
-        // Seeding-time regularity pruning threshold = ρ·N_final (if total N is known) — cut irregular
         // Seeding-time regularity pruning. Only a bound that holds for EVERY future batch may be used
         // here, because the fixed period grows while maxReg = ρ·N_t also rises: a pattern irregular now
         // can be regular later. ρ·N_final is the tightest such bound, so it prunes hardest without
@@ -349,7 +347,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         // WITHOUT a final size there is no valid ceiling, and the answer is then to prune NOTHING.
         // Not pruning cannot lose a pattern; it only costs memory. Falling back to ρ·N_current would
         // prune against a bound that later rises, which is exactly the baseline's defect and the
-        // reason its recall collapses to 0.017 — a correctness loss, not a memory saving. So exactness
+        // reason its recall collapses to 0.017, which is a correctness loss rather than a memory saving. So exactness
         // never depends on knowing the final size; only the memory does.
         //
         // seedPruneByFinalN=false is the S10 ablation, which deliberately reproduces that defect.
@@ -363,9 +361,9 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
                     ? (hintedTotalN >= data.numSequences
                             ? (int) (maxRegRatio * hintedTotalN)   // sound and tight
                             : Integer.MAX_VALUE)                   // sound, no pruning
-                    : maxReg;                                  // ρ·N_current — approximate, ablation only
+                    : maxReg;                                  // ρ·N_current, approximate, ablation only
         seedMaxReg = horizonMaxReg;
-        seedThreshold0 = bufferThreshold;      // θ₀ — the discovery bound is derived from exactly this
+        seedThreshold0 = bufferThreshold;      // θ₀; the discovery bound is derived from exactly this
         if (seedWithEngine05) seedWithParallelEngine(dOld);
         else staticBuild();
         pats = patsQueue.toArray(new Pat[0]);
@@ -531,13 +529,13 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
             VerticalUtilityList v = w.vul(0); v.reset();
             buildInto(w, rootVul, item, false, v);
             if (v.isEmpty() || v.peuUpperBound < enumThreshold) return;
-            if ((enumUseIntraGap ? v.maxIntraGap : v.maxInnerPeriod) > enumMaxReg) return;   // regularity pruning (anti-monotone) — see extend()
+            if ((enumUseIntraGap ? v.maxIntraGap : v.maxInnerPeriod) > enumMaxReg) return;   // regularity pruning (anti-monotone); see extend()
             w.ext[0] = S_EXT; w.item[0] = item;
             enumerate(w, v, 0, item);
         });
     }
 
-    /** Record the pattern if SHS/HS, then extend candidates (PEU-pruned) — sequential recursion within one branch. */
+    /** Record the pattern if SHS/HS, then extend candidates (PEU-pruned); sequential recursion within one branch. */
     private void enumerate(Workspace w, VerticalUtilityList vul, int depth, int lastItem) {
         exploredNodes.increment();
         if (vul.totalUtility >= enumThreshold && vul.lastSeqId != -1) {
@@ -568,7 +566,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
     }
 
     // =====================================================================
-    //  INCREMENTAL — re-match each SHS/HS pattern on new sequences, then promote
+    //  INCREMENTAL: re-match each SHS/HS pattern on new sequences, then promote
     // =====================================================================
     @Override
     public long processBatch(List<List<int[]>> deltaD) {
@@ -610,7 +608,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
             return;
         }
         // Inverted index over the new sequences [lo,hi): item -> ascending seqIds containing it.
-        // Prunes the cross-product — each pattern is re-matched only against sequences that contain
+        // Prunes the cross-product: each pattern is re-matched only against sequences that contain
         // EVERY one of its items (intersection of posting lists; a necessary order-free condition for
         // occurrence), instead of every new sequence. Exact: a sequence missing any pattern item cannot
         // contain the pattern, so it would have returned MIN_VALUE and left utility/regularity unchanged.
@@ -637,7 +635,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
     }
 
     // =====================================================================
-    //  CONTENT-DRIVEN MAINTAIN (trieMaintain) — trie over pats, traverse per new sequence
+    //  CONTENT-DRIVEN MAINTAIN (trieMaintain): trie over pats, traverse per new sequence
     // =====================================================================
 
     /** Build the prefix trie from {@code pats} (once; pats is fixed after seeding). ext[0]=S_EXT (a
@@ -666,7 +664,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
      * Content-driven incremental maintenance. Phase 1 (parallel over DISJOINT ASCENDING sequence
      * chunks): each thread traverses the trie per sequence, recording per-pattern max-measure utility;
      * it folds occurrences into O(1)-per-pattern accumulators (first/last/maxGap-within-chunk/utilSum).
-     * Phase 2 (parallel over patterns): merge the T chunk accumulators in ascending thread order — the
+     * Phase 2 (parallel over patterns): merge the T chunk accumulators in ascending thread order, so the
      * cross-chunk gap is (next chunk's first occurrence − previous chunk's last), so regularity is exact
      * without materializing the full occurrence list. Result identical to the per-pattern re-match.
      */
@@ -797,7 +795,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
 
     /**
      * Candidate sequences for pattern {@code p} = INTERSECTION of the posting lists of its distinct
-     * items (sequences containing EVERY pattern item — the tightest order-free necessary condition).
+     * items (sequences containing EVERY pattern item, the tightest order-free necessary condition).
      * Returns null if any item is absent from the batch. Iterates the shortest list and keeps entries
      * present in all others (binary search); the result stays in ascending seqId order.
      */
@@ -831,7 +829,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
     /**
      * Exact max-measure utility of pattern {@code (ext,item)} in sequence {@code seqId} via a
      * frontier-based dynamic program: at each step keep all non-dominated end positions (max utility
-     * per position) rather than a single greedy state — matches the oracle semantics. Returns
+     * per position) rather than a single greedy state, which matches the oracle semantics. Returns
      * {@link Long#MIN_VALUE} if absent.
      */
     private long matchPatternUtil(int[] ext, int[] item, int seqId) {
@@ -973,7 +971,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
     }
 
     // =====================================================================
-    //  CLASSIFICATION — promote SHS->HS
+    //  CLASSIFICATION: promote SHS->HS
     // =====================================================================
     private void classify() {
         highUtility.clear();
@@ -982,7 +980,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         // A seeded pattern's fixed period grows as batches land: a new occurrence turns the current
         // tail into an inner gap. Once it passes ρ·N_final the pattern is irregular at this batch and
         // at every later one, so it is dropped here rather than carried to the end. Patterns still
-        // short on UTILITY stay — that is the retention this must not disturb.
+        // short on UTILITY stay, and that is the retention this must not disturb.
         if (evictPermanentlyIrregular) {
             int bound = finalMaxReg();
             if (bound != Integer.MAX_VALUE) {
@@ -1006,7 +1004,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
             if (trueMaxPer > maxReg) continue;                  // irregular -> discard from output (Corollary 2)
             if (p.utility >= minUtil)
                 highUtility.put(formatPattern(p.ext, p.item), new long[]{p.utility, trueMaxPer});
-            else if (p.utility >= bufferThreshold) bufferedN++; // count only — do NOT materialize a String per SHS
+            else if (p.utility >= bufferThreshold) bufferedN++; // count only; do NOT materialize a String per SHS
         }
         enforceMemoryBudget(n);
     }
@@ -1014,20 +1012,19 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
     /**
      * Give up tracked patterns, worst-first, until the heap is back inside the budget.
      *
-     * <p>Every threshold this file has tried to set for retention needed a number about the future
-     * that nobody can supply. This needs none. The fixed period IS how much the database must still
-     * grow before a pattern can be regular, so ordering by it descending ranks exactly by how far
-     * away each pattern's chance is — an order that holds whatever the feed does next. The budget
-     * then says where to stop, and the budget is a fact about the machine rather than a claim about
-     * the data.
+     * <p>The retention thresholds tried before this one all required a number about the future that
+     * nobody can supply. This one requires none. The fixed period IS how much the database must still
+     * grow before a pattern can be regular, so ordering by it descending ranks patterns by how far
+     * off that point is, and the order holds whatever the feed does next. The budget then says where
+     * to stop, and it states a fact about the machine rather than a claim about the data.
      *
      * <p>Currently-qualifying patterns are never touched. They are the answer; dropping one would
      * change the result rather than the footprint, and this must only ever cost memory.
      *
      * <p>The reading is deliberately taken after the answer is built, when the transient enumeration
-     * structures are gone and what remains is close to the resident set. It cannot be exact — a
-     * collection may not have run — so the budget behaves as a high-water mark to stay under, not as
-     * a hard allocation ceiling.
+     * structures are gone and what remains is close to the resident set. It cannot be exact, since a
+     * collection may not have run, so the budget behaves as a high-water mark to stay under rather
+     * than a hard allocation ceiling.
      */
     private void enforceMemoryBudget(int n) {
         if (memoryBudgetMB <= 0 || pats.length == 0) return;
@@ -1134,7 +1131,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
     }
 
     /**
-     * PARTITION-LEMMA DISCOVERY — the one mechanism that removes the seed-once ceiling.
+     * PARTITION-LEMMA DISCOVERY: the mechanism that removes the seed-once ceiling.
      *
      * <p>For a sequence-disjoint partition {@code D = P₁ ⊎ … ⊎ P_m}, if {@code u(α,Pᵢ) < δ·U(Pᵢ)} for
      * every i then {@code u(α,D) = Σ u(α,Pᵢ) < δ·Σ U(Pᵢ) = minUtil}. Contrapositive: every globally
@@ -1143,9 +1140,9 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
      *
      * <p>This method mines one part and folds its candidates into the tracked set. Callers:
      * <ul>
-     *   <li>{@link #reconcile()} — part = all increments, threshold = minUtil − θ₀ (coarse 2-part split:
+     *   <li>{@link #reconcile()}: part = all increments, threshold = minUtil − θ₀ (coarse 2-part split:
      *       fewest candidates, but exact only at query time);</li>
-     *   <li>{@link #partitionMine} — part = Δ_k, threshold = δ·U(Δ_k) (fine k-part split: each sequence
+     *   <li>{@link #partitionMine}: part = Δ_k, threshold = δ·U(Δ_k) (fine k-part split: each sequence
      *       mined exactly once, ever, and the answer is exact after EVERY batch).</li>
      * </ul>
      *
@@ -1157,7 +1154,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         // threshold = minUtil - θ₀. When it drops to zero or below, θ₀ has caught up with minUtil and
         // the partition lemma stops saying anything: its second branch, u(α,ΔD) ≥ minUtil - θ₀, becomes
         // true for every pattern, so completeness would require enumerating all of ΔD rather than
-        // skipping it. Returning here is therefore a cost guard, NOT a soundness argument — a pattern
+        // skipping it. Returning here is therefore a cost guard, NOT a soundness argument: a pattern
         // absent from D_old and high-utility only in ΔD would be missed.
         //
         // WHEN IT FIRES DEPENDS ON THE CALLER'S QUERY POINT, not on λ alone. θ₀ is frozen at seeding
@@ -1166,7 +1163,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         // (D_old = 25%) that ceiling is 2 after the first batch, 3 after the second and 4 after the
         // third. The reported runs query once, at the end, so the ceiling is 4 and λ ≤ 3 never trips
         // it. A caller who queries after EVERY batch faces the ceiling of 2, where λ = 3 trips it and
-        // this method returns having mined nothing — silently, since a cost guard cannot report a
+        // this method returns having mined nothing, and silently, since a cost guard cannot report a
         // correctness loss. Query per batch with λ > 1 and the answer is no longer exact; use
         // partitionMine for that access pattern, or keep λ below the first query's ceiling.
         if (part.isEmpty() || threshold <= 0) return;
@@ -1221,7 +1218,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
             highUtility.put(formatPattern(p.ext, p.item), new long[]{p.utility, trueMaxPer});
             discAccepted++;
         }
-        // Keep every candidate whose UTILITY is still short — a later batch can lift it, and the lemma
+        // Keep every candidate whose UTILITY is still short: a later batch can lift it, and the lemma
         // only promises a pattern surfaces in some part. Regularity is the other matter: a fixed
         // period already past ρ·N_final can never come back, so those are dropped rather than carried.
         List<Pat> keep = fresh;
@@ -1245,8 +1242,8 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
 
     /**
      * The class the answer is complete for: every pattern with {@code maxPer <= emergentBound()} is
-     * still tracked. MAX_VALUE until the budget has ever forced an eviction — no eviction, no loss,
-     * and the class is everything. Reported to the caller, never asked of them.
+     * still tracked. MAX_VALUE until the budget has ever forced an eviction, because with no eviction
+     * there is no loss and the class is everything. Reported to the caller, never asked of them.
      */
     public int emergentBound() {
         return minEvictedFloor == Integer.MAX_VALUE ? Integer.MAX_VALUE : minEvictedFloor - 1;
@@ -1343,7 +1340,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
      * The bound above which a pattern's fixed period puts it permanently out of reach, or MAX_VALUE
      * when no such bound can be justified. Deliberately the HORIZON bound, not the mining bound:
      * permanence needs a claim about every future batch, which only a horizon supplies. The budget's
-     * emergent bound governs mining depth and retention pressure instead — eviction under it is
+     * emergent bound governs mining depth and retention pressure instead: eviction under it is
      * already permanent in effect, and accounted for by the completeness class it defines.
      */
     private int finalMaxReg() {

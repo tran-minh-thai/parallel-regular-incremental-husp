@@ -14,7 +14,7 @@ serving two purposes at once: (1) illustrating the contributions throughout the 
 > not a high-coverage approximation. With the seed-split factor λ=1 the seed threshold is θ₀ = δ·U(D_old),
 > so seeding keeps only the HS patterns of D_old; each batch re-matches those by the correct
 > **MAX-measure** and promotes any that reach the growing minUtil. Patterns too weak on D_old to be
-> seeded — the whole `{d,e}` family here — are recovered at query time by the **discovery phase**, which
+> seeded (the whole `{d,e}` family here) are recovered at query time by the **discovery phase**, which
 > mines the accumulated ΔD at minUtil−θ₀ = δ·U(ΔD). Two seed bounds close two independent gaps:
 > regularity pruning at ρ·N_final, and this discovery phase. (Historical note: an earlier version used a
 > μ<1 semi-HS buffer and was a high-coverage approximation missing `<(e)>`; the discovery phase replaced
@@ -30,7 +30,7 @@ serving two purposes at once: (1) illustrating the contributions throughout the 
 | 4 | d | 5 | **EMERGING** item (main contribution) |
 | 5 | e | 4 | **EMERGING** item, forms the itemset `<(d e)>` |
 
-## 2. Database (9 sequences) — format `item[quantity]`
+## 2. Database (9 sequences): format `item[quantity]`
 
 | SID | D_old / ΔD | sequence (paper symbols) | design note |
 |:--:|:--:|---|---|
@@ -44,7 +44,7 @@ serving two purposes at once: (1) illustrating the contributions throughout the 
 | 7 | ΔD | `(a:1)(b:12)(d:10 e:10)` | |
 | 8 | ΔD | `(a:1)(d:2)(d:10 e:10)` | d appears **twice** -> tests the MAX-measure |
 
-## 3. Incremental DEUCS update (illustrates Lemma 1 — accumulation)
+## 3. Incremental DEUCS update (illustrates Lemma 1: accumulation)
 
 `UD` and every DEUCS/SWU cell of `D_new` = the `D_old` value **plus** the contribution from `ΔD` only,
 without rescanning history:
@@ -64,7 +64,7 @@ without rescanning history:
 
 **D_old (6 sequences):** minUtil = 29, θ₀(λ=1) = δ·U(D_old) = 29, seedMaxReg = ρ·N_final = 5
 - Seeded (HS of D_old, utility ≥ θ₀ = 29): `<(a)(b)>`=104, `<(b)>`=96  *(stable patterns)*
-- NOT seeded (utility < θ₀ = 29): the whole `{d,e}` family — `<(a)(d e)>`=22, `<(d e)>`=18,
+- NOT seeded (utility < θ₀ = 29): the whole `{d,e}` family: `<(a)(d e)>`=22, `<(d e)>`=18,
   `<(a)(d)>`=14, `<(a)(e)>`=12, `<(a)>`=12. At λ=1 there is no semi-HS buffer; these are simply
   below the seed threshold and are recovered later by discovery, not by maintenance.
 
@@ -86,7 +86,7 @@ without rescanning history:
 
 ## 5. Where each contribution is illustrated
 
-1. **Accumulative incremental update (Lemma 1):** §3 table — ΔD is appended at the tail, every cell accumulates.
+1. **Accumulative incremental update (Lemma 1):** §3 table: ΔD is appended at the tail, every cell accumulates.
 2. **Regularity-based pruning (Corollary 2):** `<(c)>` has utility = 40·4 = **160 ≥ minUtil**
    but appears only in SID 2 -> maxPer = max(3, 9−2) = 7 > maxReg = 5 -> **rejected**. A high-utility
    pattern is rejected *purely due to non-regularity*.
@@ -100,7 +100,7 @@ without rescanning history:
    μ<1 buffer, which only approximated.
 5. **Why `<(e)>` needs discovery, not maintenance:** at seeding, `<(e)>` is below θ₀ (item e sits at the
    end of an event -> remaining utility 0, upper bound too low), so no seed node exists and maintenance
-   alone can never promote it. The discovery phase, mining ΔD directly, is exactly what recovers it —
+   alone can never promote it. The discovery phase, mining ΔD directly, is exactly what recovers it,
    the concrete reason both bounds are needed for exactness.
 6. **Directed DEUCS (I and S):** `<(d e)>` co-occurs within the same event (DEUCS_I);
    `<(a)(b)>`, `<(a)(d)>` follow the sequence order (DEUCS_S).
@@ -118,7 +118,7 @@ The two differ in mechanism. RIncHusp keeps the `{d,e}` family in its μ<1 semi-
 on surge, but updates by a greedy match, gets `<(d)>` wrong (170 not 160), and has no way to reach
 patterns that were below its buffer floor. P-RIncHUSP does not buffer at all (λ=1): it seeds only the
 D_old HS, updates by the correct **max-measure** (so `<(d)>`=160 is right), and recovers the entire
-`{d,e}` family — including `<(e)>` — through the discovery phase, which RIncHusp has no equivalent of.
+`{d,e}` family, including `<(e)>`, through the discovery phase, which RIncHusp has no equivalent of.
 That is why P-RIncHUSP is exact (8/8) and RIncHusp is not (6/8). *No pattern is a false positive.*
 
 ## 7. Reproduction

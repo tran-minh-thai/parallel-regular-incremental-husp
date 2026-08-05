@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 /**
- * MaintainBench — does the content-driven trie maintain (parallel over sequences, shared-prefix work)
+ * MaintainBench: does the content-driven trie maintain (parallel over sequences, shared-prefix work)
  * beat the per-pattern re-match AND the sequential RIncHusp-Fix0.4 baseline? 4-batch A-Uniform (= S2).
  * Each config: 1 warm-up + 2 measured (min). Correctness gate: trie HS set == invindex HS set.
  *

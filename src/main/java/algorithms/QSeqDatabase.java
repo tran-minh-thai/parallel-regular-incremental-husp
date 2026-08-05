@@ -16,14 +16,14 @@ import java.util.Map;
  * {@code E} is a flat interleaved array {@code [item, util, item, util, ...]}
  * sorted ascending by item id (for ordered same-itemset matching).
  * <p>
- * This class supports <b>tail insertion</b> ({@link #appendBatch}) — the foundational invariant
+ * This class supports <b>tail insertion</b> ({@link #appendBatch}), the foundational invariant
  * of incremental update: a new batch carries only SIDs greater than every existing SID, so all old
  * positions and successive differences are invariant (Lemma 3, {@code lem:tail}).
  */
 public class QSeqDatabase {
 
     // =================================================================================
-    //  CSR (Compressed Sparse Row) STORAGE — flattens the 3-level structure (sequence→itemset→item)
+    //  CSR (Compressed Sparse Row) STORAGE: flattens the 3-level structure (sequence→itemset→item)
     //  into 1-D primitive arrays + OFFSET arrays. Cache-friendly, no objects/pointers,
     //  share-invariant across threads. Supports TAIL INSERTION by APPENDING (grow).
     //

@@ -8,19 +8,19 @@ import java.util.List;
  *
  * <p>This is the only file to edit when adding a dataset or changing a threshold; the runner
  * ({@link ExperimentOfficial}) reads the catalog and needs no changes. Each dataset is one
- * {@code add(...)} line — comment it out to skip it. Missing data files are dropped silently by
+ * {@code add(...)} line; comment it out to skip it. Missing data files are dropped silently by
  * {@link DatasetSpec#onlyAvailable}, so a partial checkout still runs.
  *
  * <p>Both thresholds are ratios of the data rather than absolute values, so they carry across
  * datasets of different sizes:
  * <ul>
- *   <li>{@code minUtilRatio} (delta) — minUtil = delta x total database utility;</li>
- *   <li>{@code maxRegRatio} (rho) — maxReg = rho x number of sequences.</li>
+ *   <li>{@code minUtilRatio} (delta): minUtil = delta x total database utility;</li>
+ *   <li>{@code maxRegRatio} (rho): maxReg = rho x number of sequences.</li>
  * </ul>
  *
  * <p>The trailing boolean marks a dataset as scalability-only: it then runs scenario S1 and skips
  * the comparison and parameter sweeps, which on the largest inputs would dominate the suite's
- * runtime without adding much. Batch splitting is not fixed here either — the runner iterates over
+ * runtime without adding much. Batch splitting is not fixed here either; the runner iterates over
  * the four batch distributions in {@link ExpConfig}, and the scenario named below is only a default.
  *
  * <h2>Choosing delta</h2>
@@ -43,7 +43,7 @@ import java.util.List;
  * <p>Pattern count alone does not decide the value: memory has to be checked on the
  * <em>B-Increasing</em> batch split, which is the worst case. There the initial database is only
  * 10% of the data, so the discovery phase must mine the remaining 90% at a rich threshold. SIGN
- * shows how sharp that limit can be — see the note on its line.
+ * shows how sharp that limit can be; see the note on its line.
  *
  * <p>To retune a dataset, sweep candidate thresholds with {@link DeltaProbe} (or
  * {@link KosarakDeltaProbe} for KOSARAK, which has memory guards) on the B-Increasing distribution
@@ -71,7 +71,7 @@ public final class DatasetCatalog {
         // fixed those values are in results of ./probe_dataset.sh. rho = 0.03 is the important change
         // from the earlier 0.30: at 0.30 the regularity constraint pruned nothing on these datasets
         // (S7 was flat, 30 -> 31 on SIGN across the whole sweep), so the numbers described plain
-        // high-utility mining. At 0.03 the constraint is active — tightening to 0.02 drops SIGN from
+        // high-utility mining. At 0.03 the constraint is active: tightening to 0.02 drops SIGN from
         // 830 patterns to 172, loosening to 0.04 raises it to 4,439.
 
         // Dense, 730 sequences. At (0.005, 0.03): 830 patterns, ~100 MB, under a second. The old
@@ -91,7 +91,7 @@ public final class DatasetCatalog {
 
         // 47,133 sequences, IBM Quest synthetic. This is the one full-suite dataset whose events hold
         // more than one item (7.96 on average, up to 23), so it is the only one that exercises the
-        // i-extension branch of the miner — every other dataset here has singleton events. rho is its
+        // i-extension branch of the miner; every other dataset here has singleton events. rho is its
         // own, 0.06 rather than 0.03, because the same ratio maps to a different absolute maxReg: the
         // planted patterns' periods cluster near maxReg = 0.055*N, so the count jumps from 62 at
         // rho = 0.05 to 5,612 at 0.06 and then saturates. At (0.001, 0.06): 5,612 patterns, ~1.2 s.
@@ -121,7 +121,7 @@ public final class DatasetCatalog {
         // minutes even at a high threshold. MSNBC's regularity constraint never binds (196 patterns at
         // rho 0.01 through 0.30) because its 17 items recur in nearly every sequence. BMS1's operating
         // band is pinched shut: high delta returns nothing, low delta explodes. So the i-extension
-        // branch is covered by the synthetic C8T1S5I8N5K, which is what the field does too — every
+        // branch is covered by the synthetic C8T1S5I8N5K, which is what the field does too, since every
         // real dataset in the HUSPM benchmark set (see HUSP-ULL, IEEE TCYB 2021) has one item per
         // itemset, and the only multi-item dataset there is IBM Quest synthetic.
 

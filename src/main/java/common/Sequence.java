@@ -21,7 +21,7 @@ public class Sequence {
     //  HUSP-ULL, ...) still use the old itemsets/remainingUtilities; only
     //  Adaptive reads the flat fields.
     //
-    //  Layout (4 primitive arrays — minimizes memory footprint):
+    //  Layout (4 primitive arrays: minimizes memory footprint):
     //    int[]    flatItems[k]            = item.id at flat position k
     //    double[] flatUtilities[k]        = utility at flat position k
     //    boolean[] isItemsetEnd[k]        = true if k is the LAST position of
@@ -30,8 +30,8 @@ public class Sequence {
     //    flatLen                          = total number of items (flat array size)
     //
     //  isItemsetEnd replaces the old flatToItemsetIdx + itemsetStart (~5x smaller):
-    //    - flatToItemsetIdx: 4L bytes — not needed (boundary folded into scan)
-    //    - itemsetStart:     4(M+1) bytes — not needed (boundary known via isItemsetEnd)
+    //    - flatToItemsetIdx: 4L bytes, not needed (boundary folded into scan)
+    //    - itemsetStart:     4(M+1) bytes, not needed (boundary known via isItemsetEnd)
     //    - isItemsetEnd:     L bytes (boolean[], 1 byte per entry in the JVM)
     //
     //  Usage (Pass-2 scan):

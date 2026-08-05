@@ -3,11 +3,11 @@ package algorithms;
 import java.util.Arrays;
 
 /**
- * Vertical utility list (VUL) of a pattern {@code α} — the manuscript, §Data structures.
+ * Vertical utility list (VUL) of a pattern {@code α}: the manuscript, §Data structures.
  * <p>
  * Stored as <b>parallel primitive arrays</b> (memory-efficient). Each entry is a single
  * <b>non-dominated end position</b> of the pattern in one sequence: a sequence may have multiple
- * entries (different end positions giving different utilities) — required for the <b>exact
+ * entries (different end positions giving different utilities), required for the <b>exact
  * max-measure</b>: the utility of an extension depends on the end position, so keeping a single
  * position (greedy) would miss matches (the max-utility position may block a better extension at
  * another position). Matches the RHusp oracle semantics.
@@ -28,9 +28,9 @@ public class VerticalUtilityList {
     public long totalUtility = 0;     // Σ_sequence max(matchUtils) = u(α) under the max-measure
     public long peuUpperBound = 0;    // Σ_sequence max(matchUtils+remUtils): PEU upper bound
     public int  lastSeqId = -1;       // most recent distinct sequence (for regularity)
-    public int  maxInnerPeriod = 0;   // largest inner period (excluding the final period — see Pat.trueMaxPer)
+    public int  maxInnerPeriod = 0;   // largest inner period (excluding the final period; see Pat.trueMaxPer)
     public int  maxIntraGap = 0;      // largest gap between CONSECUTIVE occurrences only (no initial gap
-                                      // from seq 0) — the sound regularity prune for a window [lo,hi)
+                                      // from seq 0), the sound regularity prune for a window [lo,hi)
                                       // enumeration where "distance from seq 0" is meaningless
 
     public VerticalUtilityList() { this(4); }
@@ -40,7 +40,7 @@ public class VerticalUtilityList {
         matchUtils = new long[c]; remUtils = new long[c];
     }
 
-    /** Add an end position (with non-decreasing seqId). Does not update aggregates — call {@link #finalizeAggregates()} afterwards. */
+    /** Add an end position (with non-decreasing seqId). Does not update aggregates; call {@link #finalizeAggregates()} afterwards. */
     public void add(int seqId, int eventIdx, int itemIdx, long matchUtility, long remainingUtility) {
         if (size == seqIds.length) grow();
         seqIds[size] = seqId; eventIdxs[size] = eventIdx; itemIdxs[size] = itemIdx;
@@ -76,7 +76,7 @@ public class VerticalUtilityList {
 
     public boolean isEmpty() { return size == 0; }
 
-    /** Clear for reuse (keep arrays) — for the per-depth VUL scratch in staticBuild. */
+    /** Clear for reuse (keep arrays); for the per-depth VUL scratch in staticBuild. */
     public void reset() {
         size = 0; totalUtility = 0; peuUpperBound = 0; lastSeqId = -1; maxInnerPeriod = 0; maxIntraGap = 0;
     }

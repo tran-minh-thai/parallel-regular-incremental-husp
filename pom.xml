@@ -64,7 +64,7 @@
         </configuration>
       </plugin>
 
-      <!-- DEFAULT: use exec:exec (FORKED JVM) — clean exit, no lingering-thread warnings.
+      <!-- DEFAULT: use exec:exec (FORKED JVM): clean exit, no lingering-thread warnings.
            Override mainClass / args / heap via -D properties on the command line.
 
            Examples:

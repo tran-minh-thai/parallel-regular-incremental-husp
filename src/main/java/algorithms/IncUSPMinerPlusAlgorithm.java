@@ -17,14 +17,14 @@ public class IncUSPMinerPlusAlgorithm {
 
     public double Su;
     public double currentMinUtil;
-    public int maxDepth = 1000; // Safety net against stack overflow only — does not change baseline logic
+    public int maxDepth = 1000; // Safety net against stack overflow only; does not change baseline logic
 
     // ========================================================================
     // EXPERIMENTAL METRIC VARIABLES (Metrics)
     // ========================================================================
     public int patternCount = 0;
     public long candidateCount = 0;
-    public long exploredNodes = 0; // Patterns ACTUALLY expanded (recursed into) — measures pruning effectiveness
+    public long exploredNodes = 0; // Patterns ACTUALLY expanded (recursed into); measures pruning effectiveness
     public long prunedTSU = 0;
 
     public Map<Pattern, Double> largeMap = new HashMap<>();
@@ -259,9 +259,9 @@ public class IncUSPMinerPlusAlgorithm {
         // time/memory. Only triggers once timed out (result discarded) -> does NOT change the
         // baseline mining logic.
         if (Thread.currentThread().isInterrupted()) return;
-        exploredNodes++; // this pattern is EXPANDED (recursed into) — counted BEFORE node-prune TSU
+        exploredNodes++; // this pattern is EXPANDED (recursed into); counted BEFORE node-prune TSU
         // FAIR COUNTING (generation counts): candidateCount MOVED out of the entry. I/S-ext
-        // candidates are counted WHEN GENERATED (before TSU filtering) below — consistent
+        // candidates are counted WHEN GENERATED (before TSU filtering) below, consistent
         // with the proposed algorithm.
 
         double exactUtil = 0, tsuAccumulated = 0;
@@ -320,7 +320,7 @@ public class IncUSPMinerPlusAlgorithm {
             }
             if (childAggTsu < currentMinUtil) {
                 prunedTSU++;
-                itI.remove(); // Do NOT store in the CP-tree — TrackerList is GC'd immediately
+                itI.remove(); // Do NOT store in the CP-tree; TrackerList is GC'd immediately
                 continue;
             }
             Pattern np = node.pattern.iConcatenate(entry.getKey());
@@ -356,7 +356,7 @@ public class IncUSPMinerPlusAlgorithm {
     }
 
     private void updateAndExpandNode(CPTreeNode node, TrackerList deltaTrackers, List<Sequence> deltaD) {
-        exploredNodes++; // this pattern is EXPANDED in the incremental phase — counted BEFORE node-prune TSU
+        exploredNodes++; // this pattern is EXPANDED in the incremental phase; counted BEFORE node-prune TSU
 
         // Merge Trackers from deltaTrackers into the current node
         if (deltaTrackers != null) {

@@ -12,7 +12,7 @@ import java.util.Set;
  * the full DB at an arbitrary δ. Prints oracle #HS, then one line per thread count with #HS, correct
  * count, %recall, runtime and peak memory. Arguments: [seq eui δ ρ T[,T...]].
  *
- * <p>The oracle depends only on (data, δ, ρ) — never on the thread count — so it is built ONCE and
+ * <p>The oracle depends only on (data, δ, ρ) and never on the thread count, so it is built ONCE and
  * reused for every T in the list. That matters on a large dataset: on KOSARAK the oracle costs about
  * 95 minutes against a few seconds of mining, so probing {@code 1,10} as two separate runs would pay
  * for the same oracle twice.
@@ -36,7 +36,7 @@ public class RecallProbe {
         List<List<List<int[]>>> b = ExpUtil.split(all, ExpConfig.SCEN_A);
 
         long t0 = System.currentTimeMillis();
-        Set<String> oracle = ExpUtil.oracleCanon(all, delta, rho);   // built once — independent of T
+        Set<String> oracle = ExpUtil.oracleCanon(all, delta, rho);   // built once, independent of T
         long tOracle = System.currentTimeMillis() - t0;
 
         System.out.printf("%n=== RecallProbe %s | n=%d delta=%.4f rho=%.2f | prune=%s ===%n",

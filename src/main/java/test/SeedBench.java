@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * SeedBench — does fork-join work-stealing on the D_old seeding enumeration raise parallel speedup
+ * SeedBench: does fork-join work-stealing on the D_old seeding enumeration raise parallel speedup
  * without changing the answer? Compares forkSeed off vs on at T threads, plus the T=1 sequential
  * baseline, on 4-batch A-Uniform. Correctness gate: fork-on output (pattern,utility,period) identical
  * to fork-off. Reports speedup S(T)=T1/TT for both.

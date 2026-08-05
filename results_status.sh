@@ -8,7 +8,7 @@
 #                                          ./run_experiments.sh --resume   (or delete the folder).
 #
 # SIGNATURE identifies the configuration (datasets + δ/ρ/s1Only, μ band, warm-up/measured runs,
-# timeout, S1/S2/S4 switches). Runs with DIFFERENT signatures came from DIFFERENT configs —
+# timeout, S1/S2/S4 switches). Runs with DIFFERENT signatures came from DIFFERENT configs,
 # never mix their numbers in one analysis.
 
 set -u
@@ -17,7 +17,7 @@ PROJ_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 RESULTS_DIR="$PROJ_ROOT/results"
 
 if [[ ! -d "$RESULTS_DIR" ]]; then
-    echo "No results/ directory yet — nothing has been run."
+    echo "No results/ directory yet; nothing has been run."
     exit 0
 fi
 
@@ -42,12 +42,12 @@ for d in "${runs[@]}"; do
     if [[ -f "$meta" ]]; then
         s="$(grep -m1 '^config\.signature8=' "$meta" 2>/dev/null | cut -d= -f2- || true)"
         [[ -n "${s:-}" ]] && sig="$s"
-        # java.util.Properties escapes ':' as '\:' — strip the backslashes for display
+        # java.util.Properties escapes ':' as '\:'; strip the backslashes for display
         t="$(grep -m1 '^startTime=' "$meta" 2>/dev/null | cut -d= -f2- | tr -d '\\' || true)"
         [[ -n "${t:-}" ]] && started="$t"
     fi
 
-    # Count OK vs failed (ERROR/TIMEOUT) result rows — a run can be VALID (DONE) yet mostly errors.
+    # Count OK vs failed (ERROR/TIMEOUT) result rows: a run can be VALID (DONE) yet mostly errors.
     ok=0; err=0
     if [[ -f "$d/results.csv" ]]; then
         ok=$(awk -F, 'NR>1 && $NF=="OK"'                 "$d/results.csv" | wc -l | tr -d ' ')

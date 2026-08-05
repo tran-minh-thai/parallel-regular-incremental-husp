@@ -10,8 +10,8 @@ import java.lang.management.ThreadMXBean;
  * with independently toggleable pruning tiers sharing one set of data structures:
  *
  *   Tier 1 (useEUCS)      : candidate filtering by the EUCS co-occurrence matrix (sparse storage).
- *   Tier 2 (boundMode)    : item-level upper bound — NONE / standard PEU / LA-PEU (look-ahead).
- *   Tier 3 (useRegPruning): PRUNING by the regularity constraint (anti-monotone) — includes item
+ *   Tier 2 (boundMode)    : item-level upper bound: NONE / standard PEU / LA-PEU (look-ahead).
+ *   Tier 3 (useRegPruning): PRUNING by the regularity constraint (anti-monotone); includes item
  *                           filtering at Tier 0, early break during scanning, and subtree cutting.
  *
  * The following two conditions are ALWAYS applied, independent of the flags, so every configuration
@@ -440,7 +440,7 @@ public class AlgoRHUSPMiner {
             // Regularity check at CONCLUSION always applies (independent of the Tier 3 flag)
             if (isRegular && totalUtil >= minUtility)
                 finalPatterns.put(formatCurrentPattern(), new PatternResult(totalUtil, maxPeriod));
-            // Original RHusp candidate condition — always applied (part of the baseline)
+            // Original RHusp candidate condition: always applied (part of the baseline)
             if (totalUtil + totalRU < minUtility) { prunedNodeCond++; return; }
             // Subtree cut via regularity anti-monotone property (Tier 3)
             if (useRegPruning && !isRegular) { prunedRegularity++; return; }
@@ -534,7 +534,7 @@ public class AlgoRHUSPMiner {
     /**
      * LA-PEU: scan BACKWARDS from the end of the sequence toward the instance, accumulating
      * LAR = total utility of promising items (via EUCS/Tier 0) that appear AFTER the current position.
-     * bound(x) = prefixUtil(instance) + u(x) + LAR — tighter than PEU by excluding utility of items
+     * bound(x) = prefixUtil(instance) + u(x) + LAR, tighter than PEU by excluding utility of items
      * that cannot appear in any extension that reaches the threshold.
      */
     private void computeBoundsLA(InstanceList plist, int laStamp) {
@@ -828,7 +828,7 @@ public class AlgoRHUSPMiner {
         if (Thread.currentThread().isInterrupted()) throw new RuntimeException("TIMEOUT_INTERRUPT");
     }
 
-    /** Background thread sampling the heap peak every 20ms — stable, independent of node density. */
+    /** Background thread sampling the heap peak every 20ms; stable, independent of node density. */
     private void startMemorySampler() {
         stopMemorySampler();
         samplerRunning = true;

@@ -6,20 +6,20 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * <h1>Par-Remine — the PARALLEL static miner re-run on every batch</h1>
+ * <h1>Par-Remine: the PARALLEL static miner re-run on every batch</h1>
  *
  * Wraps {@link AlgoRHUSPMinerParallel} (the companion study's parallel RHUSP engine: CSR layout,
  * work stealing, recursive dynamic load balancing) and RE-RUNS it from scratch over the whole
  * accumulated database whenever a batch arrives.
  * <p>
  * This is the <b>decisive baseline</b> for a parallel INCREMENTAL miner. It answers the question a
- * reviewer will certainly ask: <i>"a parallel static miner already exists — why not simply re-run it
+ * reviewer will certainly ask: <i>"a parallel static miner already exists, why not simply re-run it
  * when new data arrives?"</i> The gap between this baseline and P-RIncHUSP is exactly the value of
  * parallel incremental maintenance, measured on top of (not against) the parallel mining engine.
  * <p>
  * A re-mine keeps no state by definition, so each batch instantiates a FRESH miner: nothing leaks
  * between batches. {@link #processBatch} returns the miner's OWN reported mining time (Phase 1 +
- * Phase 2, excluding data-structure construction) — the same quantity the companion paper reports,
+ * Phase 2, excluding data-structure construction), the same quantity the companion paper reports,
  * which is generous to the baseline; the harness additionally records end-to-end wall clock.
  */
 public class AlgoParRemine implements IncrementalHUSPMiner {

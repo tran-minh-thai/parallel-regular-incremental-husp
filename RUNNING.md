@@ -12,13 +12,13 @@ the suite runs the relative mode inherited from the sequential line of work, `ma
 recomputed per batch. The declared `B` values are calibrated so both modes answer with the same
 oracle at the final size, which keeps their result sets directly comparable. Runs of the two modes
 carry different `config.signature` values, so `--resume` can never mix them. To retune a dataset's
-`B`, edit `absB` in the catalog — it is a given number, part of the problem statement like δ, and
+`B`, edit `absB` in the catalog; it is a given number, part of the problem statement like δ, and
 nothing derives it from the data.
 
 
 ## 1. Before you start
 
-You need a JDK (11 or later). Maven is optional — there are no runtime dependencies, so `javac`
+You need a JDK (11 or later). Maven is optional, because there are no runtime dependencies, so `javac`
 works offline.
 
 The benchmark datasets are not in this repository. Pull them from the pinned release of
@@ -57,7 +57,7 @@ Missing datasets are skipped rather than failing the run, so a partial set still
 
 **Set the heap well below physical RAM.** On a 32 GB machine use 16g, not 32g. If the heap
 approaches RAM the JVM will swap rather than fail: every timing becomes meaningless and the swap
-file can fill the disk. 16g is enough for the whole suite — KOSARAK, the largest, peaks near 1 GB at
+file can fill the disk. 16g is enough for the whole suite; KOSARAK, the largest, peaks near 1 GB at
 its configured threshold.
 
 **On a laptop, plug in and turn off power saving.** The first log line reports the thread sweep:
@@ -66,7 +66,7 @@ its configured threshold.
 ### thread sweep (pinned) = [1, 2, 4, 8, 10] | best T = 10 ###
 ```
 
-If it warns that the sweep was truncated, the machine is reporting fewer cores than it has — usually
+If it warns that the sweep was truncated, the machine is reporting fewer cores than it has, usually
 low-power mode. Stop, fix the power settings, and start again, or the scalability numbers are not
 comparable.
 
@@ -81,7 +81,7 @@ javac --release 11 -d out $(find src/main/java -name '*.java')
 
 Or `mvn compile`, which puts classes in `target/classes/` instead.
 
-## 3. Smoke test — do not skip this
+## 3. Smoke test: do not skip this
 
 Runs every scenario on the tiny example datasets in about three minutes. It is the only cheap way to
 find out whether something is broken before committing hours to a real run.
@@ -95,10 +95,10 @@ Check these, and stop if any fails:
 
 | Output | Expected |
 |---|---|
-| `S10-exactness  P-RIncHUSP[reg,disc]` | recall `1.0000` — both bounds together are exact |
-| `S10-exactness  P-RIncHUSP[reg,-]` and `[-,disc]` | recall below 1 — neither bound alone suffices |
-| `S9-musweep`, all six values of μ | recall `1.0000` throughout — correctness does not depend on μ |
-| `S3 HS invariance across T` | `OK` — the thread count does not change the result |
+| `S10-exactness  P-RIncHUSP[reg,disc]` | recall `1.0000`, so both bounds together are exact |
+| `S10-exactness  P-RIncHUSP[reg,-]` and `[-,disc]` | recall below 1, so neither bound alone suffices |
+| `S9-musweep`, all six values of μ | recall `1.0000` throughout, so correctness does not depend on μ |
+| `S3 HS invariance across T` | `OK`, so the thread count does not change the result |
 
 ## 4. Run the suite
 
@@ -146,7 +146,7 @@ results/run_log_all_<timestamp>.txt    console log
 
 Two rules for keeping results straight. A directory without `DONE` is incomplete: finish it with
 `--resume` or delete it. And `config.signature` identifies the configuration that produced the
-numbers — if you change a threshold or the suite, the signature changes, and results from different
+numbers. If you change a threshold or the suite, the signature changes, and results from different
 signatures must never be mixed in one table. `--resume` refuses to continue a run whose signature no
 longer matches, so an old run cannot be silently extended by a newer, different version.
 
@@ -157,7 +157,7 @@ Sanity checks once a run finishes:
 | Recall | `1.0000` everywhere it is measured; KOSARAK skips it by design |
 | S10 | `[reg,disc]` exact; each bound alone misses patterns |
 | S9 | recall `1.0000` at every μ; time U-shaped with its minimum at μ = 1 |
-| S8 | P-RIncHUSP nearly flat in the batch count, re-mining linear — they cross around k = 3 to 8 |
+| S8 | P-RIncHUSP nearly flat in the batch count, re-mining linear; they cross around k = 3 to 8 |
 | S11 | the same crossover seen against every baseline: on LEVIATHAN re-mining wins at k = 4 and loses by roughly 8x at k = 64 |
 | S7 | P-RIncHUSP `1.0000` at every ρ; the approximate variant falls away as ρ tightens |
 | S5 | P-RIncHUSP and the inverted-index variant agree on patterns and recall, and differ only in time |
@@ -168,7 +168,7 @@ Sanity checks once a run finishes:
 and the run exhausts memory. Sweep it and watch both:
 
 ```bash
-# Small and medium datasets. The last argument picks the batch distribution — use B, which leaves
+# Small and medium datasets. The last argument picks the batch distribution: use B, which leaves
 # only 10% of the data in D_old and is the memory worst case.
 java -cp out test.DeltaProbe datasets/SIGN_seq.txt datasets/SIGN_eui.txt 0.03 0.30 8 B
 
@@ -180,8 +180,8 @@ java -Xmx16g -cp out test.KosarakDeltaProbe
 Both report the pattern count from the miner itself rather than building a ground-truth oracle,
 which would cost far more than the mining.
 
-After choosing a value, set it in `DatasetCatalog.java`, re-run that dataset with `--only`, and — if
-you are regenerating the paper's tables — update the matching entry in the table generator.
+After choosing a value, set it in `DatasetCatalog.java`, re-run that dataset with `--only`, and, if
+you are regenerating the paper's tables, update the matching entry in the table generator.
 
 `DatasetCatalog.java` documents the measured range behind each current value. Two are worth reading
 before changing them: SIGN is floored at 0.03, because peak memory on the B-Increasing split

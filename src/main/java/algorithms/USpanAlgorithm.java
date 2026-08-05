@@ -51,7 +51,7 @@ public class USpanAlgorithm {
 
     // Counters for logging per the design specification
     public long candidateCount = 0;
-    public long exploredNodes = 0; // Patterns ACTUALLY expanded (recursed into) — measures pruning effectiveness
+    public long exploredNodes = 0; // Patterns ACTUALLY expanded (recursed into); measures pruning effectiveness
     public long prunedSWU = 0; // Number of prunes by Sequence-Weighted Utilization
     public long prunedDepth = 0; // Number of branches cut by Depth Pruning (optional tracking)
 
@@ -71,21 +71,21 @@ public class USpanAlgorithm {
      * Boundary check: an Instance's indices (itemsetIdx, itemIdx) must lie within the
      * actual structure of seq. If out of range -> log a warning (capped) + return false
      * so the caller SKIPS that instance instead of throwing IndexOutOfBoundsException and
-     * crashing the runner. Does NOT change the Width/Depth pruning mechanism — only blocks
+     * crashing the runner. Does NOT change the Width/Depth pruning mechanism; it only blocks
      * out-of-bounds array access.
      */
     private boolean inBounds(Sequence seq, int itemsetIdx, int itemIdx) {
         if (itemsetIdx < 0 || itemsetIdx >= seq.itemsets.size()) {
             if (boundaryWarnings++ < MAX_BOUNDARY_WARN) {
                 System.err.println("[USpan][WARN] itemsetIdx=" + itemsetIdx + " out of bounds (itemsets="
-                        + seq.itemsets.size() + ", seqId=" + seq.id + ") — skipping instance");
+                        + seq.itemsets.size() + ", seqId=" + seq.id + "): skipping instance");
             }
             return false;
         }
         if (itemIdx < 0 || itemIdx >= seq.itemsets.get(itemsetIdx).items.size()) {
             if (boundaryWarnings++ < MAX_BOUNDARY_WARN) {
                 System.err.println("[USpan][WARN] itemIdx=" + itemIdx + " out of bounds (items="
-                        + seq.itemsets.get(itemsetIdx).items.size() + ", seqId=" + seq.id + ") — skipping instance");
+                        + seq.itemsets.get(itemsetIdx).items.size() + ", seqId=" + seq.id + "): skipping instance");
             }
             return false;
         }
@@ -173,9 +173,9 @@ public class USpanAlgorithm {
         // time/memory. Only triggers once timed out (result discarded) -> does NOT change the
         // baseline mining logic.
         if (Thread.currentThread().isInterrupted()) return;
-        exploredNodes++; // this pattern is EXPANDED (recursed into) — counted BEFORE depth-prune (= true expansion work)
+        exploredNodes++; // this pattern is EXPANDED (recursed into); counted BEFORE depth-prune (= true expansion work)
         // FAIR COUNTING (generation counts): candidateCount MOVED out of the entry. Extension
-        // candidates are counted WHEN GENERATED (before local SWU filtering) below — consistent
+        // candidates are counted WHEN GENERATED (before local SWU filtering) below, consistent
         // with the proposed algorithm.
         // ==============================================================
         // STRATEGY 1: DEPTH PRUNING (BASED ON U_REST)

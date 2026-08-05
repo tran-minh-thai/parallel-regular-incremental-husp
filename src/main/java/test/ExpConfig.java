@@ -16,7 +16,7 @@ import algorithms.AlgoRemine;
  * sequential line of work this study builds on but not in this one. Those algorithms treat μ as a
  * "semi-high buffer" factor to be chosen or adapted within [0.4, 0.9]. Here it is fixed at
  * {@link #MU_PARTITION} = 1, which makes the seed threshold θ₀ = δ·U(D_old) and the discovery
- * threshold θ_disc = δ·U(ΔD) — each part of the database mined at its own natural threshold, which
+ * threshold θ_disc = δ·U(ΔD), so each part of the database is mined at its own natural threshold, which
  * is the condition under which the union of the per-part results is complete.
  *
  * <p>Values on either side cost more without buying anything: below 1, the seed threshold drops
@@ -44,10 +44,10 @@ public final class ExpConfig {
     /** θ₀ = μ·δ·U(D_old). μ=1 ⟹ θ₀ = δ·U(D_old) and θ_disc = δ·U(ΔD): the partition-lemma value. */
     public static final double MU_PARTITION = 1.0;
 
-    // ===================== μ buffer band — BASELINES ONLY (reference Table 10: μ₀=0.40, [0.40–0.90]) =====================
+    // ===================== μ buffer band: BASELINES ONLY (reference Table 10: μ₀=0.40, [0.40-0.90]) =====================
     public static double muMin = 0.40;          // RIncHusp Fix(0.4) baseline μ
     public static double muMax = 0.90;          // baseline adaptive ceiling
-    public static double muFixHigh = 0.90;      // Fix(high μ) baseline — fast but loses patterns
+    public static double muFixHigh = 0.90;      // Fix(high μ) baseline: fast but loses patterns
 
     // ===================== Benchmark =====================
     public static int  warmupRuns   = 1;
@@ -78,8 +78,8 @@ public final class ExpConfig {
         return 3;
     }
     /** Timeout for one measured run of one algorithm. A run past this is recorded as timed out and
-     *  the suite carries on — the safety net that stops a pathological configuration from eating the
-     *  night. Keep it tight. */
+     *  the suite carries on. This is the safety net that stops a pathological configuration from
+     *  eating the night. Keep it tight. */
     public static long runTimeoutMs = 60L * 60 * 1000;   // 60 minutes per run
     /**
      * Timeout for building the recall oracle, kept separate from {@link #runTimeoutMs} on purpose.
@@ -90,12 +90,12 @@ public final class ExpConfig {
      */
     public static long oracleTimeoutMs = 60L * 60 * 1000;
 
-    // ===================== Thread sweep — PINNED (reproducibility, luuy C7) =====================
+    // ===================== Thread sweep: PINNED (reproducibility, luuy C7) =====================
     /**
      * Thread counts swept in S1, and the source of the "best T" used by S2/S4/S5/S6/S7/S8.
      * <b>PINNED</b> rather than derived from {@code availableProcessors()}: a machine can silently
      * report fewer cores (macOS Low Power Mode did exactly that mid-study), which would quietly change
-     * the tables. Entries above the machine's real core count are DROPPED — never oversubscribed —
+     * the tables. Entries above the machine's real core count are DROPPED rather than oversubscribed,
      * and {@link #threadSweepTruncated()} makes the runner print a loud warning.
      */
     public static final int[] THREAD_SWEEP = {1, 2, 4, 8, 10};
@@ -125,8 +125,8 @@ public final class ExpConfig {
     // ===================== Oracle / recall =====================
     /**
      * Measure recall ONLY WHEN numSequences ≤ this. The oracle is the single-threaded RHusp
-     * reimplementation — single-threaded on purpose, so that it is independent of the parallel
-     * machinery under test — and it re-mines the whole accumulated database at every checkpoint.
+     * reimplementation, single-threaded on purpose so that it is independent of the parallel
+     * machinery under test, and it re-mines the whole accumulated database at every checkpoint.
      * Past roughly this size that exceeds {@link #runTimeoutMs}: KOSARAK (990,002 sequences) is the
      * one benchmark dataset above the line, so it reports timing without recall. This is a cost
      * limit, not a claim that the result needs no checking; raise both this and the timeout to
@@ -145,10 +145,10 @@ public final class ExpConfig {
     public static final double[][] DIST_RATIOS = {SCEN_A, SCEN_B, SCEN_C, SCEN_D};
 
     /**
-     * S5 — fine-batch STREAMING regime: D_old = 25% (keeps the seeding threshold sane; a tiny D_old
-     * collapses it and OOMs — see DatasetCatalog SIGN note) + 15 equal 5% increments. Content-driven
+     * S5, the fine-batch STREAMING regime: D_old = 25% (keeps the seeding threshold sane; a tiny
+     * D_old collapses it and OOMs, see the DatasetCatalog SIGN note) + 15 equal 5% increments. Content-driven
      * maintenance amortizes shared-prefix matching across every increment, so its edge over a
-     * per-pattern inverted index grows with the number of increments; the 4-batch regimes A–D
+     * per-pattern inverted index grows with the number of increments; the 4-batch regimes A-D
      * undersell it. This is also the realistic incremental-mining scenario (many small arrivals on a
      * large base).
      */
@@ -262,12 +262,12 @@ public final class ExpConfig {
 
     /**
      * Buffer factors swept by S9, where θ₀ = μ·δ·U(D_old). Recall holds at 1.0 at every μ, since
-     * exactness does not depend on θ₀. Cost does move with μ — the seed shrinks as θ₀ rises while
-     * discovery has to mine ΔD at a lower threshold — but the shape is dataset-dependent, NOT a U
+     * exactness does not depend on θ₀. Cost does move with μ, since the seed shrinks as θ₀ rises
+     * while discovery has to mine ΔD at a lower threshold, but the shape is dataset-dependent, NOT a U
      * with its floor at μ=1: the measured time minima sit at μ=3 (SIGN), μ=0.4 (LEVIATHAN), μ=1.5
      * (C8T1S5I8N5K) and μ=1 (BIBLE alone), and for peak memory μ=2 is at or below μ=1 on all four.
-     * μ=1 is canonical because the partition lemma makes it so — each part mined at its own natural
-     * threshold — not because it is cheapest. 0.4 is the value the sequential baselines use.
+     * μ=1 is canonical because the partition lemma makes it so, each part being mined at its own
+     * natural threshold, not because it is cheapest. 0.4 is the value the sequential baselines use.
      */
     public static final double[] S9_MUS = {0.4, 0.7, 1.0, 1.5, 2.0, 3.0};
 
@@ -288,8 +288,8 @@ public final class ExpConfig {
      * enough to risk the definitive run. 1.5× keeps SIGN at ρ=0.045 (~320 MB) while still spanning
      * the informative region (172 -> 830 -> 4439 patterns), and for C8T1S5I8N5K the 0.5×-1.0× range
      * still crosses its saturation cliff. The approximate baselines do not hit this because they do
-     * not mine the full space — that memory gap is the honest cost of exactness, discussed in the
-     * limitations, not a defect to hide by shrinking the sweep further.
+     * not mine the full space. That memory gap is the cost of exactness, discussed in the
+     * limitations rather than hidden by shrinking the sweep further.
      */
     public static final double[] S7_RHO_MULT = {0.5, 1.0, 1.5};
     /**
@@ -301,7 +301,7 @@ public final class ExpConfig {
      * Read the flatness for what it measures. The harness queries once, after the last batch, so a
      * run costs one seeding plus k maintenance steps plus ONE discovery, and only the maintenance
      * term scales with k. A caller that queries after every batch pays discovery every time and the
-     * total is no longer flat — {@code newProposedPartition} is the variant for that access pattern,
+     * total is no longer flat; {@code newProposedPartition} is the variant for that access pattern,
      * since it mines each batch once as the batch lands.
      */
     public static final int[] S8_BATCH_COUNTS = {2, 4, 8, 16, 32, 64};
@@ -317,8 +317,8 @@ public final class ExpConfig {
      */
     public static final int[] S11_BATCH_COUNTS = {4, 16, 64};
     /**
-     * Datasets that get the S6–S10 sweeps. The heavy ones are left out: sweeping them would add
-     * many hours and the sweeps answer questions the large datasets do not. Not final —
+     * Datasets that get the S6-S10 sweeps. The heavy ones are left out: sweeping them would add
+     * many hours and the sweeps answer questions the large datasets do not. Not final:
      * {@code --test} swaps in the tiny example datasets so the sweep scenarios can be exercised in
      * seconds before committing to a long run. That check is worth keeping: a scenario that has
      * never run on the small suite has never had its correctness assertions tested at all, and a
@@ -348,18 +348,18 @@ public final class ExpConfig {
      *
      * <p>The result is exact: the pattern set equals a full re-mine of the updated database, by
      * construction and as measured on every dataset in the suite. Three settings are responsible, and
-     * the first two close independent gaps, so neither alone is enough — S10 ablates them.
+     * the first two close independent gaps, so neither alone is enough. S10 ablates them.
      *
      * <ol>
-     *   <li>{@code seedPruneByFinalN} — regularity is pruned at ρ·N_final while seeding, the tightest
+     *   <li>{@code seedPruneByFinalN}: regularity is pruned at ρ·N_final while seeding, the tightest
      *       bound that stays sound. A gap inside D_old survives unchanged when data is appended, and
      *       irregularity is anti-monotone under extension, so pruning at ρ·N_current instead drops
      *       patterns that are irregular within D_old yet regular once the database is complete. The
      *       effect grows as ρ tightens.</li>
-     *   <li>{@code discoverExact} — the increment is mined at minUtil − θ₀. Because utility is
+     *   <li>{@code discoverExact}: the increment is mined at minUtil − θ₀. Because utility is
      *       additive over a partition, that recovers precisely those patterns too weak in D_old to
      *       have been seeded.</li>
-     *   <li>μ = 1 — this sets θ₀ = δ·U(D_old) and the discovery threshold to δ·U(ΔD), so each part is
+     *   <li>μ = 1: this sets θ₀ = δ·U(D_old) and the discovery threshold to δ·U(ΔD), so each part is
      *       mined at its own natural threshold, which is what the partition lemma requires for the
      *       union of the two to be complete. It is also where cost bottoms out, seeding growing
      *       cheaper as θ₀ rises and discovery more expensive; see {@link #S9_MUS}.</li>
@@ -403,7 +403,7 @@ public final class ExpConfig {
     }
 
     /**
-     * P-RIncHUSP-P — the fully-incremental variant: every batch Δ_k is mined ONCE at its own natural
+     * P-RIncHUSP-P, the fully-incremental variant: every batch Δ_k is mined ONCE at its own natural
      * threshold δ·U(Δ_k) (the same partition lemma, finer partition). Exact after EVERY batch, not just
      * at query time; the price is that k parts mined at the same δ yield ≈k× the candidates of one part.
      * {@link #newProposed} uses the coarsest (2-part) split and is therefore cheaper when the caller only
@@ -418,7 +418,7 @@ public final class ExpConfig {
     }
 
     /**
-     * S9 — the SAME exact miner with θ₀ moved off its natural value. Exactness must NOT change (the
+     * S9: the SAME exact miner with θ₀ moved off its natural value. Exactness must NOT change (the
      * partition lemma does not depend on θ₀); only the seed/discovery cost split does.
      */
     public static AlgoPRIncHUSP newProposedMu(int threads, double mu) {
@@ -431,11 +431,11 @@ public final class ExpConfig {
     }
 
     /**
-     * S10 — the 2×2 exactness ablation. The two ceilings are INDEPENDENT and need DIFFERENT bounds;
+     * S10: the 2×2 exactness ablation. The two ceilings are INDEPENDENT and need DIFFERENT bounds;
      * this is the table that proves it. Both flags off = the pre-fix algorithm.
      *
-     * @param regBound  ρ·N_final seed prune — closes the REGULARITY ceiling (Thm. 2)
-     * @param discovery mine ΔD at minUtil−θ₀ — closes the UTILITY ceiling (partition lemma)
+     * @param regBound  ρ·N_final seed prune; closes the REGULARITY ceiling (Thm. 2)
+     * @param discovery mine ΔD at minUtil−θ₀; closes the UTILITY ceiling (partition lemma)
      */
     public static AlgoPRIncHUSP newProposedAblation(int threads, boolean regBound, boolean discovery, double mu) {
         AlgoPRIncHUSP m = newProposed(threads);
@@ -451,7 +451,7 @@ public final class ExpConfig {
     /**
      * The PRE-FIX algorithm: unsound ρ·N_current seed prune + sub-natural θ₀ (μ=0.4), no discovery.
      * Kept as a baseline because its recall collapse under a tightening ρ (SIGN: 0.9667 at ρ=0.30 →
-     * 0.7667 at ρ=0.15) is what forced the exact design — S7 must show it.
+     * 0.7667 at ρ=0.15) is what forced the exact design, so S7 must show it.
      */
     public static AlgoPRIncHUSP newProposedApprox(int threads) {
         AlgoPRIncHUSP m = newProposedAblation(threads, false, false, muMin);
@@ -459,7 +459,7 @@ public final class ExpConfig {
         return m;
     }
 
-    /** S5 ablation: the SAME proposed miner with the OLD per-pattern (inverted-index) maintain —
+    /** S5 ablation: the SAME proposed miner with the OLD per-pattern (inverted-index) maintain;
      *  isolates the content-driven maintain's contribution in the official numbers (identical HS by
      *  construction; the delta is pure maintenance-strategy cost). */
     public static AlgoPRIncHUSP newProposedInvindex(int threads) {
@@ -469,7 +469,7 @@ public final class ExpConfig {
         return m;
     }
 
-    /** RIncHusp baseline [Ishita2022] — FIXED-μ buffer, sequential, CORRECT utility-list. */
+    /** RIncHusp baseline [Ishita2022]: FIXED-μ buffer, sequential, CORRECT utility-list. */
     public static AlgoRIncHUSP newRIncHusp(double mu) {
         AlgoRIncHUSP m = new AlgoRIncHUSP();
         m.bufferFactor = mu;
@@ -486,7 +486,7 @@ public final class ExpConfig {
 
     /**
      * DECISIVE baseline: the companion study's PARALLEL static RHUSP engine (RDLB scheduler) re-run
-     * from scratch on every batch. Answers "a parallel static miner exists — why not just re-run it?".
+     * from scratch on every batch. Answers "a parallel static miner exists, why not just re-run it?".
      * The gap to P-RIncHUSP is precisely the value of parallel INCREMENTAL maintenance.
      */
     public static AlgoParRemine newParRemine(int threads) {

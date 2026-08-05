@@ -29,13 +29,13 @@ jobs:
           mkdir -p out
           javac -d out $(find src -name "*.java")
 
-      - name: Smoke test — running example
+      - name: Smoke test on the running example
         run: |
           java -cp out test.RunIncremental \
                datasets/example_seq.txt datasets/example_eui.txt \
                0.10 0.6 "0.5,0.5"
 
-      - name: Recall probe — running example
+      - name: Recall probe on the running example
         run: |
           java -cp out test.RecallProbe \
                datasets/example_seq.txt datasets/example_eui.txt \

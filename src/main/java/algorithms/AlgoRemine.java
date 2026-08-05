@@ -12,7 +12,7 @@ import java.util.Map;
  * RHUSP miner ({@link AlgoRHUSP}) over the ENTIRE accumulated database. It produces exactly the ground
  * truth each batch (it IS a full re-mine), so it isolates the value of INCREMENTAL maintenance: the gap
  * between this baseline and RIncHusp / P-RIncHUSP is precisely the cost avoided by not re-scanning
- * history. Sequential (the fair "just re-run the miner" competitor). Used on light datasets only —
+ * history. Sequential (the fair "just re-run the miner" competitor). Used on light datasets only,
  * re-mining a large DB every batch is intentionally the expensive thing the proposed avoids.
  */
 public class AlgoRemine implements IncrementalHUSPMiner {

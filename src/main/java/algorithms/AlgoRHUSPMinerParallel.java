@@ -121,7 +121,7 @@ public class AlgoRHUSPMinerParallel {
         public final int periodicity;
         /** ADDED (incremental seeding): the last sequence in which the pattern occurs. */
         public final int lastSeqId;
-        /** ADDED (incremental seeding): the largest gap among occurrences EXCLUDING the trailing gap —
+        /** ADDED (incremental seeding): the largest gap among occurrences EXCLUDING the trailing gap,
          *  together with {@link #lastSeqId} this is exactly the state needed to CONTINUE the regularity
          *  accumulation when later batches arrive. */
         public final int maxInnerPeriod;
@@ -152,12 +152,12 @@ public class AlgoRHUSPMinerParallel {
     public int forcedMaxReg = -1;
 
     /**
-     * ADDED — INCREMENTAL SEEDING MODE. When mining {@code D_old} to seed an incremental miner, the
+     * ADDED: INCREMENTAL SEEDING MODE. When mining {@code D_old} to seed an incremental miner, the
      * TRAILING-gap test ({@code numSeq - lastSeqId <= maxRegularity}) must NOT be applied: a pattern
      * whose last occurrence sits far from the end of {@code D_old} may still become regular once later
      * batches arrive (a new occurrence shrinks that gap). Applying it here would silently drop such
      * seeds and cost recall. The INNER-gap prune stays active, but not because inner gaps are
-     * monotone under extension — they are not: a pattern at SIDs {1,10} with N=20 has an inner gap
+     * monotone under extension. They are not: a pattern at SIDs {1,10} with N=20 has an inner gap
      * of 9, while an extension surviving only at {1} has an inner gap of 1, because dropping the
      * last occurrence turns an inner gap into a trailing one. The prune is safe for a different
      * reason: maxPer (trailing gap included) IS anti-monotone, and inner gap ≤ maxPer, so an inner
@@ -166,7 +166,7 @@ public class AlgoRHUSPMinerParallel {
     public boolean seedMode = false;
 
     /**
-     * ADDED — WINDOW MODE (discovery). The database handed in is a WINDOW {@code ΔD} that does not
+     * ADDED: WINDOW MODE (discovery). The database handed in is a WINDOW {@code ΔD} that does not
      * start at global sequence 0, so BOTH boundary gaps are meaningless here: the leading gap is
      * measured from the window's own first sequence (not the true predecessor in {@code D_old}), and
      * the trailing gap can still shrink. Only gaps between CONSECUTIVE occurrences INSIDE the window
@@ -292,7 +292,7 @@ public class AlgoRHUSPMinerParallel {
     /**
      * ADDED for the incremental harness of the companion study (project 07). Mines an ALREADY-PARSED
      * quantitative database, skipping file I/O: utilities in {@code db} are final (qty x external
-     * profit) and items are sorted within each event — exactly what {@link #loadData} produces.
+     * profit) and items are sorted within each event, exactly what {@link #loadData} produces.
      * The timed mining core {@link #mineCore()} is SHARED with the file entry point and is UNCHANGED
      * from the original implementation, so the measured mining cost is identical to the paper's.
      */

@@ -34,24 +34,24 @@ import java.util.function.Supplier;
  *
  * <h2>Scenarios</h2>
  * <ul>
- *   <li><b>S1</b> — scalability: sweep the thread count on distribution A, reporting speedup
+ *   <li><b>S1</b>: scalability: sweep the thread count on distribution A, reporting speedup
  *       S(p) = T1/Tp and efficiency E = S/p.</li>
- *   <li><b>S2</b> — comparison at the best thread count: the proposed miner against its own
+ *   <li><b>S2</b>: comparison at the best thread count: the proposed miner against its own
  *       sequential variant, the Fix(0.4)/Fix(0.9) baselines, and re-mining every batch (both
  *       sequential and parallel).</li>
- *   <li><b>S3</b> — parallel invariance: pattern count and recall must not change with the thread
+ *   <li><b>S3</b>: parallel invariance: pattern count and recall must not change with the thread
  *       count. Checked from the S1 runs rather than measured separately.</li>
- *   <li><b>S4</b> — robustness across the four batch distributions.</li>
- *   <li><b>S5</b> — maintenance strategy: content-driven against the per-pattern inverted index, on
+ *   <li><b>S4</b>: robustness across the four batch distributions.</li>
+ *   <li><b>S5</b>: maintenance strategy: content-driven against the per-pattern inverted index, on
  *       a fine batch schedule. Both return the same patterns, so the gap is maintenance cost alone.</li>
- *   <li><b>S6</b> — sensitivity to the utility threshold delta.</li>
- *   <li><b>S7</b> — sensitivity to the regularity threshold rho, including the approximate variant,
+ *   <li><b>S6</b>: sensitivity to the utility threshold delta.</li>
+ *   <li><b>S7</b>: sensitivity to the regularity threshold rho, including the approximate variant,
  *       whose recall falls away as rho tightens.</li>
- *   <li><b>S8</b> — batch-count scaling: incremental maintenance against re-mining every batch over
+ *   <li><b>S8</b>: batch-count scaling: incremental maintenance against re-mining every batch over
  *       k batches, which locates the point where incremental work becomes the cheaper option.</li>
- *   <li><b>S9</b> — buffer factor sweep: recall is independent of mu, cost is not.</li>
- *   <li><b>S10</b> — exactness ablation: the two seed bounds switched on and off.</li>
- *   <li><b>S11</b> — the S2 comparison repeated at several batch counts, so the ranking is a trend
+ *   <li><b>S9</b>: buffer factor sweep: recall is independent of mu, cost is not.</li>
+ *   <li><b>S10</b>: exactness ablation: the two seed bounds switched on and off.</li>
+ *   <li><b>S11</b>: the S2 comparison repeated at several batch counts, so the ranking is a trend
  *       rather than a point.</li>
  * </ul>
  * S5 to S10 run only on datasets small enough to have an oracle; the heavy ones are marked
@@ -79,7 +79,7 @@ public class ExperimentOfficial {
     static int specAbsB = 0;        // declared absolute bound of the dataset being benchmarked
     static double specBaseR = 1;    // its base rho, so sweep multipliers scale B coherently
 
-    /** The declared B scaled by a sweep's multiplier, truncating like every bound in this study —
+    /** The declared B scaled by a sweep's multiplier, truncating like every bound in this study;
      *  declared numbers only, and the SAME value goes to the miners and to the cell's oracle, since
      *  a bound the two sides disagree on answers two different questions. Zero when not absolute. */
     static int scaledAbsB(double r) {
@@ -97,7 +97,7 @@ public class ExperimentOfficial {
 
     public static void main(String[] args) throws IOException {
         java.util.List<String> flags = java.util.Arrays.asList(args);
-        // Single-dataset mode: <seqFile> <eutilFile> [δ] [ρ] [outCsv] — first arg is a path, not a --flag.
+        // Single-dataset mode: <seqFile> <eutilFile> [δ] [ρ] [outCsv]; first arg is a path, not a --flag.
         if (args.length >= 2 && !args[0].startsWith("--")) {
             double d = args.length >= 3 ? Double.parseDouble(args[2]) : 0.002;
             double r = args.length >= 4 ? Double.parseDouble(args[3]) : 0.30;
@@ -139,7 +139,7 @@ public class ExperimentOfficial {
 
         ctx = RunContext.start(suite, resume);
         csv = ctx.csv;
-        System.out.printf("### PARALLEL EXPERIMENT — %d datasets | %s | dir=results/%s ###%n",
+        System.out.printf("### PARALLEL EXPERIMENT | %d datasets | %s | dir=results/%s ###%n",
                 suite.size(), ctx.resumed ? "RESUME (skipping finished work)" : "fresh run", ctx.dir.getName());
         System.out.printf("### thread sweep (pinned) = %s | best T = %d ###%n",
                 Arrays.toString(ExpConfig.effectiveThreadSweep()), ExpConfig.bestT());
@@ -155,7 +155,7 @@ public class ExperimentOfficial {
         }
         for (DatasetSpec s : suite) {
             if (ctx.isDatasetDone(s.tag)) {
-                System.out.printf("%n========== %s — SKIP (already finished in this run) ==========%n", s.tag);
+                System.out.printf("%n========== %s : SKIP (already finished in this run) ==========%n", s.tag);
                 continue;
             }
             try {
@@ -187,7 +187,7 @@ public class ExperimentOfficial {
         tag = tg;
         all = ExpUtil.loadAll(seqFile, euiFile);
         writeDatasetStats(tg, all);                    // characteristics table (once per dataset)
-        final int cores = ExpConfig.bestT();           // PINNED best-T (not availableProcessors) — see ExpConfig
+        final int cores = ExpConfig.bestT();           // PINNED best-T (not availableProcessors); see ExpConfig
         Set<String> oracle = oracleOrNull(minUtilRatio, maxRegRatio);
 
         if (ExpConfig.absoluteMode) {
@@ -236,10 +236,10 @@ public class ExperimentOfficial {
                     () -> ExpConfig.newRIncHusp(ExpConfig.muMin), 1, bA, minUtilRatio, maxRegRatio, oracle);
             benchmark("S2-compare", "A-Uniform", "RIncHusp-Fix0.9", "0.90",
                     () -> ExpConfig.newRIncHusp(ExpConfig.muFixHigh), 1, bA, minUtilRatio, maxRegRatio, oracle);
-            // Re-mine baselines (light datasets only — re-mining a heavy DB every batch is prohibitive,
+            // Re-mine baselines (light datasets only, since re-mining a heavy DB every batch is prohibitive,
             // which is exactly the cost the incremental methods avoid; see C2/C3 in the design notes).
             //   Remine-static : SEQUENTIAL static miner re-run each batch.
-            //   ParRemine     : the companion study's PARALLEL static engine (RDLB) re-run each batch —
+            //   ParRemine     : the companion study's PARALLEL static engine (RDLB) re-run each batch,
             //                   the decisive baseline ("why not just re-run the parallel miner?").
             if (ExpConfig.s6Datasets.contains(tag)) {
                 benchmark("S2-compare", "A-Uniform", "Remine-static", "static",
@@ -252,7 +252,7 @@ public class ExperimentOfficial {
         // ---------- S11: the S2 comparison repeated across batch counts ----------
         // S2 compares against the baselines on ONE split of four batches, which is nearly static for
         // a method whose subject is incremental maintenance. S11 repeats it at k=4, 16 and 64, so the
-        // comparison is a trend rather than a single point — and on LEVIATHAN the ranking flips as k
+        // comparison is a trend rather than a single point, and on LEVIATHAN the ranking flips as k
         // grows, which a single split cannot show.
         //
         // Remine-static runs at k=4 ONLY: it re-mines the whole database sequentially once per batch,
@@ -313,8 +313,8 @@ public class ExperimentOfficial {
             }
         }
 
-        // ---------- S5: Fine-batch streaming — isolates the maintenance-strategy cost ----------
-        // s1Only datasets skip S5 too, EXCEPT the explicit allowlist (SIGN — see ExpConfig.s5ExtraDatasets).
+        // ---------- S5: Fine-batch streaming, isolates the maintenance-strategy cost ----------
+        // s1Only datasets skip S5 too, EXCEPT the explicit allowlist (SIGN; see ExpConfig.s5ExtraDatasets).
         if (ExpConfig.runS5FineBatch && (!s1Only || ExpConfig.s5ExtraDatasets.contains(tag))) {
             System.out.println("-- S5 Fine-batch streaming (D_old 25% + 15 x 5% increments, best T=" + cores + ") --");
             List<List<List<int[]>>> bF = ExpUtil.split(all, ExpConfig.SCEN_FINE);
@@ -359,7 +359,7 @@ public class ExperimentOfficial {
             }
         }
 
-        // ---------- S8: batch-count scaling — THE CROSSOVER (light datasets) ----------
+        // ---------- S8: batch-count scaling, THE CROSSOVER (light datasets) ----------
         // The decisive figure: re-mining with the parallel static engine costs O(#updates) while
         // incremental maintenance is flat, so the two curves cross. Both methods are measured over the
         // SAME data split into an increasing number of update cycles.
@@ -374,13 +374,13 @@ public class ExperimentOfficial {
             }
         }
 
-        // ---------- S9: θ₀ sweep — why μ=1 is not a tuned constant ----------
+        // ---------- S9: θ₀ sweep, why μ=1 is not a tuned constant ----------
         // Two claims, one table. (a) recall is 1.0000 at EVERY μ: exactness does not depend on θ₀, exactly
-        // as the partition lemma says. (b) cost moves with μ — the seed gets cheaper as θ₀ rises while
-        // discovery gets more expensive — but the SHAPE is dataset-dependent, not a U with its floor at
+        // as the partition lemma says. (b) cost moves with μ: the seed gets cheaper as θ₀ rises while
+        // discovery gets more expensive, but the SHAPE is dataset-dependent, not a U with its floor at
         // μ=1: the measured minima sit at μ=3 (SIGN), μ=0.4 (LEVIATHAN), μ=1.5 (C8T1) and μ=1 (BIBLE
         // alone). μ=1 is the value the partition lemma makes canonical, each part mined at its own
-        // natural threshold (θ₀=δ·U(D_old), θ_disc=δ·U(ΔD)) — not the cheapest one.
+        // natural threshold (θ₀=δ·U(D_old), θ_disc=δ·U(ΔD)), not the cheapest one.
         // μ=0.4 is the inherited RIncHusp buffer value.
         if (ExpConfig.runS9MuSweep && ExpConfig.s6Datasets.contains(tag)) {
             System.out.println("-- S9 θ₀ sweep (distribution A, best T=" + cores + ") --");
@@ -407,7 +407,7 @@ public class ExperimentOfficial {
             }
         }
 
-        // ---------- S10: exactness ablation — which flag closes which ceiling ----------
+        // ---------- S10: exactness ablation, which flag closes which ceiling ----------
         // The seed-once ceiling has TWO independent components needing DIFFERENT bounds:
         //   regBound  (ρ·N_final seed prune) closes the REGULARITY component;
         //   discovery (mine ΔD at minUtil−θ₀) closes the UTILITY component.
@@ -429,7 +429,7 @@ public class ExperimentOfficial {
         }
     }
 
-    /** Emit dataset characteristics (once per dataset) to the log AND {@code dataset_stats.csv} — the
+    /** Emit dataset characteristics (once per dataset) to the log AND {@code dataset_stats.csv}; the
      *  paper's "experimental setup" table: #sequences, #distinct items, avg/max length (items),
      *  avg/max #itemsets (events) per sequence, total DB utility. */
     static void writeDatasetStats(String tg, List<List<int[]>> data) throws IOException {

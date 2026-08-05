@@ -16,7 +16,7 @@ public class AdaptiveBuffer {
 
     /**
      * How μ is chosen each batch. {@code FIX} is a constant threshold; the adaptive modes differ in
-     * which signals they use — COMBINED takes the min of all three, GROWTH/MINBASE/UTILRATIO use one
+     * which signals they use: COMBINED takes the min of all three, GROWTH/MINBASE/UTILRATIO use one
      * each (r_G / r_θ / r_U).
      */
     public enum Strategy { COMBINED, GROWTH, MINBASE, UTILRATIO, FIX }

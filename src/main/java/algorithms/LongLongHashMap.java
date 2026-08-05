@@ -53,7 +53,7 @@ public final class LongLongHashMap {
         keys[i] = k; vals[i] = v; size++;
     }
 
-    /** Fibonacci-style mix — the low bits of the raw key are the tiny itemIdx, poor for masking alone. */
+    /** Fibonacci-style mix; the low bits of the raw key are the tiny itemIdx, poor for masking alone. */
     private static long mix(long k) {
         k *= 0x9E3779B97F4A7C15L;
         return k ^ (k >>> 29);

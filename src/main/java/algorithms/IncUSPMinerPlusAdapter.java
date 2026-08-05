@@ -15,7 +15,7 @@ import java.util.Map;
  * (a superset of RHUSP).
  * <p>
  * Role in the paper (the manuscript, line "IncUSP-Miner+"): an ablation isolating the
- * <b>cost of the regularity constraint</b> in the incremental setting — IncUSP-Miner+
+ * <b>cost of the regularity constraint</b> in the incremental setting. IncUSP-Miner+
  * finds more patterns (including non-regular ones) and is therefore more expensive;
  * P-RIncHUSP prunes the non-regular patterns.
  * <p>

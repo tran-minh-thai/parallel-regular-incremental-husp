@@ -6,10 +6,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * <h1>RIncHusp — Regular Incremental High-Utility Sequential Pattern miner</h1>
+ * <h1>RIncHusp: Regular Incremental High-Utility Sequential Pattern miner</h1>
  *
  * Direct competing BASELINE: Ishita, Ahmed &amp; Leung (2022), "New approaches for mining
- * regular high utility sequential patterns", Applied Intelligence — bib key
+ * regular high utility sequential patterns", Applied Intelligence; bib key
  * {@code Ishita2022}. Corresponds to the <b>"RIncHusp"</b> row in the baseline table
  * (the manuscript): R/I/P = yes/yes/no, re-implementation, original is APPROXIMATE. This
  * implementation references {@code codeThamKhao/AlgoRIncHUSP.java} and {@code AlgoRIncHUSP_Adaptive.java}.
@@ -27,11 +27,11 @@ import java.util.Map;
  * <b>max-measure</b>: for each new sequence, every existing pattern is incremented by {@code u(α,S)}
  * = the occurrence yielding the largest utility in that sequence ({@link #evalSequence}). Since
  * {@code u(α,DB)=Σ_S u(α,S)} is additive over sequences, this incremental update yields the EXACT
- * value of a re-mine — unlike the APPROXIMATE "raw accumulation" version (adding only single-item
+ * value of a re-mine, unlike the APPROXIMATE "raw accumulation" version (adding only single-item
  * utility) of {@code codeThamKhao/AlgoRIncHUSP.java}. Thus the gap against P-RIncHUSP reflects the
  * TRUE contribution of "new-pattern mining + parallelism + adaptive buffer", not a utility-measurement error.
  * <p>
- * Runs SEQUENTIALLY. The buffer uses a FIXED threshold θ=μ·minUtil (μ={@link #bufferFactor}, NOT adaptive —
+ * Runs SEQUENTIALLY. The buffer uses a FIXED threshold θ=μ·minUtil (μ={@link #bufferFactor}, NOT adaptive;
  * adaptivity is a contribution exclusive to P-RIncHUSP).
  */
 public class AlgoRIncHUSP implements IncrementalHUSPMiner {
@@ -83,7 +83,7 @@ public class AlgoRIncHUSP implements IncrementalHUSPMiner {
         recomputeThresholds();
         // Initial seeding mines statically at the BUFFER THRESHOLD θ = bufferFactor·minUtil (NOT
         // minUtil): retains promising patterns in [θ, minUtil) so they can be promoted to HS in
-        // later batches — matching RIncHusp's buffer mechanism. Mining at minUtil would discard them.
+        // later batches, matching RIncHusp's buffer mechanism. Mining at minUtil would discard them.
         long seedThreshold = (long) Math.ceil(bufferFactor * minUtil);
         Map<String, long[]> seeds = staticMiner.mine(db, seedThreshold, maxReg);
         for (Map.Entry<String, long[]> e : seeds.entrySet())
@@ -112,7 +112,7 @@ public class AlgoRIncHUSP implements IncrementalHUSPMiner {
         // FIXED buffer threshold of the original RIncHusp (approximate, not adaptive per batch)
         bufferThreshold = bufferFactor * minUtil;
 
-        // update ONLY existing nodes (no new-pattern generation — the inherent defect is isolated),
+        // update ONLY existing nodes (no new-pattern generation, so the inherent defect is isolated),
         // but compute utility EXACTLY by the max-measure (see evalSequence)
         for (int i = 0; i < deltaD.size(); i++)
             evalSequence(deltaD.get(i), startSid + i);

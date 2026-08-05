@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Incremental experiment runner — drives the PROPOSED algorithm and BASELINES uniformly on
+ * Incremental experiment runner: drives the PROPOSED algorithm and BASELINES uniformly on
  * a common batch-split scenario, measuring runtime / memory / coverage.
  *
  * <pre>

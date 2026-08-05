@@ -44,7 +44,7 @@ public class HUSPULLAlgorithm {
 
     // Counters for logging
     public long candidateCount = 0;
-    public long exploredNodes = 0; // Patterns ACTUALLY expanded (recursed into) — measures pruning effectiveness
+    public long exploredNodes = 0; // Patterns ACTUALLY expanded (recursed into); measures pruning effectiveness
     public long prunedSWU = 0;  // Number of 1-items pruned by SWU
     public long prunedLAR = 0;  // Branch pruning (subtree-level)
     public long prunedIIP = 0;  // Candidate pruning (item-level PEU)
@@ -130,9 +130,9 @@ public class HUSPULLAlgorithm {
         // time/memory. Only triggers once timed out (result discarded) -> does NOT change the
         // baseline mining logic.
         if (Thread.currentThread().isInterrupted()) return;
-        exploredNodes++; // this pattern is EXPANDED (recursed into) — counted BEFORE LAR-prune
+        exploredNodes++; // this pattern is EXPANDED (recursed into); counted BEFORE LAR-prune
         // FAIR COUNTING (generation counts): candidateCount MOVED out of the entry. I/S-ext
-        // candidates are counted WHEN GENERATED (before PEU/IIP filtering) below — consistent
+        // candidates are counted WHEN GENERATED (before PEU/IIP filtering) below, consistent
         // with the proposed algorithm.
         // ==========================================================
         // TIER-2 PRUNING (SUBTREE-LEVEL): LOOK-AHEAD REMOVING (LAR)
@@ -185,7 +185,7 @@ public class HUSPULLAlgorithm {
         }
 
         // FAIR COUNTING (generation counts): EVERY I/S-ext candidate (grouped by item) generated,
-        // BEFORE filtering by PEU/IIP — consistent with the proposed algorithm.
+        // BEFORE filtering by PEU/IIP: consistent with the proposed algorithm.
         candidateCount += iCandidatesMap.size() + sCandidatesMap.size();
 
         // ==========================================================

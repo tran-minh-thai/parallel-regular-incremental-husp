@@ -11,7 +11,7 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * <h1>RHusp — Regular High-Utility Sequential Pattern miner (STATIC)</h1>
+ * <h1>RHusp: Regular High-Utility Sequential Pattern miner (STATIC)</h1>
  *
  * STATIC RHUSP mining engine over the whole database (non-incremental), using the PEU upper bound
  * and the regularity constraint. Corresponds to the <b>"RHusp"</b> row in the baseline table
@@ -21,8 +21,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * <p>
  * The {@link #parallel} flag selects the run mode:
  * <ul>
- *   <li>{@code false} — SEQUENTIAL RHusp (original R/--/-- oracle);</li>
- *   <li>{@code true}  — root-level parallel, used by {@link AlgoRHUSPRecompute} (the
+ *   <li>{@code false}: SEQUENTIAL RHusp (original R/--/-- oracle);</li>
+ *   <li>{@code true}: root-level parallel, used by {@link AlgoRHUSPRecompute} (the
  *       "proposed-static" reference re-mined from scratch each batch).</li>
  * </ul>
  * Mining uses the MAXIMUM utility measure (max over matches within each sequence), consistent
@@ -36,7 +36,7 @@ public class AlgoRHUSP {
         final int numSequences = db.size();
         final List<List<int[]>> ruDB = buildRemaining(db);
 
-        // root-level candidate set (every item that appears) — simple PEU filtering via processExtension
+        // root-level candidate set (every item that appears); simple PEU filtering via processExtension
         Set<Integer> roots = new HashSet<>();
         for (List<int[]> seq : db)
             for (int[] ev : seq)
@@ -48,7 +48,7 @@ public class AlgoRHUSP {
         java.util.stream.Stream<Integer> stream =
                 parallel ? roots.parallelStream() : roots.stream();
         stream.forEach(item -> {
-            // TreeMap: traverse by ASCENDING seqId — REQUIRED to compute regularity (period=seqId−lastSeqId) correctly.
+            // TreeMap: traverse by ASCENDING seqId; REQUIRED to compute regularity (period=seqId−lastSeqId) correctly.
             Map<Integer, List<int[]>> projected = new TreeMap<>();   // seqId -> list of {eventIdx,itemIdx,curUtil}
             for (int seqId = 0; seqId < numSequences; seqId++) {
                 List<int[]> l = new ArrayList<>();
@@ -76,7 +76,7 @@ public class AlgoRHUSP {
             List<int[]> remSeq = ruDB.get(seqId);
             Map<Integer, long[]> bestPerPos = new HashMap<>();  // posKey -> {curUtil}
             boolean found = false;
-            // localMax = max-measure utility of the pattern in the sequence; localMaxPeu = max(util+ru) — exact PEU bound.
+            // localMax = max-measure utility of the pattern in the sequence; localMaxPeu = max(util+ru), the exact PEU bound.
             long localMax = 0, localMaxPeu = 0;
 
             for (int[] inst : en.getValue()) {

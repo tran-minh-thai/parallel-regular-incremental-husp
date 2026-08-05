@@ -3,7 +3,7 @@ package algorithms;
 import java.util.Arrays;
 
 /**
- * Open-addressing {@code int} hash set (linear probing) — replaces {@code HashSet<Integer>} to
+ * Open-addressing {@code int} hash set (linear probing); replaces {@code HashSet<Integer>} to
  * AVOID autoboxing/unboxing in the hot path (localCandidates). Keys stored directly in {@code int[]}.
  * Sentinel {@link #FREE} = {@link Integer#MIN_VALUE} (assumes no item equals MIN_VALUE).
  */
@@ -34,7 +34,7 @@ public final class IntHashSet {
     public boolean isEmpty() { return size == 0; }
     public int size() { return size; }
 
-    /** Clear for REUSE (retains array capacity) — avoids allocating a new set in the hot path. */
+    /** Clear for REUSE (retains array capacity); avoids allocating a new set in the hot path. */
     public void clear() {
         if (size == 0) return;
         Arrays.fill(keys, FREE);

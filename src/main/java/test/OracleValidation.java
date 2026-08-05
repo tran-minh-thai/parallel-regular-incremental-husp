@@ -22,7 +22,7 @@ import java.util.TreeSet;
  * trustworthy.
  * <p>
  * Important: the oracle must be correct on LONG SEQUENCES / large datasets, not just on the pattern
- * set — ordering bugs (regularity via HashMap) have only surfaced on real data. Results are written
+ * set: ordering bugs (regularity via HashMap) have only surfaced on real data. Results are written
  * to {@code results/}.
  */
 public class OracleValidation {
@@ -33,7 +33,7 @@ public class OracleValidation {
         Case(String tag, double delta, double rho) { this.tag = tag; this.delta = delta; this.rho = rho; }
     }
 
-    /** Validation list — pick a moderate δ so both run yet still produce patterns. Edit freely. */
+    /** Validation list; pick a moderate δ so both run yet still produce patterns. Edit freely. */
     static Case[] cases() {
         // Small/medium REAL datasets the in-memory (naive) miner can handle; moderate δ. BIBLE/FIFA/KOSARAK
         // are too large for the naive miner, so coverage is NOT validated there (performance benchmark only).
@@ -73,7 +73,7 @@ public class OracleValidation {
     }
 
     static void validateOne(Case c, String seqFile, String euiFile, BufferedWriter w) throws IOException {
-        // original RHusp (reference) — reads the file directly
+        // original RHusp (reference); reads the file directly
         AlgoRHUSPMiner ref = new AlgoRHUSPMiner();
         long t0 = System.currentTimeMillis();
         ref.runAlgorithm(seqFile, euiFile, "results", c.tag, c.delta, c.rho);

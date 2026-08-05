@@ -19,7 +19,7 @@ import java.util.TreeMap;
  *
  * <h3>Two ways to run</h3>
  * <ul>
- *   <li><b>Automatic full suite (IntelliJ — click Run, no arguments):</b> runs
+ *   <li><b>Automatic full suite (IntelliJ: click Run, no arguments):</b> runs
  *       {@link DatasetCatalog#testSuite()} with preconfigured parameters.</li>
  *   <li><b>Single dataset (terminal):</b>
  *       {@code ExperimentTest <seqFile> <eutilFile> [minUtilRatio=0.10] [maxRegRatio=0.6] [outDir=test_output]}</li>
@@ -42,7 +42,7 @@ public class ExperimentTest {
         // No arguments -> run the FULL test SUITE (suitable for clicking Run in IntelliJ)
         List<DatasetSpec> suite = DatasetCatalog.testSuite();
         new File(outDir).mkdirs();
-        System.out.printf("### TEST EXPERIMENT — %d datasets, patterns saved to '%s/' ###%n", suite.size(), outDir);
+        System.out.printf("### TEST EXPERIMENT | %d datasets, patterns saved to '%s/' ###%n", suite.size(), outDir);
         for (DatasetSpec s : suite) {
             try {
                 runOne(s.tag, s.seqFile, s.euiFile, s.minUtilRatio, s.maxRegRatio, s.batchRatios, outDir);

@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * <h1>RHusp-Recompute — "re-mine from scratch" reference</h1>
+ * <h1>RHusp-Recompute: "re-mine from scratch" reference</h1>
  *
  * Non-incremental baseline: whenever a batch {@code ΔD} arrives, accumulate it into the database
  * and RE-RUN the static RHUSP mining engine {@link AlgoRHUSP} from scratch over the whole

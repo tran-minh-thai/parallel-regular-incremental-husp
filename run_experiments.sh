@@ -29,7 +29,7 @@ STACK="4m"
 SKIP_BUILD=0
 DRY_RUN=0
 RESUME=0          # --resume: continue the newest unfinished run (skip cells already done)
-TEST_SUITE=0      # --test:   run the tiny testSuite (example datasets) — seconds, for a smoke check
+TEST_SUITE=0      # --test:   run the tiny testSuite (example datasets); seconds, for a smoke check
 MODE1_ONLY=0      # --m1:     run only the per-batch-exact comparison (P-RIncHUSP-P vs ParRemine)
 FOLLOWUP=0        # --followup: run all three follow-up probes in one session
 ABSOLUTE=0        # --absolute: constant per-dataset regularity bound B = floor(rho*N_final)
@@ -67,10 +67,10 @@ Options:
       --stack  <size>       Per-thread stack, e.g. 4m, 8m (default 4m).
       --skip-build          Skip the compile step (assumes classes are already built).
       --no-maven            Build with `javac` and run with `java` instead of Maven. The project has
-                            NO external dependencies, so this needs no network and no ~/.m2 — use it
+                            NO external dependencies, so this needs no network and no ~/.m2; use it
                             when Maven cannot reach repo.maven.apache.org. Classes go to out/.
       --test                (full suite) Run the tiny testSuite (example datasets) instead of the real
-                            one — finishes in seconds. Use it to smoke-test the WHOLE pipeline
+                            one, finishing in seconds. Use it to smoke-test the WHOLE pipeline
                             (compile + run + results dir) before starting a multi-hour run.
       --resume              (full suite) Continue the newest UNFINISHED run: skip datasets/cells
                             already completed, redo only what is missing. Safe to re-invoke after a
@@ -155,7 +155,7 @@ if (( NO_MAVEN == 1 )); then
     command -v javac >/dev/null 2>&1 || { echo "javac not found on PATH (need a JDK, not just a JRE)" >&2; exit 1; }
 else
     command -v mvn >/dev/null 2>&1 || {
-        echo "mvn not found on PATH. Tip: the project has no dependencies — you can run without Maven:" >&2
+        echo "mvn not found on PATH. Tip: the project has no dependencies, so you can run without Maven:" >&2
         echo "      ./run_experiments.sh --no-maven" >&2
         exit 1
     }

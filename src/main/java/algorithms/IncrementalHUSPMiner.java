@@ -19,8 +19,8 @@ public interface IncrementalHUSPMiner {
     /**
      * Initialize on the historical database.
      * @param dOld     initial sequences
-     * @param minUtilRatio δ — minUtil = δ × totalDbUtility
-     * @param maxRegRatio ρ — maxReg = ρ × numSequences
+     * @param minUtilRatio δ: minUtil = δ × totalDbUtility
+     * @param maxRegRatio ρ: maxReg = ρ × numSequences
      */
     void initialBuild(List<List<int[]>> dOld, double minUtilRatio, double maxRegRatio);
 
@@ -40,7 +40,7 @@ public interface IncrementalHUSPMiner {
      * reported. A pattern that fails the regularity test is dropped from the output but stays in the
      * tracked set, because a later batch can make it regular again; discovery likewise keeps every
      * candidate it raises, since the partition lemma only promises a pattern surfaces in SOME part.
-     * So the tracked set is a superset of the answer, it never shrinks, and nothing measured it —
+     * So the tracked set is a superset of the answer, it never shrinks, and nothing measured it,
      * which left the peak-memory figures with no quantity to correlate against.
      *
      * @return the number of tracked patterns, or -1 if the miner does not distinguish the two sets

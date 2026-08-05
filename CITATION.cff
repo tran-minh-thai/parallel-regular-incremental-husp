@@ -3,14 +3,14 @@ message: "If you use this software, please cite it using the metadata below."
 type: software
 title: "P-RIncHUSP: Parallel Regular Incremental High-Utility Sequential Pattern Mining"
 abstract: >
-  A Java implementation of P-RIncHUSP — a parallel, incremental framework for
+  A Java implementation of P-RIncHUSP, a parallel, incremental framework for
   mining Regular High-Utility Sequential Patterns from a growing quantitative
-  sequence database. Regularity is a declared per-dataset constant B — a pattern
-  is regular when it recurs at least every B sequences, at every point in time —
+  sequence database. Regularity is a declared per-dataset constant B: a pattern
+  is regular when it recurs at least every B sequences, at every point in time,
   so no bound drifts as the database grows and full-strength pruning stays sound
   in every phase; the relative formulation inherited from the sequential line of
-  work is kept for comparison. The incremental result is exact — equal to a full
-  re-mine — through sound seed pruning plus a discovery phase over the increment,
+  work is kept for comparison. The incremental result is exact, equal to a full
+  re-mine, through sound seed pruning plus a discovery phase over the increment,
   with the seed-split factor fixed by a partition lemma rather than tuned. The
   implementation parallelizes enumeration over prefix subtrees, maintains
   patterns content-driven across batches, computes exact max-measure utility via

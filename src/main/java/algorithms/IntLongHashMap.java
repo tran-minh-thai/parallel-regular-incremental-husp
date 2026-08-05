@@ -3,7 +3,7 @@ package algorithms;
 import java.util.Arrays;
 
 /**
- * Open-addressing {@code int->long} hash map (linear probing) — replaces {@code HashMap<Integer,Long>}
+ * Open-addressing {@code int->long} hash map (linear probing); replaces {@code HashMap<Integer,Long>}
  * to AVOID autoboxing and {@code Long} object headers in the hot path (LA-PEU accumulation in
  * localCandidates). Keys and values stored directly in {@code int[]/long[]}.
  */
@@ -42,7 +42,7 @@ public final class IntLongHashMap {
     public int  keyAt(int i)      { return keys[i]; }
     public long valAt(int i)      { return vals[i]; }
 
-    /** Clear for REUSE (retains capacity) — avoids allocating a new map in the hot path. */
+    /** Clear for REUSE (retains capacity); avoids allocating a new map in the hot path. */
     public void clear() {
         if (size == 0) return;
         Arrays.fill(keys, FREE);

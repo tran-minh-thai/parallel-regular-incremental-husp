@@ -10,10 +10,10 @@ import java.util.Map;
 /**
  * δ feasibility probe: run the PROPOSED miner (P-RIncHUSP, adaptive buffer, T = all cores) ONCE on one
  * dataset for a given δ, and report TRUE peak heap (JVM MXBean, not the sampled meter), #HS and #SHS.
- * If the run OOMs the JVM simply dies (no "OK" line) — the {@code tune_delta.sh} sweep runs each δ in a
+ * If the run OOMs the JVM simply dies (no "OK" line); the {@code tune_delta.sh} sweep runs each δ in a
  * fresh JVM so one OOM does not poison the others.
  * <p>
- * Distribution defaults to <b>B-Increasing (10/20/30/40)</b> — the small first batch is the
+ * Distribution defaults to <b>B-Increasing (10/20/30/40)</b>, where the small first batch is the
  * memory-worst case, so a δ that fits here fits the whole suite.
  * <p>Args: {@code <seqFile> <euiFile> <δ> [ρ=0.30] [threads=allCores] [dist=B|A]}.
  */

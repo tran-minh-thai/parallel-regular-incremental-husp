@@ -7,8 +7,8 @@ package test;
  * periodic sampler thread, the incremental miner recorded the heap at a couple of fixed points, the
  * re-mine baselines at a few others. A point sample taken at chosen moments can miss the true peak,
  * and it misses it by a different amount in each miner, so the peak-memory column was comparing
- * numbers from different instruments. Reading the peak from this meter instead — started and stopped
- * by the harness around every run — makes the instrument identical regardless of what the miner does
+ * numbers from different instruments. Reading the peak from this meter instead, started and stopped
+ * by the harness around every run, makes the instrument identical regardless of what the miner does
  * internally.
  *
  * It samples {@code totalMemory() - freeMemory()}, the same quantity the miners sampled, on a daemon
@@ -49,7 +49,7 @@ final class PeakMemoryMeter implements AutoCloseable {
     /**
      * Peak since the previous mark (or since construction), after which the window restarts from the
      * heap's current level. Called at each phase boundary, this splits one run's peak into per-phase
-     * peaks and answers which phase actually needs the heap — the single whole-run figure cannot,
+     * peaks and answers which phase actually needs the heap, which the single whole-run figure cannot,
      * and a cell that dies of exhaustion leaves no breakdown at all.
      *
      * <p>The value is the highest level reached DURING the window, not the phase's own contribution:
@@ -57,7 +57,7 @@ final class PeakMemoryMeter implements AutoCloseable {
      * what has to fit is the level, not the increment. It follows that the phase figures do not sum
      * to the total; each is bounded by it, and the largest of them approaches it.
      *
-     * <p>{@link #peakMB()} is unaffected — the whole-run accumulator is never reset — so the existing
+     * <p>{@link #peakMB()} is unaffected, since the whole-run accumulator is never reset, so the existing
      * peak column keeps its meaning across this change.
      */
     double markPhaseMB() {

@@ -10,14 +10,14 @@ import java.util.Map;
 import java.util.TreeSet;
 
 /**
- * Measures the budget-only mode: no final size, no growth factor, no lookahead — the miner is told
+ * Measures the budget-only mode: no final size, no growth factor, no lookahead. The miner is told
  * nothing about the future at all. The heap budget is the single input, and the retention bound B is
  * an OUTPUT, read off {@link AlgoPRIncHUSP#emergentBound()} after the run.
  *
  * <p>Two things have to hold, and both are checked here rather than argued. Recall against the
  * budget is the trade-off curve: memory, a fact about the machine, exchanged for patterns. And the
  * guarantee must be exact on its class: every oracle pattern whose maxPer lies at or under the
- * reported B has to be present in the answer — the "class miss" column counts violations and must
+ * reported B has to be present in the answer; the "class miss" column counts violations and must
  * read zero on every row.
  *
  * <pre>

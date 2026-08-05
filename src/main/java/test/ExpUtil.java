@@ -49,7 +49,7 @@ public final class ExpUtil {
     }
 
     /** As {@link #run}, but if {@code phaseOut} is non-null (length ≥ 2) fills [0]=seeding/build ms,
-     *  [1]=cumulative incremental (processBatch) ms — the per-phase cost decomposition (C11). */
+     *  [1]=cumulative incremental (processBatch) ms; the per-phase cost decomposition (C11). */
     public static Map<String, long[]> run(IncrementalHUSPMiner m, List<List<List<int[]>>> b,
                                           double minUtilRatio, double maxRegRatio, long[] phaseOut) {
         return run(m, b, minUtilRatio, maxRegRatio, phaseOut, null, null, null);
@@ -93,7 +93,7 @@ public final class ExpUtil {
     }
 
     /** As {@link #oracleCanon}, at an EXPLICIT absolute regularity bound. In absolute mode the
-     *  declared B defines the problem, so the oracle must be mined at exactly that number — deriving
+     *  declared B defines the problem, so the oracle must be mined at exactly that number, since deriving
      *  its bound from a ratio would answer a different question than the miners were asked. */
     public static Set<String> oracleCanon(List<List<int[]>> all, double minUtilRatio, int maxReg) {
         long totalDbUtility = 0;

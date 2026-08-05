@@ -8,11 +8,11 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * KBench — the batch-count crossover, the structural reason incremental must win.
+ * KBench: the batch-count crossover, the structural reason incremental must win.
  *
  * <p>Par-Remine pays k full re-mines of a growing DB: cost grows super-linearly in k.
  * P-RIncHUSP-E pays one seed + Σ maintains + one discovery. Total maintain work is
- * |pats| × |ΔD| — every new sequence is matched against the tracked set exactly once,
+ * |pats| × |ΔD|: every new sequence is matched against the tracked set exactly once,
  * <b>independent of how that ΔD was chopped into batches</b>. So our cost is ≈flat in k
  * while the baseline's is linear. k = 2 is the baseline's best case; k = 4 (what we have
  * been measuring all along) is still nearly its best case.
@@ -22,7 +22,7 @@ import java.util.Set;
 public class KBench {
 
     static final int[] KS = {2, 4, 8, 16, 32};
-    static final double MU = 1.0;      // θ₀ = δ·U(D_old) — the partition-lemma value (parameter-free)
+    static final double MU = 1.0;      // θ₀ = δ·U(D_old), the partition-lemma value (parameter-free)
 
     public static void main(String[] args) throws Exception {
         String seq = args[0], eui = args[1];
@@ -98,8 +98,8 @@ public class KBench {
     static AlgoPRIncHUSP cfg(boolean partition, int T) {
         AlgoPRIncHUSP m = ExpConfig.newProposed(T);
         m.seedPruneByFinalN = true;              // regularity ceiling closed (Thm. 2)
-        m.discoverExact     = !partition;        // utility ceiling closed — coarse 2-part split
-        m.partitionMine     = partition;         //                       — fine k-part split
+        m.discoverExact     = !partition;        // utility ceiling closed, coarse 2-part split
+        m.partitionMine     = partition;         //                         fine k-part split
         m.buffer.strategy = AdaptiveBuffer.Strategy.FIX;
         m.buffer.fixedMu = MU;
         m.buffer.bufferFactorMin = MU;

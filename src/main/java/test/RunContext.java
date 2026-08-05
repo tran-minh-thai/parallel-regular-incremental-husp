@@ -23,14 +23,14 @@ import java.util.Set;
  *
  * Everything for ONE run lives in a self-describing directory {@code results/run_<timestamp>_<confighash>/}:
  * <ul>
- *   <li><b>meta.properties</b> — environment (OS / JVM / cores / max heap / host / git commit) + the
+ *   <li><b>meta.properties</b>: environment (OS / JVM / cores / max heap / host / git commit) + the
  *       config that produced the numbers (δ,ρ,s1Only per dataset; μ band; warm-up/measured runs;
  *       per-run timeout; scenario switches) + {@code config.signature} + {@code status}.</li>
- *   <li><b>results.csv</b> — one row per (dataset, scenario, distribution, algorithm, threads, iteration).</li>
- *   <li><b>completed.txt</b> — one line per FINISHED benchmark cell (append + flush): the resume authority.</li>
- *   <li><b>datasets_done.txt</b> — one line per dataset whose scenarios all finished (lets resume skip the
+ *   <li><b>results.csv</b>: one row per (dataset, scenario, distribution, algorithm, threads, iteration).</li>
+ *   <li><b>completed.txt</b>: one line per FINISHED benchmark cell (append + flush): the resume authority.</li>
+ *   <li><b>datasets_done.txt</b>: one line per dataset whose scenarios all finished (lets resume skip the
  *       expensive re-load + oracle of a fully-done dataset).</li>
- *   <li><b>DONE</b> — empty marker written IFF the whole suite finished. Its ABSENCE ⇒ aborted/partial.</li>
+ *   <li><b>DONE</b>: empty marker written IFF the whole suite finished. Its ABSENCE ⇒ aborted/partial.</li>
  * </ul>
  *
  * <h3>Which results are valid / which are stale</h3>
@@ -42,7 +42,7 @@ import java.util.Set;
  * With {@code --resume}, the newest run dir whose signature matches and that has NO {@code DONE} is
  * reused: cells in {@code completed.txt} are skipped (their aggregate is reloaded from {@code results.csv}
  * so the S1 speed-up table stays correct), fully-done datasets are skipped whole, and only the missing
- * work runs — appending to the same files.
+ * work runs, appending to the same files.
  */
 public final class RunContext {
 
@@ -190,7 +190,7 @@ public final class RunContext {
     }
 
     private void saveMeta() throws IOException {
-        try (Writer w = new FileWriter(metaFile)) { meta.store(w, "P-RIncHUSP experiment run — provenance + resume state"); }
+        try (Writer w = new FileWriter(metaFile)) { meta.store(w, "P-RIncHUSP experiment run: provenance + resume state"); }
     }
 
     /** Load completed.txt / datasets_done.txt, and reconstruct per-cell aggregates from results.csv. */
@@ -230,7 +230,7 @@ public final class RunContext {
         }
     }
 
-    /** Rewrite results.csv keeping ONLY rows of completed cells — drops partial rows from a crashed cell
+    /** Rewrite results.csv keeping ONLY rows of completed cells; drops partial rows from a crashed cell
      *  and any duplicate rows a redo would create, so results.csv always holds exactly the valid results. */
     private void pruneCsvToCompleted(File csvFile) throws IOException {
         File tmp = new File(dir, "results.csv.tmp");
@@ -257,7 +257,7 @@ public final class RunContext {
         } catch (IOException ignore) {}
     }
 
-    /** Signature of every knob that changes the NUMBERS — bump the prefix if the schema changes.
+    /** Signature of every knob that changes the NUMBERS; bump the prefix if the schema changes.
      *  v3: proposed maintain = content-driven parallel trie (lazy retired); S5 ablation = trie vs
      *  inverted-index.
      *  v5: the proposed miner is now EXACT (sound ρ·N_final seed prune + ΔD discovery at minUtil−θ₀,

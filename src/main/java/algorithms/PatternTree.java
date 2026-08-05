@@ -7,7 +7,7 @@ import java.util.Map;
 
 /**
  * Prefix enumeration tree storing the state of patterns that are currently high-utility or buffered
- * — the manuscript, §Buffer and pattern tree.
+ * See the manuscript, §Buffer and pattern tree.
  * <p>
  * Each {@link Node} stores a VUL (vertical utility list) plus two child tables: within-itemset join
  * ({@link Node#iChildren}) and sequence-order join ({@link Node#sChildren}). Both tables are allocated
@@ -26,11 +26,11 @@ public class PatternTree {
         public final int extType;        // I_EXT or S_EXT (join type from parent)
         public Node parent;              // parent pointer -> build pattern sequence in O(depth)
 
-        // lazily allocated child tables — null means no child of that type yet (leaf node: both null)
+        // lazily allocated child tables; null means no child of that type yet (leaf node: both null)
         public Map<Integer, Node> iChildren;
         public Map<Integer, Node> sChildren;
 
-        /** VUL of the pattern at this node — maintained persistently across batches (extended only with new sequences). */
+        /** VUL of the pattern at this node, maintained persistently across batches (extended only with new sequences). */
         public VerticalUtilityList vul;
 
         Node(int item, int extType) { this.item = item; this.extType = extType; }
@@ -73,7 +73,7 @@ public class PatternTree {
         return cur;
     }
 
-    /** Enumerate all nodes (DFS) — used during end-of-batch result classification. */
+    /** Enumerate all nodes (DFS); used during end-of-batch result classification. */
     public List<Node> collectAllNodes() {
         List<Node> out = new ArrayList<>();
         dfs(root, out);

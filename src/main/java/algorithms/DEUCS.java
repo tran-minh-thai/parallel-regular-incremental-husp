@@ -13,8 +13,8 @@ import java.util.Map;
  * equal to the sequence-weighted utility (SWU) of sequences containing both {@code x} and {@code y}
  * under the corresponding relation. Two components:
  * <ul>
- *   <li>{@link #coOccurInEvent} — co-occurrence within the SAME event;</li>
- *   <li>{@link #coOccurAfter} — co-occurrence in SEQUENCE ORDER.</li>
+ *   <li>{@link #coOccurInEvent}: co-occurrence within the SAME event;</li>
+ *   <li>{@link #coOccurAfter}: co-occurrence in SEQUENCE ORDER.</li>
  * </ul>
  * Also maintains the total database utility {@link #totalDbUtility} and the per-item {@link #SWU} table.
  * <p>
@@ -48,7 +48,7 @@ public class DEUCS {
     public long swu(int x)         { return SWU.getOrDefault(x, 0L); }
 
     /**
-     * Release ALL structures (co-occurrence + adjacency + SWU) — call AFTER seeding completes.
+     * Release ALL structures (co-occurrence + adjacency + SWU); call AFTER seeding completes.
      * P-RIncHUSP uses DEUCS only for candidate generation during staticBuild; the incremental
      * phase re-matches directly and no longer needs it.
      */
@@ -57,7 +57,7 @@ public class DEUCS {
         adjInEvent.clear(); adjAfter.clear();
     }
 
-    /** Rebuild the adjacency index from coOccurInEvent/coOccurAfter — call AFTER incUpdate. */
+    /** Rebuild the adjacency index from coOccurInEvent/coOccurAfter; call AFTER incUpdate. */
     public void buildAdjacency() {
         adjInEvent.clear(); adjAfter.clear();
         buildAdj(coOccurInEvent, adjInEvent);
@@ -72,7 +72,7 @@ public class DEUCS {
     }
 
     /**
-     * Algorithm 2 — IncUpdateDEUCS: additive incremental update from batch {@code batch} only.
+     * Algorithm 2: IncUpdateDEUCS: additive incremental update from batch {@code batch} only.
      * Cost O(|ΔD|·L̄²), independent of the history size (the manuscript, §Complexity).
      */
     public void incUpdate(java.util.List<java.util.List<int[]>> batch) {
