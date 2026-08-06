@@ -25,8 +25,22 @@ import java.util.Map;
 public class AlgoParRemine implements IncrementalHUSPMiner {
 
     public int numThreads = Runtime.getRuntime().availableProcessors();
-    /** STRAT_RDLB = the companion paper's proposed scheduler (its best configuration). */
-    public int parallelStrategy = AlgoRHUSPMinerParallel.STRAT_RDLB;
+    /**
+     * Scheduler the wrapped engine runs with. Defaults to STRAT_STEAL, the standard work-stealing
+     * primitive whose origin is pSPADE, because that is the configuration every reported number was
+     * measured at ({@code ExpConfig.newParRemine} sets it explicitly for the same reason).
+     * <p>
+     * This default used to be STRAT_RDLB, described here as "the companion paper's proposed
+     * scheduler (its best configuration)". That is NOW WRONG as a description of the baseline: RDLB
+     * is the companion study's specific and still unpublished contribution, so a headline comparison
+     * cannot rest on it, and the field was overridden to STRAT_STEAL in the harness while this
+     * default and its comment were left behind. Reading this class alone therefore suggested the
+     * published figures were measured against RDLB, which they were not.
+     * <p>
+     * Both strategies return the same pattern set, so only timing differs. Set STRAT_RDLB
+     * deliberately if you want the stronger scheduler; expect the reported ratios to shrink.
+     */
+    public int parallelStrategy = AlgoRHUSPMinerParallel.STRAT_STEAL;
     public boolean denseBuffers = true;
 
     private final List<List<int[]>> db = new ArrayList<>();
