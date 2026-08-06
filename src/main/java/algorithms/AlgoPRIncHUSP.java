@@ -154,9 +154,13 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
      * belongs. Under the increasing split ΔD starts at 0.10·N while ρ·N_final is 0.03·N, so every
      * pattern occurring only in ΔD is already irregular when it arrives.
      *
-     * <p>Off by default: it changes which patterns are held, so the reported run stays reproducible.
-     * It should not change the ANSWER, since every pattern it drops is one classify() already
-     * withholds, but that is verified against the oracle rather than assumed.
+     * <p>The field default is false, but this is NOT off in the reported runs: under a declared
+     * absolute bound {@code ExpConfig.newProposed} turns it on, and the published run is
+     * maxReg=ABSOLUTE, so every reported number was measured with it active. An earlier comment
+     * here claimed the opposite ("off by default, so the reported run stays reproducible"), which
+     * was written before the absolute reformulation and is NOW WRONG.
+     * <p>It does not change the ANSWER, since every pattern it drops is one classify() already
+     * withholds; that is verified against the oracle rather than assumed.
      */
     public boolean evictPermanentlyIrregular = false;
 
@@ -194,9 +198,13 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
      * a genuine ceiling: rho * N_final under a horizon, the declared absolute bound, or the emergent
      * bound under a budget. In those cases dropping a pattern means leaving the declared class, which
      * is what the class already states. It is the same lemma the eviction uses, moved from "generate,
-     * then discard" to "never generate", so the candidates are never materialized at all. Off by
-     * default so every reported configuration is unchanged; the S10 ablation path
-     * (seedPruneByFinalN=false) never engages it.
+     * then discard" to "never generate", so the candidates are never materialized at all.
+     * <p>The field default is false, but under a declared absolute bound
+     * {@code ExpConfig.newProposed} turns it on, and the published run is maxReg=ABSOLUTE, so every
+     * reported number was measured with it active. An earlier comment here claimed it was "off by
+     * default so every reported configuration is unchanged", which was written before the absolute
+     * reformulation and is NOW WRONG. The S10 ablation path (seedPruneByFinalN=false) still never
+     * engages it, because the miner requires a sound ceiling.
      */
     public boolean floorPruneSeeds = false;
 
