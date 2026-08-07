@@ -7,14 +7,14 @@
 #
 # Usage:
 #   bash fetch_datasets.sh                      # pinned release (what the paper reports)
-#   bash fetch_datasets.sh v1-seed42-lognormal  # a different release
+#   bash fetch_datasets.sh v1.1-seed42-lognormal  # a different release
 #   bash fetch_datasets.sh --list               # show available releases
 #
 # Re-running is safe: files are overwritten with identical bytes and re-verified.
 
 set -euo pipefail
 
-VERSION="${1:-v1.1-seed42-lognormal}"
+VERSION="${1:-v1.1.1-seed42-lognormal}"
 REPO="tran-minh-thai/huspm-datasets"
 PROJ="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DEST="$PROJ/datasets"

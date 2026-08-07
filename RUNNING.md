@@ -31,7 +31,7 @@ bash fetch_datasets.sh          # download, extract into datasets/, verify check
 That script is the whole step. If you would rather run it by hand:
 
 ```bash
-VERSION=v1.1-seed42-lognormal
+VERSION=v1.1.1-seed42-lognormal
 REPO=https://github.com/tran-minh-thai/huspm-datasets
 curl -fLO $REPO/releases/download/$VERSION/huspm-datasets-$VERSION.tar.gz
 tar xzf huspm-datasets-$VERSION.tar.gz -C datasets/
