@@ -35,7 +35,7 @@ keywords:
   - ForkJoinPool
 license: MIT
 version: "1.0.0"
-date-released: "2026-06-25"
+date-released: "2026-08-07"
 repository-code: "https://github.com/tran-minh-thai/parallel-regular-incremental-husp"
 references:
   - type: article
