@@ -34,8 +34,8 @@ keywords:
   - shared-memory
   - ForkJoinPool
 license: MIT
-version: "1.0.0"
-date-released: "2026-08-07"
+version: "1.0.1"
+date-released: "2026-08-08"
 repository-code: "https://github.com/tran-minh-thai/parallel-regular-incremental-husp"
 references:
   - type: article
