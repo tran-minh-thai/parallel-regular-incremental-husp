@@ -51,6 +51,8 @@ tar xzf "$TMP/$TARBALL" -C "$DEST"
 # hence the separate download and the check from inside datasets/.
 echo "Verifying checksums ..."
 curl -fsSL -o "$DEST/MANIFEST.sha256" \
+    "https://github.com/$REPO/releases/download/$VERSION/MANIFEST.sha256" \
+  || curl -fsSL -o "$DEST/MANIFEST.sha256" \
     "https://raw.githubusercontent.com/$REPO/main/MANIFEST.sha256"
 ( cd "$DEST" && "${SHA[@]}" MANIFEST.sha256 )
 
