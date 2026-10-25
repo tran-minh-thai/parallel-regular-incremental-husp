@@ -1121,11 +1121,48 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         if (mb > peakMB) peakMB = mb;
     }
 
+    /**
+     * What happens to the anchor after a query. The anchor is the prefix whose tracked set is known to
+     * cover every regular pattern of utility at least θ₀ on it; discovery mines everything after it.
+     * <ul>
+     *   <li>{@link #ANCHOR_KEEP} (default, the reported behaviour): the anchor stays at the seeding
+     *       prefix, so every query re-mines the whole increment since seeding.</li>
+     *   <li>{@link #ANCHOR_RESET}: after the query the answer is exact, so the set of regular patterns
+     *       with utility at least minUtil on the current prefix is exactly the answer. That makes the
+     *       current prefix a valid anchor with θ₀ = minUtil: the tracked set shrinks to the answer, the
+     *       raw increment is dropped, and the next query mines only the data since this one.</li>
+     * </ul>
+     * Both are exact; they differ in cost only.
+     */
+    public static final int ANCHOR_KEEP = 0, ANCHOR_RESET = 1;
+    public int anchorPolicy = ANCHOR_KEEP;
+
+    /**
+     * Use the integer discovery threshold {@code minUtil - ceil(θ₀) + 1} instead of {@code minUtil - θ₀}.
+     * A pattern the anchor does not cover has anchor utility at most ceil(θ₀) - 1, because utilities
+     * are integers, so its increment utility is at least the tighter value. The tighter threshold is
+     * never below 1, which removes the non-positive-threshold case that otherwise skips discovery.
+     */
+    public boolean integerDiscoveryThreshold = false;
+
+    /**
+     * Deliberate defects for checking that the query-schedule probe can fail (0 = none). Never set
+     * outside that probe. 1: discovery threshold one unit too high; 2: anchor reset also drops every
+     * answer pattern whose last occurrence lies in the first half of the data; 3: fresh candidates are
+     * rebuilt from the increment only, so their utility and periods ignore the anchor prefix.
+     */
+    public static int FAULT = 0;
+
+    /** Per-query instrumentation of the last reconciliation (probe use). */
+    public long lastQueryMineMs, lastQueryRebuildMs, lastQueryThreshold;
+    public int lastQueryCandidates, lastQueryFresh, lastQueryIncrementSeqs;
+
     /** Querying the result triggers the reconciliation when {@link #discoverExact} is on (exact on demand). */
     @Override public Map<String, long[]> getHighUtilityPatterns() {
         if (discoverExact && !reconciled) {
             long t0 = System.currentTimeMillis();
             reconcile();
+            if (anchorPolicy == ANCHOR_RESET) resetAnchor();
             discMs += System.currentTimeMillis() - t0;
             reconciled = true;
         }
@@ -1134,8 +1171,32 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
 
     /** Query-time reconciliation (2-part split): mine ALL increments at θ_disc = minUtil − θ₀. */
     private void reconcile() {
+        lastQueryMineMs = lastQueryRebuildMs = lastQueryThreshold = 0;
+        lastQueryCandidates = lastQueryFresh = 0;
+        lastQueryIncrementSeqs = increments.size();
         if (increments.isEmpty()) return;
-        discoverFrom(increments, minUtil - seedThreshold0);   // θ₀ = δ·U(D_old) ⟹ θ_disc = δ·U(ΔD)
+        double threshold = integerDiscoveryThreshold
+                ? minUtil - (long) Math.ceil(seedThreshold0) + 1
+                : minUtil - seedThreshold0;                   // θ₀ = δ·U(D_old) ⟹ θ_disc = δ·U(ΔD)
+        if (FAULT == 1) threshold += 1;
+        lastQueryThreshold = (long) Math.ceil(threshold);
+        discoverFrom(increments, threshold);
+    }
+
+    /**
+     * Move the anchor to the current prefix. Valid only right after an exact reconciliation: then every
+     * regular pattern with utility at least minUtil is in {@link #pats} with exact state, so keeping
+     * exactly those and setting θ₀ = minUtil satisfies the coverage invariant at the new anchor.
+     */
+    private void resetAnchor() {
+        final int n = data.numSequences;
+        int w = 0;
+        for (Pat p : pats)
+            if (p.lastSeqId != -1 && p.utility >= minUtil && p.trueMaxPer(n) <= maxReg
+                    && !(FAULT == 2 && p.lastSeqId < n / 2)) pats[w++] = p;
+        if (w < pats.length) { pats = java.util.Arrays.copyOf(pats, w); trieRoot = null; }
+        seedThreshold0 = minUtil;
+        increments.clear();
     }
 
     /**
@@ -1193,9 +1254,12 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         // The bound is seedMaxReg -- under a horizon that is ρ·N_final, sound for future batches too;
         // under a budget it is the emergent bound, and the ladder may tighten it further right here.
         int[] minedAt = new int[1];
+        long tMine = System.nanoTime();
         AlgoRHUSPMinerParallel eng = runEngineWithinBudget(mk, part, seedMaxReg, minedAt);
+        lastQueryMineMs += (System.nanoTime() - tMine) / 1_000_000;
         if (minedAt[0] < seedMaxReg) { capClassBound(minedAt[0]); seedMaxReg = minedAt[0]; }
         discCandidates += eng.finalPatterns.size();
+        lastQueryCandidates += eng.finalPatterns.size();
         if (eng.finalPatterns.isEmpty()) return;
 
         java.util.HashSet<String> known = new java.util.HashSet<>(pats.length * 2);
@@ -1208,16 +1272,21 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
             fresh.add(new Pat(path[0], path[1], 0, -1, 0));   // exact state recomputed below
         }
         if (fresh.isEmpty()) return;
+        lastQueryFresh += fresh.size();
 
         // Exact full-DB state for each fresh candidate, from scratch over [0, n).
+        long tRebuild = System.nanoTime();
         final int n = data.numSequences;
         final Map<Integer, int[]> inv = buildInvertedIndex(0, n);
+        final int incrementSeqs = part.size();
         runParallelIndexed(fresh.size(), i -> {
             Pat p = fresh.get(i);
             int[] cand = candidateSeqs(p, inv);
             if (cand == null) return;
-            for (int s : cand) matchAndUpdate(p, s);           // ascending seqIds -> regularity is exact
+            int from = (FAULT == 3) ? n - incrementSeqs : 0;
+            for (int s : cand) if (s >= from) matchAndUpdate(p, s);   // ascending seqIds -> regularity is exact
         });
+        lastQueryRebuildMs += (System.nanoTime() - tRebuild) / 1_000_000;
 
         for (Pat p : fresh) {
             if (p.lastSeqId == -1 || p.utility < minUtil) continue;

@@ -56,17 +56,27 @@ public class AlgoParRemine implements IncrementalHUSPMiner {
 
     @Override public String name() { return "ParRemine"; }
 
+    /**
+     * Buffer arriving batches and re-mine only when the result is queried, instead of after every
+     * batch. This is the re-mining baseline that serves the same query schedule as an incremental
+     * miner exact at query time: both deliver an exact answer at exactly the same points.
+     */
+    public boolean mineOnQuery = false;
+    private boolean stale = false;
+
     @Override
     public void initialBuild(List<List<int[]>> dOld, double minUtilRatio, double maxRegRatio) {
         this.minUtilRatio = minUtilRatio;
         this.maxRegRatio = maxRegRatio;
         db.addAll(dOld);
+        if (mineOnQuery) { stale = true; return; }
         remine();
     }
 
     @Override
     public long processBatch(List<List<int[]>> deltaD) {
         db.addAll(deltaD);
+        if (mineOnQuery) { stale = true; return 0; }
         return remine();                       // batch cost = a full re-mine of everything seen so far
     }
 
@@ -94,6 +104,9 @@ public class AlgoParRemine implements IncrementalHUSPMiner {
         return ms;
     }
 
-    @Override public Map<String, long[]> getHighUtilityPatterns() { return result; }
+    @Override public Map<String, long[]> getHighUtilityPatterns() {
+        if (stale) { remine(); stale = false; }
+        return result;
+    }
     @Override public double peakMemoryMB() { return peakMB; }
 }
