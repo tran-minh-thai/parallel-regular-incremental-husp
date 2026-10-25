@@ -1179,7 +1179,8 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
      * cost-capped discovery leaves its half-built candidates in the tracked set (measured harmless: each
      * candidate is either fully rebuilt or untouched, and untouched ones carry no last occurrence and
      * are evicted at the next classification); 5: an aborted discovery skips the fallback re-mine; 6: an aborted discovery
-     * also keeps candidates whose rebuild was still in progress.
+     * also keeps candidates whose rebuild was still in progress; 7: a query skipped by the window backoff
+     * answers from the stale maintained set instead of re-mining.
      */
     public static int FAULT = 0;
 
@@ -1212,6 +1213,14 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
     public boolean gateByOverhead = false;
     /** False skips the engine's GC-based memory reset on the query path (discovery and full re-mine). */
     public boolean measureMemoryOnQuery = true;
+    /** After an aborted attempt with window |W_a|, re-mine directly until the window reaches 2|W_a|. */
+    public boolean windowBackoff = false;
+    /** Scale the last re-mine cost by the growth in sequences: F_hat = F_last * N / N_last. */
+    public boolean scaleFhatByN = false;
+    /** Abort discovery once the used heap exceeds this fraction of the maximum heap (0 = off). */
+    public double heapGuardFraction = 0;
+    private int lastRemineN = 0;
+    private int backoffUntilWindow = 0;
     private long lastOverheadNanos = 0;
     private long attemptWorkNanos = 0;                            // mining + rebuild time of the current attempt
     private boolean[] pendingDone = null;
@@ -1314,26 +1323,37 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         lastQueryR = incrementUtility > 0 ? (double) tau * increments.size() / incrementUtility : 0;
         if (increments.isEmpty()) { lastQueryAction = -1; return; }
         lastQueryKept = 0;
+        lastAttemptMs = lastAttemptLoadMs = lastAttemptPreprocessMs = lastAttemptEnumMs = lastAttemptRebuildMs = lastBudgetMs = 0;
+        lastAttemptAbortPhase = "";
         if (lastRemineNanos < 0) { lastQueryAction = 1; fullRemine(); return; }
         if (gateByOverhead && budgetFactor * lastRemineNanos < 2.0 * lastOverheadNanos) {
             lastQueryAction = 3;                                    // not worth trying: re-mine directly
             fullRemine();
             return;
         }
+        if (windowBackoff && increments.size() < backoffUntilWindow) {
+            lastQueryAction = 3;                                    // backing off: the window has not doubled yet
+            if (FAULT != 7) fullRemine();                           // FAULT 7: skip the re-mine, answer from the stale set
+            return;
+        }
+        double fhat = scaleFhatByN && lastRemineN > 0
+                ? (double) lastRemineNanos * data.numSequences / lastRemineN : lastRemineNanos;
         long attemptStart = System.nanoTime();
         long attemptStartEpoch = System.currentTimeMillis();
         attemptWorkNanos = 0;
         lastDiscoveryEngine = null;
         lastAttemptMs = lastAttemptLoadMs = lastAttemptPreprocessMs = lastAttemptEnumMs = lastAttemptRebuildMs = 0;
         lastAttemptAbortPhase = "";
-        lastBudgetMs = (long) (budgetFactor * lastRemineNanos) / 1_000_000;
-        discoveryDeadlineNanos = attemptStart + (long) (budgetFactor * lastRemineNanos);
+        lastBudgetMs = (long) (budgetFactor * fhat) / 1_000_000;
+        discoveryDeadlineNanos = attemptStart + (long) (budgetFactor * fhat);
         try {
             reconcile();
             lastOverheadNanos = Math.max(0, System.nanoTime() - attemptStart - attemptWorkNanos);
             recordAttempt(attemptStart, attemptStartEpoch);
             lastQueryAction = 0;
-            if (increments.size() >= reanchorFraction * data.numSequences) { resetAnchor(); incrementUtility = 0; }
+            if (increments.size() >= reanchorFraction * data.numSequences) {
+                resetAnchor(); incrementUtility = 0; backoffUntilWindow = 0;
+            }
         } catch (RuntimeException | OutOfMemoryError ex) {
             if (ex instanceof RuntimeException && !isDiscoveryAbort(ex)) throw (RuntimeException) ex;
             if (pendingFresh == null) ABORTS_IN_MINING.incrementAndGet();
@@ -1354,6 +1374,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
             }
             abortedQueries++;
             lastQueryAction = 2;
+            if (windowBackoff) backoffUntilWindow = 2 * increments.size();
             lastOverheadNanos = Math.max(0, System.nanoTime() - attemptStart - attemptWorkNanos);
             recordAttempt(attemptStart, attemptStartEpoch);
             lastAttemptAbortPhase = (pendingFresh == null ? "mining" : "rebuild")
@@ -1382,7 +1403,8 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
 
     private static boolean isDiscoveryAbort(Throwable e) {
         for (Throwable c = e; c != null; c = c.getCause()) {
-            if (c instanceof BudgetExceeded || c instanceof OutOfMemoryError) return true;
+            if (c instanceof BudgetExceeded || c instanceof OutOfMemoryError
+                    || c instanceof AlgoRHUSPMinerParallel.HeapBudgetExceeded) return true;
             if (c.getMessage() != null && c.getMessage().contains("TIMEOUT_INTERRUPT")) return true;
         }
         return false;
@@ -1412,6 +1434,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         for (Map.Entry<String, AlgoRHUSPMinerParallel.PatternResult> en : e.finalPatterns.entrySet())
             highUtility.put(en.getKey(), new long[]{en.getValue().utility, en.getValue().periodicity});
         lastRemineNanos = System.nanoTime() - t;
+        lastRemineN = data.numSequences;
         lastQueryMineMs = lastRemineNanos / 1_000_000;
         lastQueryCandidates = e.finalPatterns.size();
     }
@@ -1483,6 +1506,8 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
                 e.deadlineEpochMillis = System.currentTimeMillis()
                         + Math.max(1, (discoveryDeadlineNanos - System.nanoTime()) / 1_000_000);
             e.measureMemory = measureMemoryOnQuery;
+            if (heapGuardFraction > 0 && discoveryDeadlineNanos != Long.MAX_VALUE)
+                e.abortHeapBytes = (long) (heapGuardFraction * Runtime.getRuntime().maxMemory());
             lastDiscoveryEngine = e;
             e.windowMode = true;                               // a mid-stream part: neither leading nor
                                                                // trailing gap is a real gap of α in D
@@ -1670,7 +1695,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
             // its stragglers to the grave with it.
             AlgoRHUSPMinerParallel eng = mk.get();
             eng.forcedMaxReg = bound;
-            eng.abortHeapBytes = memoryBudgetMB > 0 ? memoryBudgetMB * 1024L * 1024L : 0;
+            if (memoryBudgetMB > 0) eng.abortHeapBytes = memoryBudgetMB * 1024L * 1024L;   // else keep the supplier's guard
             try {
                 eng.runAlgorithmInMemory(slice, minUtilRatio, maxRegRatio);
                 boundOut[0] = bound;

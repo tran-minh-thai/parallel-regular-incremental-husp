@@ -228,7 +228,9 @@ public class QueryScheduleProbe {
                 List<String> parts = new ArrayList<>(java.util.Arrays.asList(policy.split("-")));
                 boolean sel = parts.get(0).equals("sel");
                 boolean bud2 = parts.get(0).equals("bud2");          // bud2: bud + keep rebuilt + overhead gate + no GC
-                if (bud2) { parts.set(0, "bud"); parts.add("nogc"); }
+                boolean bud3 = parts.get(0).equals("bud3");          // bud3: bud + keep rebuilt + window backoff + scaled F_hat
+                                                                     //       + heap guard 0.6 + no GC (no overhead gate)
+                if (bud2 || bud3) { parts.set(0, "bud"); parts.add("nogc"); }
                 boolean bud = parts.get(0).equals("bud");            // bud[-c<factor>]: cost-capped discovery
                 double budget = 1.0;
                 for (String s : parts) if (s.startsWith("c")) budget = Double.parseDouble(s.substring(1));
@@ -250,8 +252,11 @@ public class QueryScheduleProbe {
                 p.adaptiveQuery = sel;
                 p.costCapped = bud;
                 p.budgetFactor = budget;
-                p.keepRebuiltOnAbort = bud2;
+                p.keepRebuiltOnAbort = bud2 || bud3;
                 p.gateByOverhead = bud2;
+                p.windowBackoff = bud3;
+                p.scaleFhatByN = bud3;
+                p.heapGuardFraction = bud3 ? 0.6 : 0;
                 p.measureMemoryOnQuery = !parts.contains("nogc");
                 p.selectorKappa = kappa;
                 m = p;

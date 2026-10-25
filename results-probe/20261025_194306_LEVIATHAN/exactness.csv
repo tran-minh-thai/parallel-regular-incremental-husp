@@ -1,0 +1,8 @@
+dataset,policy,batches,schedule,fault,query,after_batch,n_seqs,oracle_size,returned,missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,gap_rejected,tracked_after,action,r,kept_on_abort,budget_ms,attempt_ms,attempt_load_ms,attempt_preprocess_ms,attempt_enum_ms,attempt_rebuild_ms,abort_phase
+LEVIATHAN,bud3-c1000,8,every,0,0,1,2084,8937,8937,0,0,0,0,625,25675,8937,0,0,8648,remine,3.13,0,0,0,0,0,0,0,
+LEVIATHAN,bud3-c1000,8,every,0,1,2,2709,7873,7873,0,0,0,0,1250,15748,31233,23749,1224,8181,discover,6.25,0,453349,3256,2,10,345,2850,
+LEVIATHAN,bud3-c1000,8,every,0,2,3,3334,7185,7185,0,0,0,0,1875,23902,19632,12354,381,7185,discover,9.38,0,557943,2311,1,10,260,2019,
+LEVIATHAN,bud3-c1000,8,every,0,3,4,3959,6319,6319,0,0,0,0,625,7455,75612,69504,10176,6691,discover,3.13,0,662536,13206,1,4,267,12820,
+LEVIATHAN,bud3-c1000,8,every,0,4,5,4584,5948,5948,0,0,0,0,1250,14701,30231,24132,2166,6335,discover,6.25,0,767130,5697,1,4,212,5445,
+LEVIATHAN,bud3-c1000,8,every,0,5,6,5209,5322,5322,0,0,0,0,1875,21573,18112,12613,656,5694,discover,9.38,0,871723,3859,1,5,311,3521,
+LEVIATHAN,bud3-c1000,8,every,0,6,7,5834,5148,5148,0,0,0,0,2500,29179,13996,8681,381,5513,discover,12.50,0,976317,3284,1,5,253,3012,

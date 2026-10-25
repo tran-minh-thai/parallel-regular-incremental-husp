@@ -34,7 +34,7 @@ public class QueryScheduleStress {
         AlgoPRIncHUSP.FAULT = Integer.getInteger("fault", 0);
         AlgoPRIncHUSP.FORCE_REBUILD_ABORT = Boolean.getBoolean("forceRebuildAbort");
         AlgoPRIncHUSP.FORCE_MID_CANDIDATE_ABORT = Boolean.getBoolean("forceMidCandidateAbort");
-        String[] policies = System.getProperty("policies", "keep-sfx,reset-sfx,keep-sfx-gf,keep-sfx-gf-l0.5,sel-k0,sel-k5,sel-k1000000000,bud-c0,bud-c0.001,bud-c1,bud-c1000000000").split(",");
+        String[] policies = System.getProperty("policies", "keep-sfx,reset-sfx,keep-sfx-gf,keep-sfx-gf-l0.5,sel-k0,sel-k5,sel-k1000000000,bud-c0,bud-c0.001,bud-c1,bud-c1000000000,bud3-c0,bud3-c0.001,bud3-c1,bud3-c1000000000").split(",");
         int compared = 0, failing = 0, nonEmpty = 0, multiItemSeqs = 0;
         Map<String, Integer> failsByPolicy = new TreeMap<>();
         for (int seed = 1; seed <= trials; seed++) {
