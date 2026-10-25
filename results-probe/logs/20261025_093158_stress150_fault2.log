@@ -1,0 +1,7 @@
+  FAIL seed=1 policy=reset-sfx batch=2 oracle=94 miss=5 extra=0 uErr=0 pErr=0
+  FAIL seed=1 policy=reset-sfx batch=3 oracle=55 miss=5 extra=0 uErr=0 pErr=0
+  FAIL seed=1 policy=reset-sfx batch=5 oracle=25 miss=1 extra=0 uErr=0 pErr=0
+  FAIL seed=2 policy=reset-sfx batch=2 oracle=37 miss=1 extra=0 uErr=0 pErr=0
+  FAIL seed=4 policy=reset-sfx batch=2 oracle=82 miss=5 extra=0 uErr=0 pErr=0
+fault=2 trials=150 sequences-with-multi-item-events=5384 compared-queries=2708 with-non-empty-oracle=2664 failing=260 {reset-sfx=260}
+rc=1

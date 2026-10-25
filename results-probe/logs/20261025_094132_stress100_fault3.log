@@ -1,0 +1,7 @@
+  FAIL seed=1 policy=keep-sfx batch=1 oracle=156 miss=46 extra=0 uErr=0 pErr=0
+  FAIL seed=1 policy=keep-sfx batch=2 oracle=94 miss=25 extra=0 uErr=0 pErr=0
+  FAIL seed=1 policy=keep-sfx batch=3 oracle=55 miss=11 extra=0 uErr=0 pErr=0
+  FAIL seed=1 policy=keep-sfx batch=4 oracle=31 miss=6 extra=0 uErr=0 pErr=0
+  FAIL seed=1 policy=keep-sfx batch=5 oracle=25 miss=6 extra=0 uErr=0 pErr=0
+fault=3 trials=100 sequences-with-multi-item-events=3621 compared-queries=1764 with-non-empty-oracle=1732 failing=813 {keep-sfx=238, keep-sfx-gf=238, keep-sfx-gf-l0.5=97, reset-sfx=240}
+rc=1

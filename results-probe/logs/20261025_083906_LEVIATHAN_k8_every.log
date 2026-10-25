@@ -1,0 +1,31 @@
+LEVIATHAN N=5834 delta=0.005 B=175 k=8 schedule=every threads=10 fault=0 -> results-probe/20261025_083907_LEVIATHAN
+  oracle after batch 1: N=2084 minUtil=25675 patterns=8937
+  oracle after batch 2: N=2709 minUtil=33450 patterns=7873
+  oracle after batch 3: N=3334 minUtil=41604 patterns=7185
+  oracle after batch 4: N=3959 minUtil=49058 patterns=6319
+  oracle after batch 5: N=4584 minUtil=56304 patterns=5948
+  oracle after batch 6: N=5209 minUtil=63176 patterns=5322
+  oracle after batch 7: N=5834 minUtil=70782 patterns=5148
+  keep-sfx q0  after b1  N=2084   oracle=8937   got=8937   miss=0 extra=0 uErr=0 pErr=0  ingest=78ms query=3740ms  [thr=7973 cand=75073 fresh=66584 mine=461ms rebuild=3198ms tracked=9420]
+  keep-sfx q1  after b2  N=2709   oracle=7873   got=7873   miss=0 extra=0 uErr=0 pErr=0  ingest=45ms query=2089ms  [thr=15748 cand=31233 fresh=23221 mine=348ms rebuild=1716ms tracked=8315]
+  keep-sfx q2  after b3  N=3334   oracle=7185   got=7185   miss=0 extra=0 uErr=0 pErr=0  ingest=24ms query=1656ms  [thr=23902 cand=19632 fresh=12338 mine=356ms rebuild=1289ms tracked=7560]
+  keep-sfx q3  after b4  N=3959   oracle=6319   got=6319   miss=0 extra=0 uErr=0 pErr=0  ingest=21ms query=1394ms  [thr=31356 cand=14172 fresh=7755 mine=363ms rebuild=1024ms tracked=6664]
+  keep-sfx q4  after b5  N=4584   oracle=5948   got=5948   miss=0 extra=0 uErr=0 pErr=0  ingest=15ms query=1347ms  [thr=38602 cand=11999 fresh=5950 mine=380ms rebuild=961ms tracked=6265]
+  keep-sfx q5  after b6  N=5209   oracle=5322   got=5322   miss=0 extra=0 uErr=0 pErr=0  ingest=18ms query=1227ms  [thr=45474 cand=9877 fresh=4458 mine=389ms rebuild=832ms tracked=5606]
+  keep-sfx q6  after b7  N=5834   oracle=5148   got=5148   miss=0 extra=0 uErr=0 pErr=0  ingest=16ms query=1225ms  [thr=53080 cand=8981 fresh=3738 mine=403ms rebuild=817ms tracked=5422]
+  reset-sfx q0  after b1  N=2084   oracle=8937   got=8937   miss=0 extra=0 uErr=0 pErr=0  ingest=23ms query=3666ms  [thr=7973 cand=75073 fresh=66584 mine=374ms rebuild=3218ms tracked=8937]
+  reset-sfx q1  after b2  N=2709   oracle=7873   got=7873   miss=0 extra=0 uErr=0 pErr=0  ingest=23ms query=5646ms  [thr=7776 cand=87360 fresh=79738 mine=394ms rebuild=5165ms tracked=7873]
+  reset-sfx q2  after b3  N=3334   oracle=7185   got=7185   miss=0 extra=0 uErr=0 pErr=0  ingest=19ms query=7133ms  [thr=8155 cand=78295 fresh=71382 mine=365ms rebuild=6678ms tracked=7185]
+  reset-sfx q3  after b4  N=3959   oracle=6319   got=6319   miss=0 extra=0 uErr=0 pErr=0  ingest=22ms query=9064ms  [thr=7455 cand=75612 fresh=69504 mine=369ms rebuild=8626ms tracked=6319]
+  reset-sfx q4  after b5  N=4584   oracle=5948   got=5948   miss=0 extra=0 uErr=0 pErr=0  ingest=16ms query=13367ms  [thr=7247 cand=99492 fresh=93730 mine=397ms rebuild=12870ms tracked=5948]
+  reset-sfx q5  after b6  N=5209   oracle=5322   got=5322   miss=0 extra=0 uErr=0 pErr=0  ingest=14ms query=18110ms  [thr=6873 cand=100966 fresh=95760 mine=383ms rebuild=17611ms tracked=5322]
+  reset-sfx q6  after b7  N=5834   oracle=5148   got=5148   miss=0 extra=0 uErr=0 pErr=0  ingest=13ms query=16351ms  [thr=7607 cand=90384 fresh=85334 mine=345ms rebuild=15922ms tracked=5148]
+  remine q0  after b1  N=2084   oracle=8937   got=8937   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=345ms
+  remine q1  after b2  N=2709   oracle=7873   got=7873   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=290ms
+  remine q2  after b3  N=3334   oracle=7185   got=7185   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=308ms
+  remine q3  after b4  N=3959   oracle=6319   got=6319   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=323ms
+  remine q4  after b5  N=4584   oracle=5948   got=5948   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=331ms
+  remine q5  after b6  N=5209   oracle=5322   got=5322   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=347ms
+  remine q6  after b7  N=5834   oracle=5148   got=5148   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=368ms
+compared queries=21 failing=0
+rc=0

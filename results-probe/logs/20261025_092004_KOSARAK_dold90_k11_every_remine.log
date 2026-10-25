@@ -1,0 +1,23 @@
+KOSARAK N=990002 delta=0.015 B=297000 k=11 dOld=0.9 schedule=every threads=10 fault=0 reference=parallel engine (NOT independent) -> results-probe/20261025_092006_KOSARAK
+  oracle after batch 1: N=900902 minUtil=5476340 patterns=30
+  oracle after batch 2: N=910802 minUtil=5536681 patterns=30
+  oracle after batch 3: N=920702 minUtil=5596323 patterns=30
+  oracle after batch 4: N=930602 minUtil=5654431 patterns=30
+  oracle after batch 5: N=940502 minUtil=5716417 patterns=30
+  oracle after batch 6: N=950402 minUtil=5777232 patterns=30
+  oracle after batch 7: N=960302 minUtil=5837124 patterns=30
+  oracle after batch 8: N=970202 minUtil=5897968 patterns=30
+  oracle after batch 9: N=980102 minUtil=5957032 patterns=30
+  oracle after batch 10: N=990002 minUtil=6013360 patterns=30
+  remine q0  after b1  N=900902 oracle=30     got=30     miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=3646ms
+  remine q1  after b2  N=910802 oracle=30     got=30     miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=3733ms
+  remine q2  after b3  N=920702 oracle=30     got=30     miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=3730ms
+  remine q3  after b4  N=930602 oracle=30     got=30     miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=3740ms
+  remine q4  after b5  N=940502 oracle=30     got=30     miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=3709ms
+  remine q5  after b6  N=950402 oracle=30     got=30     miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=3779ms
+  remine q6  after b7  N=960302 oracle=30     got=30     miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=3882ms
+  remine q7  after b8  N=970202 oracle=30     got=30     miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=3847ms
+  remine q8  after b9  N=980102 oracle=30     got=30     miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=3941ms
+  remine q9  after b10 N=990002 oracle=30     got=30     miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=3967ms
+compared queries=10 failing=0
+rc=0

@@ -1,0 +1,49 @@
+KOSARAK N=990002 delta=0.015 B=297000 k=11 dOld=0.9 schedule=every threads=10 fault=0 reference=parallel engine (NOT independent) -> results-probe/20261025_090833_KOSARAK
+  oracle after batch 1: N=900902 minUtil=5476340 patterns=30
+  oracle after batch 2: N=910802 minUtil=5536681 patterns=30
+  oracle after batch 3: N=920702 minUtil=5596323 patterns=30
+  oracle after batch 4: N=930602 minUtil=5654431 patterns=30
+  oracle after batch 5: N=940502 minUtil=5716417 patterns=30
+  oracle after batch 6: N=950402 minUtil=5777232 patterns=30
+  oracle after batch 7: N=960302 minUtil=5837124 patterns=30
+  oracle after batch 8: N=970202 minUtil=5897968 patterns=30
+  oracle after batch 9: N=980102 minUtil=5957032 patterns=30
+  oracle after batch 10: N=990002 minUtil=6013360 patterns=30
+  keep-sfx-gf q0  after b1  N=900902 oracle=30     got=30     miss=0 extra=0 uErr=0 pErr=0  ingest=37ms query=2461ms  [thr=60318 cand=33 fresh=3 gapRej=0 mine=415ms rebuild=2045ms tracked=33]
+  keep-sfx-gf q1  after b2  N=910802 oracle=30     got=30     miss=0 extra=0 uErr=0 pErr=0  ingest=4ms query=2308ms  [thr=120659 cand=34 fresh=2 gapRej=0 mine=424ms rebuild=1883ms tracked=35]
+  keep-sfx-gf q2  after b3  N=920702 oracle=30     got=30     miss=0 extra=0 uErr=0 pErr=0  ingest=2ms query=433ms  [thr=180301 cand=33 fresh=0 gapRej=0 mine=433ms rebuild=0ms tracked=35]
+  keep-sfx-gf q3  after b4  N=930602 oracle=30     got=30     miss=0 extra=0 uErr=0 pErr=0  ingest=2ms query=467ms  [thr=238409 cand=31 fresh=0 gapRej=0 mine=467ms rebuild=0ms tracked=35]
+  keep-sfx-gf q4  after b5  N=940502 oracle=30     got=30     miss=0 extra=0 uErr=0 pErr=0  ingest=2ms query=520ms  [thr=300395 cand=30 fresh=0 gapRej=0 mine=520ms rebuild=0ms tracked=35]
+  keep-sfx-gf q5  after b6  N=950402 oracle=30     got=30     miss=0 extra=0 uErr=0 pErr=0  ingest=2ms query=556ms  [thr=361210 cand=30 fresh=0 gapRej=0 mine=556ms rebuild=0ms tracked=35]
+  keep-sfx-gf q6  after b7  N=960302 oracle=30     got=30     miss=0 extra=0 uErr=0 pErr=0  ingest=2ms query=579ms  [thr=421102 cand=30 fresh=0 gapRej=0 mine=579ms rebuild=0ms tracked=35]
+  keep-sfx-gf q7  after b8  N=970202 oracle=30     got=30     miss=0 extra=0 uErr=0 pErr=0  ingest=2ms query=604ms  [thr=481946 cand=30 fresh=0 gapRej=0 mine=604ms rebuild=0ms tracked=35]
+  keep-sfx-gf q8  after b9  N=980102 oracle=30     got=30     miss=0 extra=0 uErr=0 pErr=0  ingest=2ms query=667ms  [thr=541010 cand=30 fresh=0 gapRej=0 mine=667ms rebuild=0ms tracked=35]
+  keep-sfx-gf q9  after b10 N=990002 oracle=30     got=30     miss=0 extra=0 uErr=0 pErr=0  ingest=1ms query=663ms  [thr=597338 cand=31 fresh=0 gapRej=0 mine=663ms rebuild=0ms tracked=35]
+  keep-sfx-gf-l0.5 q0  after b1  N=900902 oracle=30     got=30     miss=0 extra=0 uErr=0 pErr=0  ingest=2ms query=274ms  [thr=2768329 cand=0 fresh=0 gapRej=0 mine=274ms rebuild=0ms tracked=87]
+  keep-sfx-gf-l0.5 q1  after b2  N=910802 oracle=30     got=30     miss=0 extra=0 uErr=0 pErr=0  ingest=5ms query=270ms  [thr=2828670 cand=0 fresh=0 gapRej=0 mine=270ms rebuild=0ms tracked=87]
+  keep-sfx-gf-l0.5 q2  after b3  N=920702 oracle=30     got=30     miss=0 extra=0 uErr=0 pErr=0  ingest=3ms query=280ms  [thr=2888312 cand=0 fresh=0 gapRej=0 mine=280ms rebuild=0ms tracked=87]
+  keep-sfx-gf-l0.5 q3  after b4  N=930602 oracle=30     got=30     miss=0 extra=0 uErr=0 pErr=0  ingest=2ms query=290ms  [thr=2946420 cand=0 fresh=0 gapRej=0 mine=290ms rebuild=0ms tracked=87]
+  keep-sfx-gf-l0.5 q4  after b5  N=940502 oracle=30     got=30     miss=0 extra=0 uErr=0 pErr=0  ingest=2ms query=284ms  [thr=3008406 cand=0 fresh=0 gapRej=0 mine=284ms rebuild=0ms tracked=87]
+  keep-sfx-gf-l0.5 q5  after b6  N=950402 oracle=30     got=30     miss=0 extra=0 uErr=0 pErr=0  ingest=2ms query=290ms  [thr=3069221 cand=0 fresh=0 gapRej=0 mine=290ms rebuild=0ms tracked=87]
+  keep-sfx-gf-l0.5 q6  after b7  N=960302 oracle=30     got=30     miss=0 extra=0 uErr=0 pErr=0  ingest=2ms query=298ms  [thr=3129113 cand=0 fresh=0 gapRej=0 mine=298ms rebuild=0ms tracked=87]
+  keep-sfx-gf-l0.5 q7  after b8  N=970202 oracle=30     got=30     miss=0 extra=0 uErr=0 pErr=0  ingest=2ms query=302ms  [thr=3189957 cand=0 fresh=0 gapRej=0 mine=302ms rebuild=0ms tracked=87]
+  keep-sfx-gf-l0.5 q8  after b9  N=980102 oracle=30     got=30     miss=0 extra=0 uErr=0 pErr=0  ingest=2ms query=294ms  [thr=3249021 cand=1 fresh=0 gapRej=0 mine=294ms rebuild=0ms tracked=87]
+  keep-sfx-gf-l0.5 q9  after b10 N=990002 oracle=30     got=30     miss=0 extra=0 uErr=0 pErr=0  ingest=2ms query=300ms  [thr=3305349 cand=1 fresh=0 gapRej=0 mine=299ms rebuild=0ms tracked=87]
+  reset-sfx-gf q0  after b1  N=900902 oracle=30     got=30     miss=0 extra=0 uErr=0 pErr=0  ingest=2ms query=2026ms  [thr=60318 cand=33 fresh=3 gapRej=0 mine=341ms rebuild=1684ms tracked=30]
+Exception in thread "main" java.lang.OutOfMemoryError
+	at java.base/jdk.internal.reflect.DirectConstructorHandleAccessor.newInstance(DirectConstructorHandleAccessor.java:62)
+	at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:499)
+	at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:483)
+	at java.base/java.util.concurrent.ForkJoinTask.getException(ForkJoinTask.java:564)
+	at java.base/java.util.concurrent.ForkJoinTask.reportException(ForkJoinTask.java:580)
+	at java.base/java.util.concurrent.ForkJoinTask.join(ForkJoinTask.java:670)
+	at java.base/java.util.concurrent.ForkJoinPool.invoke(ForkJoinPool.java:3149)
+	at algorithms.AlgoRHUSPMinerParallel.mineCore(AlgoRHUSPMinerParallel.java:347)
+	at algorithms.AlgoRHUSPMinerParallel.runAlgorithmInMemory(AlgoRHUSPMinerParallel.java:316)
+	at algorithms.AlgoPRIncHUSP.runEngineWithinBudget(AlgoPRIncHUSP.java:1427)
+	at algorithms.AlgoPRIncHUSP.discoverFrom(AlgoPRIncHUSP.java:1283)
+	at algorithms.AlgoPRIncHUSP.reconcile(AlgoPRIncHUSP.java:1207)
+	at algorithms.AlgoPRIncHUSP.getHighUtilityPatterns(AlgoPRIncHUSP.java:1188)
+	at test.QueryScheduleProbe.main(QueryScheduleProbe.java:140)
+Caused by: java.lang.OutOfMemoryError: Java heap space
+rc=1

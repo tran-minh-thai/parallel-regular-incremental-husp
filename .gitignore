@@ -34,3 +34,6 @@ datasets/*.tar.gz
 !datasets/example_eui.txt
 !datasets/example2_seq.txt
 !datasets/example2_eui.txt
+
+# Console logs of the feasibility probes are their only record of exactness results; keep them.
+!results-probe/logs/*.log

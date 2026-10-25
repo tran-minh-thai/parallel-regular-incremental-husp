@@ -1,0 +1,2 @@
+fault=0 trials=300 sequences-with-multi-item-events=10837 compared-queries=5360 with-non-empty-oracle=5260 failing=0 {}
+rc=0

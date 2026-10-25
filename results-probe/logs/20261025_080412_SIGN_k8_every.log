@@ -1,0 +1,57 @@
+SIGN N=730 delta=0.005 B=21 k=8 schedule=every threads=10 fault=0 -> results-probe/20261025_080412_SIGN
+  oracle after batch 1: N=261 minUtil=2860 patterns=8547
+  oracle after batch 2: N=339 minUtil=3665 patterns=4891
+  oracle after batch 3: N=417 minUtil=4516 patterns=3928
+  oracle after batch 4: N=495 minUtil=5408 patterns=2052
+  oracle after batch 5: N=573 minUtil=6430 patterns=1486
+  oracle after batch 6: N=651 minUtil=7343 patterns=938
+  oracle after batch 7: N=730 minUtil=8344 patterns=830
+Exception in thread "main" java.lang.OutOfMemoryError
+	at java.base/jdk.internal.reflect.DirectConstructorHandleAccessor.newInstance(DirectConstructorHandleAccessor.java:62)
+	at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:499)
+	at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:483)
+	at java.base/java.util.concurrent.ForkJoinTask.getException(ForkJoinTask.java:564)
+	at java.base/java.util.concurrent.ForkJoinTask.reportException(ForkJoinTask.java:580)
+	at java.base/java.util.concurrent.ForkJoinTask.join(ForkJoinTask.java:670)
+	at java.base/java.util.concurrent.ForkJoinPool.invoke(ForkJoinPool.java:3149)
+	at algorithms.AlgoRHUSPMinerParallel.mineCore(AlgoRHUSPMinerParallel.java:333)
+	at algorithms.AlgoRHUSPMinerParallel.runAlgorithmInMemory(AlgoRHUSPMinerParallel.java:302)
+	at algorithms.AlgoPRIncHUSP.runEngineWithinBudget(AlgoPRIncHUSP.java:1395)
+	at algorithms.AlgoPRIncHUSP.discoverFrom(AlgoPRIncHUSP.java:1258)
+	at algorithms.AlgoPRIncHUSP.reconcile(AlgoPRIncHUSP.java:1183)
+	at algorithms.AlgoPRIncHUSP.getHighUtilityPatterns(AlgoPRIncHUSP.java:1164)
+	at test.QueryScheduleProbe.main(QueryScheduleProbe.java:123)
+Caused by: java.lang.OutOfMemoryError: Java heap space
+	at algorithms.AlgoRHUSPMinerParallel$InstanceList.<init>(AlgoRHUSPMinerParallel.java:726)
+	at algorithms.AlgoRHUSPMinerParallel.processOne(AlgoRHUSPMinerParallel.java:845)
+	at algorithms.AlgoRHUSPMinerParallel.mine(AlgoRHUSPMinerParallel.java:1004)
+	at algorithms.AlgoRHUSPMinerParallel.processOne(AlgoRHUSPMinerParallel.java:927)
+	at algorithms.AlgoRHUSPMinerParallel.mine(AlgoRHUSPMinerParallel.java:1004)
+	at algorithms.AlgoRHUSPMinerParallel.processOne(AlgoRHUSPMinerParallel.java:927)
+	at algorithms.AlgoRHUSPMinerParallel.mine(AlgoRHUSPMinerParallel.java:1004)
+	at algorithms.AlgoRHUSPMinerParallel.processOne(AlgoRHUSPMinerParallel.java:927)
+	at algorithms.AlgoRHUSPMinerParallel.mine(AlgoRHUSPMinerParallel.java:1004)
+	at algorithms.AlgoRHUSPMinerParallel.processOne(AlgoRHUSPMinerParallel.java:927)
+	at algorithms.AlgoRHUSPMinerParallel.mine(AlgoRHUSPMinerParallel.java:1004)
+	at algorithms.AlgoRHUSPMinerParallel.processOne(AlgoRHUSPMinerParallel.java:927)
+	at algorithms.AlgoRHUSPMinerParallel.mine(AlgoRHUSPMinerParallel.java:1004)
+	at algorithms.AlgoRHUSPMinerParallel.processOne(AlgoRHUSPMinerParallel.java:927)
+	at algorithms.AlgoRHUSPMinerParallel.mine(AlgoRHUSPMinerParallel.java:1004)
+	at algorithms.AlgoRHUSPMinerParallel.processOne(AlgoRHUSPMinerParallel.java:927)
+	at algorithms.AlgoRHUSPMinerParallel.mine(AlgoRHUSPMinerParallel.java:1004)
+	at algorithms.AlgoRHUSPMinerParallel.processOne(AlgoRHUSPMinerParallel.java:927)
+	at algorithms.AlgoRHUSPMinerParallel.mine(AlgoRHUSPMinerParallel.java:1004)
+	at algorithms.AlgoRHUSPMinerParallel.processOne(AlgoRHUSPMinerParallel.java:927)
+	at algorithms.AlgoRHUSPMinerParallel.mine(AlgoRHUSPMinerParallel.java:1004)
+	at algorithms.AlgoRHUSPMinerParallel.processOne(AlgoRHUSPMinerParallel.java:927)
+	at algorithms.AlgoRHUSPMinerParallel.mine(AlgoRHUSPMinerParallel.java:1004)
+	at algorithms.AlgoRHUSPMinerParallel.processOne(AlgoRHUSPMinerParallel.java:927)
+	at algorithms.AlgoRHUSPMinerParallel.mine(AlgoRHUSPMinerParallel.java:1004)
+	at algorithms.AlgoRHUSPMinerParallel.processOne(AlgoRHUSPMinerParallel.java:927)
+	at algorithms.AlgoRHUSPMinerParallel.mine(AlgoRHUSPMinerParallel.java:1004)
+	at algorithms.AlgoRHUSPMinerParallel.processOne(AlgoRHUSPMinerParallel.java:927)
+	at algorithms.AlgoRHUSPMinerParallel.mine(AlgoRHUSPMinerParallel.java:1004)
+	at algorithms.AlgoRHUSPMinerParallel.processOne(AlgoRHUSPMinerParallel.java:927)
+	at algorithms.AlgoRHUSPMinerParallel.mine(AlgoRHUSPMinerParallel.java:1004)
+	at algorithms.AlgoRHUSPMinerParallel$RootTask.compute(AlgoRHUSPMinerParallel.java:794)
+rc=1
