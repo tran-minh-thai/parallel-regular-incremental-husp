@@ -30,6 +30,14 @@ Usage:
   python3 tools/build_stream_datasets.py yoochoose  <yoochoose-buys.dat>       <out-dir> <manifest-dir>
   python3 tools/build_stream_datasets.py retail     <online_retail_II.xlsx>    <out-dir> <manifest-dir>
   python3 tools/build_stream_datasets.py dunnhumby  <transaction_data.csv>     <out-dir> <manifest-dir>
+  python3 tools/build_stream_datasets.py hm         <transactions_train.csv>   <out-dir> <manifest-dir> [max_weeks]
+  python3 tools/build_stream_datasets.py vs         <transactions.csv.gz>      <out-dir> <manifest-dir> <chain>
+
+  HM-CW               sequence = (customer, ISO week), ordered by week then customer id; event = one
+                      purchase day; item = article_id; utility = round(price * 1e6) per row.
+  VS-CHAIN<c>-CW      one chain; same construction; item = category|company|brand;
+                      utility = round(purchaseamount * 100).
+  For both, the order of customers inside a week is arbitrary (by id) and B spans two weeks.
 
 Standard library only, so it runs unchanged on Windows.
 """
@@ -54,15 +62,19 @@ def sha256(path):
 
 
 def write_db(name, sequences, out_dir, manifest_dir, raw_path, counts, b_rule, b_value, roles):
-    """sequences: list of lists of events; an event is an OrderedDict raw_item -> utility (int > 0)."""
+    """sequences: iterable of lists of events; an event is an OrderedDict raw_item -> utility (int > 0).
+    b_value: the regularity bound, or a function (n_sequences, counts) -> bound evaluated after writing,
+    so a generator can stream sequences without holding them all."""
     item_ids = {}
     seq_path = os.path.join(out_dir, name + "_seq.txt")
     eui_path = os.path.join(out_dir, name + "_eui.txt")
     total_utility = 0
     n_events = 0
     n_items = 0
+    n_seqs = 0
     with open(seq_path, "w", newline="\n") as f:
         for seq in sequences:
+            n_seqs += 1
             parts = []
             for ev in seq:
                 toks = []
@@ -80,6 +92,8 @@ def write_db(name, sequences, out_dir, manifest_dir, raw_path, counts, b_rule, b
         f.write("# ItemID:Profit (all 1: the item quantity field carries the measured line value)\n")
         for i in range(1, len(item_ids) + 1):
             f.write("%d:1\n" % i)
+    if callable(b_value):
+        b_value = b_value(n_seqs, counts)
     manifest = OrderedDict([
         ("name", name),
         ("builder", "tools/build_stream_datasets.py"),
@@ -88,7 +102,7 @@ def write_db(name, sequences, out_dir, manifest_dir, raw_path, counts, b_rule, b
         ("raw_sha256", sha256(raw_path)),
         ("roles", roles),
         ("values", "measured"),
-        ("sequences", len(sequences)),
+        ("sequences", n_seqs),
         ("events", n_events),
         ("item_occurrences", n_items),
         ("distinct_items", len(item_ids)),
@@ -249,9 +263,106 @@ def build_dunnhumby(raw, out_dir, manifest_dir):
              "item=PRODUCT_ID; utility=round(SALES_VALUE*100)")
 
 
+def iso_week(date_str):
+    y, m, d = map(int, date_str[:10].split("-"))
+    iy, iw, _ = datetime.date(y, m, d).isocalendar()
+    return "%04d-W%02d" % (iy, iw)
+
+
+def week_sequences(week_rows):
+    """week_rows: customer -> day -> event; yields one sequence per customer, customers in id order."""
+    for cust in sorted(week_rows):
+        days = week_rows[cust]
+        yield [days[d] for d in sorted(days)]
+
+
+def build_hm(raw, out_dir, manifest_dir, max_weeks=0):
+    """H&M transactions_train.csv (t_dat, customer_id, article_id, price, sales_channel_id), sorted by date."""
+    counts = defaultdict(int)
+
+    def stream():
+        week_rows, cur, last_date, weeks = defaultdict(lambda: defaultdict(OrderedDict)), None, "", 0
+        with open(raw, newline="") as f:
+            r = csv.reader(f)
+            next(r)
+            for row in r:
+                counts["rows"] += 1
+                d = row[0]
+                if d < last_date:
+                    sys.exit("input is not sorted by date at row %d" % counts["rows"])
+                last_date = d
+                wk = iso_week(d)
+                if wk != cur:
+                    if cur is not None:
+                        yield from week_sequences(week_rows)
+                        week_rows = defaultdict(lambda: defaultdict(OrderedDict))
+                        weeks += 1
+                        if max_weeks and weeks >= max_weeks:
+                            counts["stopped_after_weeks"] = weeks
+                            counts["weeks"] = weeks
+                            return
+                    cur = wk
+                u = int(round(float(row[3]) * 1_000_000))
+                if u <= 0:
+                    counts["dropped_nonpositive_price"] += 1
+                    continue
+                add(week_rows[row[1]][d], row[2], u)
+        if cur is not None:
+            yield from week_sequences(week_rows)
+            weeks += 1
+        counts["weeks"] = weeks
+
+    name = "HM-CW" if not max_weeks else "HM-CW-%dW" % max_weeks
+    write_db(name, stream(), out_dir, manifest_dir, raw, counts,
+             "2 weeks of sequences, ceil(2 * N / weeks)", lambda n, c: math.ceil(2 * n / c["weeks"]),
+             "sequence=(customer, ISO week), ordered by week then customer id; event=one purchase day of that "
+             "customer in the week; item=article_id; utility=round(price*1e6) per row (one row = one unit), "
+             "summed per item and day; the price column is scaled by an undisclosed constant")
+
+
+def build_vs(raw, out_dir, manifest_dir, chain):
+    """Valued Shoppers transactions.csv.gz restricted to one chain; item = category|company|brand."""
+    import gzip
+    counts = defaultdict(int)
+    rows = defaultdict(lambda: defaultdict(OrderedDict))     # (week, customer) -> day -> event
+    with gzip.open(raw, "rt", newline="") as f:
+        r = csv.reader(f)
+        next(r)
+        for row in r:
+            counts["rows"] += 1
+            if row[1] != chain:
+                continue
+            counts["rows_in_chain"] += 1
+            qty, amount = int(row[9]), float(row[10])
+            if qty <= 0 or amount <= 0:
+                counts["dropped_nonpositive_quantity_or_amount"] += 1
+                continue
+            u = int(round(amount * 100))
+            if u <= 0:
+                counts["dropped_zero_value"] += 1
+                continue
+            d = row[6]
+            add(rows[(iso_week(d), row[0])][d], row[3] + "|" + row[4] + "|" + row[5], u)
+    keys = sorted(rows)
+    seqs = [[rows[k][d] for d in sorted(rows[k])] for k in keys]
+    weeks = len({k[0] for k in keys})
+    counts["weeks"] = weeks
+    b = math.ceil(2 * len(seqs) / weeks)
+    write_db("VS-CHAIN%s-CW" % chain, seqs, out_dir, manifest_dir, raw, counts,
+             "2 weeks of sequences, ceil(2 * N / weeks)", b,
+             "one chain (%s); sequence=(customer, ISO week), ordered by week then customer id; event=one purchase "
+             "day; item=category|company|brand; utility=round(purchaseamount*100)" % chain)
+
+
 if __name__ == "__main__":
-    if len(sys.argv) != 5:
+    if len(sys.argv) < 5:
         sys.exit(__doc__)
-    kind, raw, out_dir, manifest_dir = sys.argv[1:]
-    {"yoochoose": build_yoochoose, "retail": build_retail, "dunnhumby": build_dunnhumby}[kind](
-        raw, out_dir, manifest_dir)
+    kind, raw, out_dir, manifest_dir = sys.argv[1:5]
+    extra = sys.argv[5:]
+    if kind == "hm":
+        build_hm(raw, out_dir, manifest_dir, int(extra[0]) if extra else 0)
+    elif kind == "vs":
+        build_vs(raw, out_dir, manifest_dir, extra[0])
+    else:
+        {"yoochoose": build_yoochoose, "retail": build_retail, "dunnhumby": build_dunnhumby}[kind](
+            raw, out_dir, manifest_dir)
