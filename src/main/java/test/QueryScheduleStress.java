@@ -32,7 +32,7 @@ public class QueryScheduleStress {
     public static void main(String[] args) throws Exception {
         int trials = args.length > 0 ? Integer.parseInt(args[0]) : 200;
         AlgoPRIncHUSP.FAULT = Integer.getInteger("fault", 0);
-        String[] policies = {"keep-sfx", "reset-sfx"};
+        String[] policies = System.getProperty("policies", "keep-sfx,reset-sfx,keep-sfx-gf,keep-sfx-gf-l0.5").split(",");
         int compared = 0, failing = 0, nonEmpty = 0, multiItemSeqs = 0;
         Map<String, Integer> failsByPolicy = new TreeMap<>();
         for (int seed = 1; seed <= trials; seed++) {
@@ -60,12 +60,7 @@ public class QueryScheduleStress {
                 oracle.add(canon);
             }
             for (String policy : policies) {
-                AlgoPRIncHUSP m = ExpConfig.newProposed(2);
-                m.integerDiscoveryThreshold = true;
-                m.suffixWindowPrune = policy.endsWith("-sfx");
-                m.anchorPolicy = policy.startsWith("reset") ? AlgoPRIncHUSP.ANCHOR_RESET : AlgoPRIncHUSP.ANCHOR_KEEP;
-                m.setAbsoluteMaxReg(absB);
-                IncrementalHUSPMiner mm = m;
+                IncrementalHUSPMiner mm = QueryScheduleProbe.build(policy, 2, absB);
                 mm.initialBuild(batches.get(0), delta, 0.0);
                 for (int b = 1; b < batches.size(); b++) {
                     mm.processBatch(batches.get(b));

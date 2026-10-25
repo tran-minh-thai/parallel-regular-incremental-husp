@@ -276,6 +276,13 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
     /** Shared ForkJoinPool for the whole algorithm lifetime (lazily created, size = numThreads). */
     private ForkJoinPool pool;
 
+    /** Largest period of an ascending sequence list over [0, n), with virtual boundaries -1 and n. */
+    private static int supersetGap(int[] seqs, int n) {
+        int prev = -1, gap = 0;
+        for (int s : seqs) { if (s - prev > gap) gap = s - prev; prev = s; }
+        return Math.max(gap, n - prev);
+    }
+
     /** Per-thread workspace: VUL scratch per depth + path buffers (no per-node allocation). */
     private final ThreadLocal<Workspace> ws = ThreadLocal.withInitial(Workspace::new);
 
@@ -1153,6 +1160,16 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
     public boolean suffixWindowPrune = false;
 
     /**
+     * Before rebuilding a fresh candidate's state over the whole database, reject it when the
+     * sequences containing all of its items already leave a gap above the regularity bound. Those
+     * sequences are a superset of the candidate's occurrences, so its maximum period is at least that
+     * gap: it is irregular now and, by the non-decrease of the maximum period, forever. Exact, and it
+     * needs only the posting-list intersection the rebuild computes anyway.
+     */
+    public boolean rebuildGapFilter = false;
+    public int lastQueryGapRejected;
+
+    /**
      * Deliberate defects for checking that the query-schedule probe can fail (0 = none). Never set
      * outside that probe. 1: discovery threshold one unit too high; 2: anchor reset also drops
      * about one answer pattern in ten (chosen by a hash of its items), breaking the coverage invariant; 3: fresh candidates are
@@ -1179,7 +1196,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
     /** Query-time reconciliation (2-part split): mine ALL increments at θ_disc = minUtil − θ₀. */
     private void reconcile() {
         lastQueryMineMs = lastQueryRebuildMs = lastQueryThreshold = 0;
-        lastQueryCandidates = lastQueryFresh = 0;
+        lastQueryCandidates = lastQueryFresh = lastQueryGapRejected = 0;
         lastQueryIncrementSeqs = increments.size();
         if (increments.isEmpty()) return;
         double threshold = integerDiscoveryThreshold
@@ -1287,14 +1304,21 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         final int n = data.numSequences;
         final Map<Integer, int[]> inv = buildInvertedIndex(0, n);
         final int incrementSeqs = part.size();
+        final int gapBound = finalMaxReg();
+        final java.util.concurrent.atomic.LongAdder gapRejected = new java.util.concurrent.atomic.LongAdder();
         runParallelIndexed(fresh.size(), i -> {
             Pat p = fresh.get(i);
             int[] cand = candidateSeqs(p, inv);
             if (cand == null) return;
+            if (rebuildGapFilter && gapBound != Integer.MAX_VALUE && supersetGap(cand, n) > gapBound) {
+                gapRejected.increment();
+                return;                                        // lastSeqId stays -1: dropped below
+            }
             int from = (FAULT == 3) ? n - incrementSeqs : 0;
             for (int s : cand) if (s >= from) matchAndUpdate(p, s);   // ascending seqIds -> regularity is exact
         });
         lastQueryRebuildMs += (System.nanoTime() - tRebuild) / 1_000_000;
+        lastQueryGapRejected += gapRejected.intValue();
 
         for (Pat p : fresh) {
             if (p.lastSeqId == -1 || p.utility < minUtil) continue;

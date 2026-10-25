@@ -32,7 +32,9 @@ import java.util.Map;
  *   <li>{@code keep}: the proposed miner, anchor fixed at seeding (the reported behaviour);</li>
  *   <li>{@code reset}: the proposed miner, anchor moved to the current prefix after every query;</li>
  *   <li>suffix {@code -sfx} on either: discovery also prunes on the leading-gap lower bound of the
- *       suffix window ({@link AlgoPRIncHUSP#suffixWindowPrune});</li>
+ *       suffix window ({@link AlgoPRIncHUSP#suffixWindowPrune}); suffix {@code -gf}: fresh candidates
+ *       whose item posting lists leave a gap above the bound are rejected before the state rebuild
+ *       ({@link AlgoPRIncHUSP#rebuildGapFilter});</li>
  *   <li>{@code remine}: the parallel static engine run from scratch at each query only.</li>
  * </ul>
  * All three use the same engine scheduler, so timing differences are not a scheduler artefact.
@@ -135,6 +137,7 @@ public class QueryScheduleProbe {
                             p == null ? "" : "" + p.lastQueryThreshold,
                             p == null ? "" : "" + p.lastQueryCandidates,
                             p == null ? "" : "" + p.lastQueryFresh,
+                            p == null ? "" : "" + p.lastQueryGapRejected,
                             p == null ? "" : "" + m.trackedCount()) + "\n");
                     tm.write(String.join(",", tag, policy, "" + batches.size(), schedule, "" + AlgoPRIncHUSP.FAULT,
                             "" + q, "" + b, "" + ingestMs, "" + queryMs,
@@ -145,8 +148,8 @@ public class QueryScheduleProbe {
                                     + "uErr=%d pErr=%d  ingest=%dms query=%dms%s%n",
                             policy, q, b, n, oracle.get(b).size(), res.size(), d[0], d[1], d[2], d[3],
                             ingestMs, queryMs, p == null ? ""
-                                    : String.format("  [thr=%d cand=%d fresh=%d mine=%dms rebuild=%dms tracked=%d]",
-                                    p.lastQueryThreshold, p.lastQueryCandidates, p.lastQueryFresh,
+                                    : String.format("  [thr=%d cand=%d fresh=%d gapRej=%d mine=%dms rebuild=%dms tracked=%d]",
+                                    p.lastQueryThreshold, p.lastQueryCandidates, p.lastQueryFresh, p.lastQueryGapRejected,
                                     p.lastQueryMineMs, p.lastQueryRebuildMs, m.trackedCount()));
                     ingestMs = 0;
                     q++;
@@ -159,20 +162,9 @@ public class QueryScheduleProbe {
         if (compared == 0 || failing > 0) System.exit(1);
     }
 
-    private static IncrementalHUSPMiner build(String policy, int threads, int absB) {
+    static IncrementalHUSPMiner build(String policy, int threads, int absB) {
         IncrementalHUSPMiner m;
         switch (policy) {
-            case "keep":
-            case "keep-sfx":
-            case "reset":
-            case "reset-sfx": {
-                AlgoPRIncHUSP p = ExpConfig.newProposed(threads);
-                p.integerDiscoveryThreshold = true;
-                p.anchorPolicy = policy.startsWith("reset") ? AlgoPRIncHUSP.ANCHOR_RESET : AlgoPRIncHUSP.ANCHOR_KEEP;
-                p.suffixWindowPrune = policy.endsWith("-sfx");
-                m = p;
-                break;
-            }
             case "remine": {
                 AlgoParRemine r = ExpConfig.newParRemine(threads);
                 r.parallelStrategy = AlgoRHUSPMinerParallel.STRAT_RDLB;   // same scheduler as the proposal
@@ -180,7 +172,23 @@ public class QueryScheduleProbe {
                 m = r;
                 break;
             }
-            default: throw new IllegalArgumentException("unknown policy " + policy);
+            default: {
+                // keep|reset, optionally followed by -sfx (suffix-window prune), -gf (rebuild gap filter)
+                // and -l<lambda> (anchor threshold = lambda * minUtil at seeding; default 1)
+                List<String> parts = java.util.Arrays.asList(policy.split("-"));
+                if (!parts.get(0).equals("keep") && !parts.get(0).equals("reset"))
+                    throw new IllegalArgumentException("unknown policy " + policy);
+                double lambda = 1.0;
+                for (String s : parts) if (s.startsWith("l")) lambda = Double.parseDouble(s.substring(1));
+                if (lambda != 1.0 && parts.get(0).equals("reset"))
+                    throw new IllegalArgumentException("anchor reset is defined for lambda = 1 only");
+                AlgoPRIncHUSP p = lambda == 1.0 ? ExpConfig.newProposed(threads) : ExpConfig.newProposedMu(threads, lambda);
+                p.integerDiscoveryThreshold = true;
+                p.anchorPolicy = parts.get(0).equals("reset") ? AlgoPRIncHUSP.ANCHOR_RESET : AlgoPRIncHUSP.ANCHOR_KEEP;
+                p.suffixWindowPrune = parts.contains("sfx");
+                p.rebuildGapFilter = parts.contains("gf");
+                m = p;
+            }
         }
         m.setAbsoluteMaxReg(absB);
         return m;
