@@ -118,7 +118,8 @@ public class QueryScheduleProbe {
              BufferedWriter tm = new BufferedWriter(new FileWriter(new File(dir, "timing_feasibility.csv")))) {
             ex.write("dataset,policy,batches,schedule,fault,query,after_batch,n_seqs,oracle_size,returned,"
                     + "missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,"
-                    + "gap_rejected,tracked_after,action,r,kept_on_abort\n");
+                    + "gap_rejected,tracked_after,action,r,kept_on_abort,budget_ms,attempt_ms,attempt_load_ms,"
+                    + "attempt_preprocess_ms,attempt_enum_ms,attempt_rebuild_ms,abort_phase\n");
             tm.write("dataset,policy,batches,schedule,fault,query,after_batch,ingest_ms,query_ms,"
                     + "discovery_mine_ms,rebuild_ms,seed_ms\n");
             final long limitS = Long.getLong("limit", 0);         // per-policy time limit, reference excluded
@@ -169,7 +170,14 @@ public class QueryScheduleProbe {
                                     : p.lastQueryAction == 1 ? "remine" : p.lastQueryAction == 2 ? "aborted"
                                     : p.lastQueryAction == 3 ? "skipped" : "none"),
                             p == null || !(p.adaptiveQuery || p.costCapped) ? "" : String.format(java.util.Locale.ROOT, "%.2f", p.lastQueryR),
-                            p == null || !p.costCapped ? "" : "" + p.lastQueryKept) + "\n");
+                            p == null || !p.costCapped ? "" : "" + p.lastQueryKept,
+                            p == null || !p.costCapped ? "" : "" + p.lastBudgetMs,
+                            p == null || !p.costCapped ? "" : "" + p.lastAttemptMs,
+                            p == null || !p.costCapped ? "" : "" + p.lastAttemptLoadMs,
+                            p == null || !p.costCapped ? "" : "" + p.lastAttemptPreprocessMs,
+                            p == null || !p.costCapped ? "" : "" + p.lastAttemptEnumMs,
+                            p == null || !p.costCapped ? "" : "" + p.lastAttemptRebuildMs,
+                            p == null || !p.costCapped ? "" : p.lastAttemptAbortPhase) + "\n");
                     tm.write(String.join(",", tag, policy, "" + batches.size(), schedule, "" + AlgoPRIncHUSP.FAULT,
                             "" + q, "" + b, "" + ingestMs, "" + queryMs,
                             p == null ? "" : "" + p.lastQueryMineMs,
@@ -179,7 +187,10 @@ public class QueryScheduleProbe {
                                     + "uErr=%d pErr=%d  ingest=%dms query=%dms%s%n",
                             policy, q, b, n, oracle.get(b).size(), res.size(), d[0], d[1], d[2], d[3],
                             ingestMs, queryMs, p == null ? ""
-                                    : String.format(java.util.Locale.ROOT, "  [%sthr=%d cand=%d fresh=%d gapRej=%d mine=%dms rebuild=%dms tracked=%d]",
+                                    : (p.costCapped ? String.format(java.util.Locale.ROOT, "  {budget=%d attempt=%d load=%d pre=%d enum=%d rebuild=%d abort=%s}",
+                                    p.lastBudgetMs, p.lastAttemptMs, p.lastAttemptLoadMs, p.lastAttemptPreprocessMs,
+                                    p.lastAttemptEnumMs, p.lastAttemptRebuildMs, p.lastAttemptAbortPhase) : "")
+                                    + String.format(java.util.Locale.ROOT, "  [%sthr=%d cand=%d fresh=%d gapRej=%d mine=%dms rebuild=%dms tracked=%d]",
                                     p.adaptiveQuery || p.costCapped ? (p.lastQueryAction == 0 ? "DISCOVER r="
                                             : p.lastQueryAction == 2 ? "ABORTED+REMINE r=" : p.lastQueryAction == 3 ? "SKIP+REMINE r=" : "REMINE r=")
                                             + String.format(java.util.Locale.ROOT, "%.1f ", p.lastQueryR) : "",

@@ -1,0 +1,17 @@
+{
+  "kind": "probe (development machine, feasibility only)",
+  "command": "java -Ddold=0.25 test.QueryScheduleProbe datasets/LEVIATHAN_seq.txt datasets/LEVIATHAN_eui.txt 0.005 175 8 every bud2",
+  "git_commit": "cfdf4170dc5b8b5075e310c6af698e0466ebfa8b",
+  "tree": "MODIFIED (2 files)",
+  "sha256_AlgoPRIncHUSP": "fca3a2aeb4211f9f7c557695f811132f71adcf07264e2f45be13a792a8502b63",
+  "sha256_AlgoParRemine": "1c2d15b22aa6bef9a6bc5f24022edb6b4b564bba984c6cd07f932e6c335364e4",
+  "sha256_AlgoRHUSPMinerParallel": "01f3ff33a00c7d5c70916d13f122345e69f420567eeb79116e1fab88518800db",
+  "sha256_QueryScheduleProbe": "9ce52aa318d64ebe66720b2c57e0865e8155524c5fb75fa76a751ef5f8e50518",
+  "sha256_seq": "8ad599eacaf5421677d056cca41e40c47b508b90dc383f44715b925d29602fb5",
+  "sha256_eui": "472a87f07dd068ffa78504085ae24427da4adbcd1486b19544a4c36300e55739",
+  "java": "26.0.1+8-34 Oracle Corporation",
+  "os": "Mac OS X 27.0.1 aarch64",
+  "threads": "10",
+  "max_heap_mb": "8192",
+  "started": "2026-10-25T18:53:21+07:00"
+}
