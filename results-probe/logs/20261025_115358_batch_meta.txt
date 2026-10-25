@@ -1,0 +1,18 @@
+kind: H1-H3 test batch (development machine), DANG_KY_TRUOC_BO_CHON.md with the 25/10 grid amendment
+git_commit: 77442feefeb92a22ecc4b045e33ebc067728aafe
+tree_src: 0 modified
+java: openjdk version "26.0.1" 2026-04-21
+script (args: <repo> <build-dir>):
+cd "$1"; OUT="$2"; L=results-probe/logs
+for ds in "ONLINE-RETAIL-II-H 0.001 68" "DUNNHUMBY-H 0.0005 151" "FIFA 0.04 6135"; do
+  set -- $ds; name=$1; delta=$2; B=$3
+  for sch in "S1 0.5 21" "S2 0.9 11"; do
+    set -- $sch; sid=$1; dold=$2; k=$3
+    for pol in remine sel keep-sfx-gf; do
+      t=$(date +%Y%m%d_%H%M%S); log=$L/${t}_htest_${name}_${sid}_${pol}.log
+      java -Ddold=$dold -Doracle=remine -Xmx16g -cp "$OUT" test.QueryScheduleProbe datasets/${name}_seq.txt datasets/${name}_eui.txt $delta $B $k every $pol > $log 2>&1
+      echo "rc=$?" >> $log
+    done
+  done
+done
+echo ALLDONE

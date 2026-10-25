@@ -1,0 +1,9 @@
+FIFA N=20450 B=6135 limit=60s band=[50,5000] threads=10
+delta=0.03 TIMEOUT after 60001 ms
+stopped: restart from the next delta in a fresh JVM
+rc=3
+(restart after timeout at 0.03)
+FIFA N=20450 B=6135 limit=60s band=[50,5000] threads=10
+delta=0.04 time=29883 ms patterns=123 ACCEPT
+chosen delta=0.04
+rc=0

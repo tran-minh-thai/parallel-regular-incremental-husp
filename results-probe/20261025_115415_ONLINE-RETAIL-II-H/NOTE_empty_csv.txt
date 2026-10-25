@@ -1,0 +1,1 @@
+exactness.csv and timing_feasibility.csv are empty (0 bytes, created 11:54:10) although the run completed and its log (results-probe/logs/2026102511540*_htest_ONLINE-RETAIL-II-H_S1_*.log) shows every query. Cause not established (suspected: the synced folder replaced the new files). Superseded by a rerun the same day.

@@ -1,0 +1,12 @@
+ONLINE-RETAIL-II-H N=5786 delta=0.001 B=68 k=11 dOld=0.9 schedule=every threads=10 fault=0 reference=parallel engine (NOT independent) -> results-probe/20261025_120954_ONLINE-RETAIL-II-H
+  oracle after batch 1: N=5265 minUtil=1731970 patterns=116
+  oracle after batch 2: N=5323 minUtil=1755835 patterns=115
+  oracle after batch 3: N=5381 minUtil=1780971 patterns=113
+  oracle after batch 4: N=5439 minUtil=1804133 patterns=108
+  oracle after batch 5: N=5497 minUtil=1833688 patterns=106
+  oracle after batch 6: N=5555 minUtil=1867892 patterns=106
+  oracle after batch 7: N=5613 minUtil=1905444 patterns=106
+  oracle after batch 8: N=5671 minUtil=1937803 patterns=106
+  oracle after batch 9: N=5729 minUtil=1968263 patterns=106
+  oracle after batch 10: N=5786 minUtil=2005746 patterns=105
+rc=KILLED by hand: batch restarted with the time limit moved inside the probe (it had counted the reference time)

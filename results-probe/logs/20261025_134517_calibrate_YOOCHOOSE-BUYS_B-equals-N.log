@@ -1,0 +1,4 @@
+YOOCHOOSE-BUYS N=234300 B=234301 limit=60s band=[50,5000] threads=10
+delta=0.001 time=502 ms patterns=194 ACCEPT
+chosen delta=0.001
+rc=0

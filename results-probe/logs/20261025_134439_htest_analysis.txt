@@ -1,0 +1,45 @@
+== DUNNHUMBY-H  dOld=0.5  (values measured)
+   keep-sfx-gf  run=20261025_122337_DUNNHUMBY-H queries=0/20 disagreeing=0 complete=False total_ms=0
+   remine       run=20261025_122307_DUNNHUMBY-H queries=20/20 disagreeing=0 complete=True total_ms=5217
+   sel          run=20261025_122322_DUNNHUMBY-H queries=20/20 disagreeing=0 complete=True total_ms=5460
+   H1 not testable (K has fewer than 5 queries)
+   H2 K incomplete -> SEL must complete: PASS
+   SEL actions: discover=0 remine=20
+== DUNNHUMBY-H  dOld=0.9  (values measured)
+   keep-sfx-gf  run=20261025_123909_DUNNHUMBY-H queries=0/10 disagreeing=0 complete=False total_ms=0
+   remine       run=20261025_123849_DUNNHUMBY-H queries=10/10 disagreeing=0 complete=True total_ms=2818
+   sel          run=20261025_123859_DUNNHUMBY-H queries=10/10 disagreeing=0 complete=True total_ms=3134
+   H1 not testable (K has fewer than 5 queries)
+   H2 K incomplete -> SEL must complete: PASS
+   SEL actions: discover=0 remine=10
+== FIFA  dOld=0.5  (values generated)
+   keep-sfx-gf  run=20261025_130848_FIFA queries=20/20 disagreeing=0 complete=True total_ms=166292
+   remine       run=20261025_124134_FIFA queries=20/20 disagreeing=0 complete=True total_ms=478871
+   sel          run=20261025_125711_FIFA queries=20/20 disagreeing=0 complete=True total_ms=205090
+   H1 spearman(r, candidates) over 20 K queries = -0.090 -> FAIL
+   H2 SEL=205090 min(K,F)=166292 ratio=1.23 -> FAIL
+   K vs F: 166292 vs 478871 -> K cheaper
+   SEL actions: discover=18 remine=2
+== FIFA  dOld=0.9  (values generated)
+   keep-sfx-gf  run=20261025_133742_FIFA queries=10/10 disagreeing=0 complete=True total_ms=45919
+   remine       run=20261025_132019_FIFA queries=10/10 disagreeing=0 complete=True total_ms=278720
+   sel          run=20261025_133001_FIFA queries=10/10 disagreeing=0 complete=True total_ms=191075
+   H1 spearman(r, candidates) over 10 K queries = -0.900 -> PASS
+   H2 SEL=191075 min(K,F)=45919 ratio=4.16 -> FAIL
+   K vs F: 45919 vs 278720 -> K cheaper
+   SEL actions: discover=4 remine=6
+== ONLINE-RETAIL-II-H  dOld=0.5  (values measured)
+   keep-sfx-gf  run=20261025_115426_ONLINE-RETAIL-II-H queries=0/20 disagreeing=0 complete=False total_ms=0
+   remine       run=20261025_134357_ONLINE-RETAIL-II-H queries=20/20 disagreeing=0 complete=True total_ms=4495
+   sel          run=20261025_134407_ONLINE-RETAIL-II-H queries=20/20 disagreeing=0 complete=True total_ms=4820
+   H1 not testable (K has fewer than 5 queries)
+   H2 K incomplete -> SEL must complete: PASS
+   SEL actions: discover=0 remine=20
+== ONLINE-RETAIL-II-H  dOld=0.9  (values measured)
+   keep-sfx-gf  run=20261025_121050_ONLINE-RETAIL-II-H queries=0/10 disagreeing=0 complete=False total_ms=0
+   remine       run=20261025_121035_ONLINE-RETAIL-II-H queries=10/10 disagreeing=0 complete=True total_ms=2097
+   sel          run=20261025_121040_ONLINE-RETAIL-II-H queries=10/10 disagreeing=0 complete=True total_ms=2300
+   H1 not testable (K has fewer than 5 queries)
+   H2 K incomplete -> SEL must complete: PASS
+   SEL actions: discover=0 remine=10
+H3 (K cheaper than F on a measured-value dataset): FAIL []

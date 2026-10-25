@@ -1,0 +1,23 @@
+DUNNHUMBY-H N=15240 delta=0.0005 B=151 k=21 dOld=0.5 schedule=every threads=10 fault=0 reference=parallel engine (NOT independent) -> results-probe/20261025_122337_DUNNHUMBY-H
+  oracle after batch 1: N=8001 minUtil=191843 patterns=102
+  oracle after batch 2: N=8382 minUtil=202702 patterns=102
+  oracle after batch 3: N=8763 minUtil=213861 patterns=103
+  oracle after batch 4: N=9144 minUtil=225180 patterns=102
+  oracle after batch 5: N=9525 minUtil=235839 patterns=102
+  oracle after batch 6: N=9906 minUtil=246640 patterns=100
+  oracle after batch 7: N=10287 minUtil=257443 patterns=100
+  oracle after batch 8: N=10668 minUtil=268424 patterns=100
+  oracle after batch 9: N=11049 minUtil=279077 patterns=99
+  oracle after batch 10: N=11430 minUtil=289761 patterns=99
+  oracle after batch 11: N=11811 minUtil=299808 patterns=98
+  oracle after batch 12: N=12192 minUtil=310237 patterns=98
+  oracle after batch 13: N=12573 minUtil=321186 patterns=98
+  oracle after batch 14: N=12954 minUtil=332187 patterns=99
+  oracle after batch 15: N=13335 minUtil=343903 patterns=96
+  oracle after batch 16: N=13716 minUtil=355275 patterns=95
+  oracle after batch 17: N=14097 minUtil=368293 patterns=95
+  oracle after batch 18: N=14478 minUtil=379591 patterns=94
+  oracle after batch 19: N=14859 minUtil=391983 patterns=93
+  oracle after batch 20: N=15240 minUtil=402873 patterns=93
+  keep-sfx-gf TIMEOUT after 900 s (policy time, reference excluded)
+rc=4

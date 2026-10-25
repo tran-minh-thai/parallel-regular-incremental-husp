@@ -1,0 +1,17 @@
+{
+  "kind": "probe (development machine, feasibility only)",
+  "command": "java -Ddold=0.5 -Doracle=remine test.QueryScheduleProbe datasets/ONLINE-RETAIL-II-H_seq.txt datasets/ONLINE-RETAIL-II-H_eui.txt 0.001 68 21 every remine",
+  "git_commit": "77442feefeb92a22ecc4b045e33ebc067728aafe",
+  "tree": "clean",
+  "sha256_AlgoPRIncHUSP": "b584974ff5521e8d5f7b648a0e415ab5e52e5a747646e7c0016e67f25a30b1c7",
+  "sha256_AlgoParRemine": "ed31e48b26eb31e1a6ecb3c067dbaf8f1decc15484bfbad4a7a540643e5eb37b",
+  "sha256_AlgoRHUSPMinerParallel": "b795516d437c8ea8777241771f12a5d36a30edb23340ca7eaebb1b97a8d3b9fd",
+  "sha256_QueryScheduleProbe": "b1c33ac57fec705e0e564cbd4d9f36838a6b5d2d8673953ec53014e13ccaafda",
+  "sha256_seq": "cf312cdb3baa15dbebc117b5d345c0d3754ecc64dec00599e50fa96500385f83",
+  "sha256_eui": "5863fa3867809c97a311db50cb9422a5a638d0a82d18bb569bcd3aad0f3d687b",
+  "java": "26.0.1+8-34 Oracle Corporation",
+  "os": "Mac OS X 27.0.1 aarch64",
+  "threads": "10",
+  "max_heap_mb": "16384",
+  "started": "2026-10-25T11:54:06+07:00"
+}

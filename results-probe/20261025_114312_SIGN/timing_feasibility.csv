@@ -1,0 +1,15 @@
+dataset,policy,batches,schedule,fault,query,after_batch,ingest_ms,query_ms,discovery_mine_ms,rebuild_ms,seed_ms
+SIGN,sel,8,every,0,0,1,95,328,327,0,412
+SIGN,sel,8,every,0,1,2,7,428,428,0,
+SIGN,sel,8,every,0,2,3,4,225,225,0,
+SIGN,sel,8,every,0,3,4,2,186,186,0,
+SIGN,sel,8,every,0,4,5,1,174,174,0,
+SIGN,sel,8,every,0,5,6,1,173,173,0,
+SIGN,sel,8,every,0,6,7,1,180,180,0,
+SIGN,sel-k0,8,every,0,0,1,15,3626,1092,1537,277
+SIGN,sel-k0,8,every,0,1,2,4,499,304,153,
+SIGN,sel-k0,8,every,0,2,3,3,356,226,117,
+SIGN,sel-k0,8,every,0,3,4,2,1585,630,714,
+SIGN,sel-k0,8,every,0,4,5,2,590,293,265,
+SIGN,sel-k0,8,every,0,5,6,1,342,218,116,
+SIGN,sel-k0,8,every,0,6,7,2,280,209,65,

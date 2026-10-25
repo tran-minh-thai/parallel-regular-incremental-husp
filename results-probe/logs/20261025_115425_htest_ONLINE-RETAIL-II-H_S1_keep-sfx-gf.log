@@ -1,0 +1,22 @@
+ONLINE-RETAIL-II-H N=5786 delta=0.001 B=68 k=21 dOld=0.5 schedule=every threads=10 fault=0 reference=parallel engine (NOT independent) -> results-probe/20261025_115426_ONLINE-RETAIL-II-H
+  oracle after batch 1: N=3038 minUtil=1058452 patterns=280
+  oracle after batch 2: N=3183 minUtil=1101829 patterns=254
+  oracle after batch 3: N=3328 minUtil=1136400 patterns=221
+  oracle after batch 4: N=3473 minUtil=1172508 patterns=202
+  oracle after batch 5: N=3618 minUtil=1205478 patterns=188
+  oracle after batch 6: N=3763 minUtil=1248871 patterns=177
+  oracle after batch 7: N=3908 minUtil=1287378 patterns=167
+  oracle after batch 8: N=4053 minUtil=1327284 patterns=164
+  oracle after batch 9: N=4198 minUtil=1375452 patterns=162
+  oracle after batch 10: N=4343 minUtil=1418271 patterns=154
+  oracle after batch 11: N=4488 minUtil=1455993 patterns=136
+  oracle after batch 12: N=4633 minUtil=1496640 patterns=131
+  oracle after batch 13: N=4778 minUtil=1539640 patterns=127
+  oracle after batch 14: N=4923 minUtil=1587106 patterns=122
+  oracle after batch 15: N=5068 minUtil=1640434 patterns=121
+  oracle after batch 16: N=5213 minUtil=1706180 patterns=117
+  oracle after batch 17: N=5358 minUtil=1770736 patterns=113
+  oracle after batch 18: N=5503 minUtil=1835562 patterns=106
+  oracle after batch 19: N=5648 minUtil=1927777 patterns=106
+  oracle after batch 20: N=5786 minUtil=2005746 patterns=105
+rc=TIMEOUT after 900s (killed by hand at the 15-minute limit; batch restarted with a watchdog)

@@ -1,0 +1,19 @@
+kind: H1-H3 test batch, continued with a 900 s watchdog
+git_commit: 77442feefeb92a22ecc4b045e33ebc067728aafe
+tree_src: 0 modified
+java: openjdk version "26.0.1" 2026-04-21
+script (args: <repo> <build-dir>):
+cd "$1"; OUT="$2"; L=results-probe/logs; LIMIT=900
+run() { name=$1; delta=$2; B=$3; sid=$4; dold=$5; k=$6; pol=$7
+  t=$(date +%Y%m%d_%H%M%S); log=$L/${t}_htest_${name}_${sid}_${pol}.log
+  java -Ddold=$dold -Doracle=remine -Xmx16g -cp "$OUT" test.QueryScheduleProbe datasets/${name}_seq.txt datasets/${name}_eui.txt $delta $B $k every $pol > $log 2>&1 &
+  pid=$!; s=0
+  while kill -0 $pid 2>/dev/null; do sleep 5; s=$((s+5)); if [ $s -ge $LIMIT ]; then kill $pid; sleep 2; kill -9 $pid 2>/dev/null; echo "rc=TIMEOUT after ${LIMIT}s" >> $log; return; fi; done
+  wait $pid; echo "rc=$?" >> $log; }
+for pol in remine sel keep-sfx-gf; do run ONLINE-RETAIL-II-H 0.001 68 S2 0.9 11 $pol; done
+for ds in "DUNNHUMBY-H 0.0005 151" "FIFA 0.04 6135"; do
+  for sch in "S1 0.5 21" "S2 0.9 11"; do
+    for pol in remine sel keep-sfx-gf; do run $ds $sch $pol; done
+  done
+done
+echo ALLDONE

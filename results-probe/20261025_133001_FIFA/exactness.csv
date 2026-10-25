@@ -1,0 +1,11 @@
+dataset,policy,batches,schedule,fault,query,after_batch,n_seqs,oracle_size,returned,missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,gap_rejected,tracked_after,action,r
+FIFA,sel,11,every,0,0,1,18609,142,142,0,0,0,0,204,1307341,142,0,0,141,remine,8.16
+FIFA,sel,11,every,0,1,2,18813,144,144,0,0,0,0,408,1322047,144,0,0,141,remine,16.32
+FIFA,sel,11,every,0,2,3,19017,143,143,0,0,0,0,612,1337178,143,0,0,141,remine,24.48
+FIFA,sel,11,every,0,3,4,19221,138,138,0,0,0,0,816,1351170,138,0,0,141,remine,32.64
+FIFA,sel,11,every,0,4,5,19425,132,132,0,0,0,0,1020,1363648,132,0,0,141,remine,40.80
+FIFA,sel,11,every,0,5,6,19629,129,129,0,0,0,0,1224,1377935,129,0,0,141,remine,48.96
+FIFA,sel,11,every,0,6,7,19833,127,127,0,0,0,0,1428,95467,68,4,0,145,discover,57.12
+FIFA,sel,11,every,0,7,8,20037,122,122,0,0,0,0,1632,108567,51,0,0,145,discover,65.28
+FIFA,sel,11,every,0,8,9,20241,124,124,0,0,0,0,1836,122466,69,0,0,145,discover,73.44
+FIFA,sel,11,every,0,9,10,20450,123,123,0,0,0,0,2045,134024,69,0,0,145,discover,81.80

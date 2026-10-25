@@ -1,0 +1,24 @@
+FIFA N=20450 B=6135 limit=60s band=[50,5000] threads=10
+delta=0.001 TIMEOUT after 60005 ms
+stopped: restart from the next delta in a fresh JVM
+(restart after timeout at 0.001)
+FIFA N=20450 B=6135 limit=60s band=[50,5000] threads=10
+delta=0.002 TIMEOUT after 60007 ms
+stopped: restart from the next delta in a fresh JVM
+(restart after timeout at 0.002)
+FIFA N=20450 B=6135 limit=60s band=[50,5000] threads=10
+delta=0.005 TIMEOUT after 60006 ms
+stopped: restart from the next delta in a fresh JVM
+(restart after timeout at 0.005)
+FIFA N=20450 B=6135 limit=60s band=[50,5000] threads=10
+delta=0.01 TIMEOUT after 60005 ms
+stopped: restart from the next delta in a fresh JVM
+(restart after timeout at 0.01)
+FIFA N=20450 B=6135 limit=60s band=[50,5000] threads=10
+delta=0.02 TIMEOUT after 60009 ms
+stopped: restart from the next delta in a fresh JVM
+(restart after timeout at 0.02)
+FIFA N=20450 B=6135 limit=60s band=[50,5000] threads=10
+delta=0.05 time=14721 ms patterns=30 reject
+chosen delta=NONE
+rc=0

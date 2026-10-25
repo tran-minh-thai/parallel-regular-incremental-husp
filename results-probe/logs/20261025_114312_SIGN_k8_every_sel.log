@@ -1,0 +1,24 @@
+SIGN N=730 delta=0.005 B=21 k=8 dOld=0.25 schedule=every threads=10 fault=0 reference=independent oracle -> results-probe/20261025_114312_SIGN
+  oracle after batch 1: N=261 minUtil=2860 patterns=8547
+  oracle after batch 2: N=339 minUtil=3665 patterns=4891
+  oracle after batch 3: N=417 minUtil=4516 patterns=3928
+  oracle after batch 4: N=495 minUtil=5408 patterns=2052
+  oracle after batch 5: N=573 minUtil=6430 patterns=1486
+  oracle after batch 6: N=651 minUtil=7343 patterns=938
+  oracle after batch 7: N=730 minUtil=8344 patterns=830
+  sel    q0  after b1  N=261    oracle=8547   got=8547   miss=0 extra=0 uErr=0 pErr=0  ingest=95ms query=328ms  [REMINE r=0.4 thr=2860 cand=8547 fresh=0 gapRej=0 mine=327ms rebuild=0ms tracked=8514]
+  sel    q1  after b2  N=339    oracle=4891   got=4891   miss=0 extra=0 uErr=0 pErr=0  ingest=7ms query=428ms  [REMINE r=0.8 thr=3665 cand=4891 fresh=0 gapRej=0 mine=428ms rebuild=0ms tracked=4827]
+  sel    q2  after b3  N=417    oracle=3928   got=3928   miss=0 extra=0 uErr=0 pErr=0  ingest=4ms query=225ms  [REMINE r=1.2 thr=4516 cand=3928 fresh=0 gapRej=0 mine=225ms rebuild=0ms tracked=3863]
+  sel    q3  after b4  N=495    oracle=2052   got=2052   miss=0 extra=0 uErr=0 pErr=0  ingest=2ms query=186ms  [REMINE r=1.6 thr=5408 cand=2052 fresh=0 gapRej=0 mine=186ms rebuild=0ms tracked=2018]
+  sel    q4  after b5  N=573    oracle=1486   got=1486   miss=0 extra=0 uErr=0 pErr=0  ingest=1ms query=174ms  [REMINE r=2.0 thr=6430 cand=1486 fresh=0 gapRej=0 mine=174ms rebuild=0ms tracked=1469]
+  sel    q5  after b6  N=651    oracle=938    got=938    miss=0 extra=0 uErr=0 pErr=0  ingest=1ms query=173ms  [REMINE r=2.3 thr=7343 cand=938 fresh=0 gapRej=0 mine=173ms rebuild=0ms tracked=918]
+  sel    q6  after b7  N=730    oracle=830    got=830    miss=0 extra=0 uErr=0 pErr=0  ingest=1ms query=180ms  [REMINE r=2.7 thr=8344 cand=830 fresh=0 gapRej=0 mine=180ms rebuild=0ms tracked=817]
+  sel-k0 q0  after b1  N=261    oracle=8547   got=8547   miss=0 extra=0 uErr=0 pErr=0  ingest=15ms query=3626ms  [DISCOVER r=0.4 thr=880 cand=531614 fresh=523509 gapRej=458291 mine=1092ms rebuild=1537ms tracked=8685]
+  sel-k0 q1  after b2  N=339    oracle=4891   got=4891   miss=0 extra=0 uErr=0 pErr=0  ingest=4ms query=499ms  [DISCOVER r=0.8 thr=1685 cand=32941 fresh=28111 gapRej=16746 mine=304ms rebuild=153ms tracked=4985]
+  sel-k0 q2  after b3  N=417    oracle=3928   got=3928   miss=0 extra=0 uErr=0 pErr=0  ingest=3ms query=356ms  [DISCOVER r=1.2 thr=2536 cand=18401 fresh=14492 gapRej=7760 mine=226ms rebuild=117ms tracked=3928]
+  sel-k0 q3  after b4  N=495    oracle=2052   got=2052   miss=0 extra=0 uErr=0 pErr=0  ingest=2ms query=1585ms  [DISCOVER r=0.4 thr=893 cand=181096 fresh=179248 gapRej=165885 mine=630ms rebuild=714ms tracked=2087]
+  sel-k0 q4  after b5  N=573    oracle=1486   got=1486   miss=0 extra=0 uErr=0 pErr=0  ingest=2ms query=590ms  [DISCOVER r=0.8 thr=1915 cand=34195 fresh=32792 gapRej=27023 mine=293ms rebuild=265ms tracked=1530]
+  sel-k0 q5  after b6  N=651    oracle=938    got=938    miss=0 extra=0 uErr=0 pErr=0  ingest=1ms query=342ms  [DISCOVER r=1.2 thr=2828 cand=9546 fresh=8651 gapRej=5693 mine=218ms rebuild=116ms tracked=972]
+  sel-k0 q6  after b7  N=730    oracle=830    got=830    miss=0 extra=0 uErr=0 pErr=0  ingest=2ms query=280ms  [DISCOVER r=1.6 thr=3829 cand=5023 fresh=4225 gapRej=2266 mine=209ms rebuild=65ms tracked=868]
+compared queries=14 failing=0
+rc=0

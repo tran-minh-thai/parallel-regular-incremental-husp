@@ -1,0 +1,4 @@
+ONLINE-RETAIL-II-H N=5786 B=68 limit=60s band=[50,5000] threads=10
+delta=0.001 time=443 ms patterns=105 ACCEPT
+chosen delta=0.001
+rc=0

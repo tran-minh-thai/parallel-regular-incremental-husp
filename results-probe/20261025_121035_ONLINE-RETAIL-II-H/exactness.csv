@@ -1,0 +1,11 @@
+dataset,policy,batches,schedule,fault,query,after_batch,n_seqs,oracle_size,returned,missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,gap_rejected,tracked_after,action,r
+ONLINE-RETAIL-II-H,remine,11,every,0,0,1,5265,116,116,0,0,0,0,,,,,,,,
+ONLINE-RETAIL-II-H,remine,11,every,0,1,2,5323,115,115,0,0,0,0,,,,,,,,
+ONLINE-RETAIL-II-H,remine,11,every,0,2,3,5381,113,113,0,0,0,0,,,,,,,,
+ONLINE-RETAIL-II-H,remine,11,every,0,3,4,5439,108,108,0,0,0,0,,,,,,,,
+ONLINE-RETAIL-II-H,remine,11,every,0,4,5,5497,106,106,0,0,0,0,,,,,,,,
+ONLINE-RETAIL-II-H,remine,11,every,0,5,6,5555,106,106,0,0,0,0,,,,,,,,
+ONLINE-RETAIL-II-H,remine,11,every,0,6,7,5613,106,106,0,0,0,0,,,,,,,,
+ONLINE-RETAIL-II-H,remine,11,every,0,7,8,5671,106,106,0,0,0,0,,,,,,,,
+ONLINE-RETAIL-II-H,remine,11,every,0,8,9,5729,106,106,0,0,0,0,,,,,,,,
+ONLINE-RETAIL-II-H,remine,11,every,0,9,10,5786,105,105,0,0,0,0,,,,,,,,

@@ -1,0 +1,43 @@
+DUNNHUMBY-H N=15240 delta=0.0005 B=151 k=21 dOld=0.5 schedule=every threads=10 fault=0 reference=parallel engine (NOT independent) -> results-probe/20261025_122307_DUNNHUMBY-H
+  oracle after batch 1: N=8001 minUtil=191843 patterns=102
+  oracle after batch 2: N=8382 minUtil=202702 patterns=102
+  oracle after batch 3: N=8763 minUtil=213861 patterns=103
+  oracle after batch 4: N=9144 minUtil=225180 patterns=102
+  oracle after batch 5: N=9525 minUtil=235839 patterns=102
+  oracle after batch 6: N=9906 minUtil=246640 patterns=100
+  oracle after batch 7: N=10287 minUtil=257443 patterns=100
+  oracle after batch 8: N=10668 minUtil=268424 patterns=100
+  oracle after batch 9: N=11049 minUtil=279077 patterns=99
+  oracle after batch 10: N=11430 minUtil=289761 patterns=99
+  oracle after batch 11: N=11811 minUtil=299808 patterns=98
+  oracle after batch 12: N=12192 minUtil=310237 patterns=98
+  oracle after batch 13: N=12573 minUtil=321186 patterns=98
+  oracle after batch 14: N=12954 minUtil=332187 patterns=99
+  oracle after batch 15: N=13335 minUtil=343903 patterns=96
+  oracle after batch 16: N=13716 minUtil=355275 patterns=95
+  oracle after batch 17: N=14097 minUtil=368293 patterns=95
+  oracle after batch 18: N=14478 minUtil=379591 patterns=94
+  oracle after batch 19: N=14859 minUtil=391983 patterns=93
+  oracle after batch 20: N=15240 minUtil=402873 patterns=93
+  remine q0  after b1  N=8001   oracle=102    got=102    miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=235ms
+  remine q1  after b2  N=8382   oracle=102    got=102    miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=247ms
+  remine q2  after b3  N=8763   oracle=103    got=103    miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=246ms
+  remine q3  after b4  N=9144   oracle=102    got=102    miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=243ms
+  remine q4  after b5  N=9525   oracle=102    got=102    miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=265ms
+  remine q5  after b6  N=9906   oracle=100    got=100    miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=318ms
+  remine q6  after b7  N=10287  oracle=100    got=100    miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=237ms
+  remine q7  after b8  N=10668  oracle=100    got=100    miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=237ms
+  remine q8  after b9  N=11049  oracle=99     got=99     miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=250ms
+  remine q9  after b10 N=11430  oracle=99     got=99     miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=249ms
+  remine q10 after b11 N=11811  oracle=98     got=98     miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=255ms
+  remine q11 after b12 N=12192  oracle=98     got=98     miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=262ms
+  remine q12 after b13 N=12573  oracle=98     got=98     miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=262ms
+  remine q13 after b14 N=12954  oracle=99     got=99     miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=272ms
+  remine q14 after b15 N=13335  oracle=96     got=96     miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=259ms
+  remine q15 after b16 N=13716  oracle=95     got=95     miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=271ms
+  remine q16 after b17 N=14097  oracle=95     got=95     miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=283ms
+  remine q17 after b18 N=14478  oracle=94     got=94     miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=272ms
+  remine q18 after b19 N=14859  oracle=93     got=93     miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=275ms
+  remine q19 after b20 N=15240  oracle=93     got=93     miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=279ms
+compared queries=20 failing=0
+rc=0

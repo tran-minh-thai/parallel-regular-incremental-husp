@@ -1,0 +1,9 @@
+DUNNHUMBY-H N=15240 B=151 limit=60s band=[50,5000] threads=10
+delta=0.001 time=498 ms patterns=43 reject
+delta=0.002 time=300 ms patterns=14 reject
+delta=0.005 time=321 ms patterns=0 reject
+delta=0.01 time=266 ms patterns=0 reject
+delta=0.02 time=238 ms patterns=0 reject
+delta=0.05 time=202 ms patterns=0 reject
+chosen delta=NONE
+rc=0

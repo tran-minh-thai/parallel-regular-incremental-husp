@@ -1,0 +1,23 @@
+FIFA N=20450 delta=0.04 B=6135 k=11 dOld=0.9 schedule=every threads=10 fault=0 reference=parallel engine (NOT independent) -> results-probe/20261025_133001_FIFA
+  oracle after batch 1: N=18609 minUtil=1307341 patterns=142
+  oracle after batch 2: N=18813 minUtil=1322047 patterns=144
+  oracle after batch 3: N=19017 minUtil=1337178 patterns=143
+  oracle after batch 4: N=19221 minUtil=1351170 patterns=138
+  oracle after batch 5: N=19425 minUtil=1363648 patterns=132
+  oracle after batch 6: N=19629 minUtil=1377935 patterns=129
+  oracle after batch 7: N=19833 minUtil=1390323 patterns=127
+  oracle after batch 8: N=20037 minUtil=1403423 patterns=122
+  oracle after batch 9: N=20241 minUtil=1417322 patterns=124
+  oracle after batch 10: N=20450 minUtil=1428880 patterns=123
+  sel    q0  after b1  N=18609  oracle=142    got=142    miss=0 extra=0 uErr=0 pErr=0  ingest=8ms query=26091ms  [REMINE r=8.2 thr=1307341 cand=142 fresh=0 gapRej=0 mine=26091ms rebuild=0ms tracked=141]
+  sel    q1  after b2  N=18813  oracle=144    got=144    miss=0 extra=0 uErr=0 pErr=0  ingest=1ms query=26298ms  [REMINE r=16.3 thr=1322047 cand=144 fresh=0 gapRej=0 mine=26298ms rebuild=0ms tracked=141]
+  sel    q2  after b3  N=19017  oracle=143    got=143    miss=0 extra=0 uErr=0 pErr=0  ingest=1ms query=26459ms  [REMINE r=24.5 thr=1337178 cand=143 fresh=0 gapRej=0 mine=26459ms rebuild=0ms tracked=141]
+  sel    q3  after b4  N=19221  oracle=138    got=138    miss=0 extra=0 uErr=0 pErr=0  ingest=1ms query=26767ms  [REMINE r=32.6 thr=1351170 cand=138 fresh=0 gapRej=0 mine=26767ms rebuild=0ms tracked=141]
+  sel    q4  after b5  N=19425  oracle=132    got=132    miss=0 extra=0 uErr=0 pErr=0  ingest=1ms query=26584ms  [REMINE r=40.8 thr=1363648 cand=132 fresh=0 gapRej=0 mine=26584ms rebuild=0ms tracked=141]
+  sel    q5  after b6  N=19629  oracle=129    got=129    miss=0 extra=0 uErr=0 pErr=0  ingest=1ms query=26966ms  [REMINE r=49.0 thr=1377935 cand=129 fresh=0 gapRej=0 mine=26966ms rebuild=0ms tracked=141]
+  sel    q6  after b7  N=19833  oracle=127    got=127    miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=1154ms  [DISCOVER r=57.1 thr=95467 cand=68 fresh=4 gapRej=0 mine=1098ms rebuild=54ms tracked=145]
+  sel    q7  after b8  N=20037  oracle=122    got=122    miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=1169ms  [DISCOVER r=65.3 thr=108567 cand=51 fresh=0 gapRej=0 mine=1169ms rebuild=0ms tracked=145]
+  sel    q8  after b9  N=20241  oracle=124    got=124    miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=1374ms  [DISCOVER r=73.4 thr=122466 cand=69 fresh=0 gapRej=0 mine=1374ms rebuild=0ms tracked=145]
+  sel    q9  after b10 N=20450  oracle=123    got=123    miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=1703ms  [DISCOVER r=81.8 thr=134024 cand=69 fresh=0 gapRej=0 mine=1703ms rebuild=0ms tracked=145]
+compared queries=10 failing=0
+rc=0

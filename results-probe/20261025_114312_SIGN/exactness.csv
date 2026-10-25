@@ -1,0 +1,15 @@
+dataset,policy,batches,schedule,fault,query,after_batch,n_seqs,oracle_size,returned,missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,gap_rejected,tracked_after,action,r
+SIGN,sel,8,every,0,0,1,261,8547,8547,0,0,0,0,78,2860,8547,0,0,8514,remine,0.39
+SIGN,sel,8,every,0,1,2,339,4891,4891,0,0,0,0,156,3665,4891,0,0,4827,remine,0.78
+SIGN,sel,8,every,0,2,3,417,3928,3928,0,0,0,0,234,4516,3928,0,0,3863,remine,1.17
+SIGN,sel,8,every,0,3,4,495,2052,2052,0,0,0,0,312,5408,2052,0,0,2018,remine,1.56
+SIGN,sel,8,every,0,4,5,573,1486,1486,0,0,0,0,390,6430,1486,0,0,1469,remine,1.95
+SIGN,sel,8,every,0,5,6,651,938,938,0,0,0,0,468,7343,938,0,0,918,remine,2.34
+SIGN,sel,8,every,0,6,7,730,830,830,0,0,0,0,547,8344,830,0,0,817,remine,2.74
+SIGN,sel-k0,8,every,0,0,1,261,8547,8547,0,0,0,0,78,880,531614,523509,458291,8685,discover,0.39
+SIGN,sel-k0,8,every,0,1,2,339,4891,4891,0,0,0,0,156,1685,32941,28111,16746,4985,discover,0.78
+SIGN,sel-k0,8,every,0,2,3,417,3928,3928,0,0,0,0,234,2536,18401,14492,7760,3928,discover,1.17
+SIGN,sel-k0,8,every,0,3,4,495,2052,2052,0,0,0,0,78,893,181096,179248,165885,2087,discover,0.39
+SIGN,sel-k0,8,every,0,4,5,573,1486,1486,0,0,0,0,156,1915,34195,32792,27023,1530,discover,0.78
+SIGN,sel-k0,8,every,0,5,6,651,938,938,0,0,0,0,234,2828,9546,8651,5693,972,discover,1.17
+SIGN,sel-k0,8,every,0,6,7,730,830,830,0,0,0,0,313,3829,5023,4225,2266,868,discover,1.57
