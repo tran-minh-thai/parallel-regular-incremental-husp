@@ -1,0 +1,8 @@
+dataset,policy,batches,schedule,fault,query,after_batch,ingest_ms,query_ms,discovery_mine_ms,rebuild_ms,seed_ms
+BIBLE,bud,8,every,0,0,1,155,1017,1016,0,1001
+BIBLE,bud,8,every,0,1,2,203,1972,914,0,
+BIBLE,bud,8,every,0,2,3,20,490,403,85,
+BIBLE,bud,8,every,0,3,4,64,1711,756,0,
+BIBLE,bud,8,every,0,4,5,41,1765,887,0,
+BIBLE,bud,8,every,0,5,6,23,1745,815,0,
+BIBLE,bud,8,every,0,6,7,28,1715,856,0,

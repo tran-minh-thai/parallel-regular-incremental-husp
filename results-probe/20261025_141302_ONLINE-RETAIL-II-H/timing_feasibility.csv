@@ -1,0 +1,11 @@
+dataset,policy,batches,schedule,fault,query,after_batch,ingest_ms,query_ms,discovery_mine_ms,rebuild_ms,seed_ms
+ONLINE-RETAIL-II-H,bud,11,every,0,0,1,9,207,207,0,252
+ONLINE-RETAIL-II-H,bud,11,every,0,1,2,6,646,247,0,
+ONLINE-RETAIL-II-H,bud,11,every,0,2,3,1,638,206,0,
+ONLINE-RETAIL-II-H,bud,11,every,0,3,4,1,603,210,0,
+ONLINE-RETAIL-II-H,bud,11,every,0,4,5,1,635,206,0,
+ONLINE-RETAIL-II-H,bud,11,every,0,5,6,11,723,216,0,
+ONLINE-RETAIL-II-H,bud,11,every,0,6,7,2,818,220,0,
+ONLINE-RETAIL-II-H,bud,11,every,0,7,8,1,857,228,0,
+ONLINE-RETAIL-II-H,bud,11,every,0,8,9,1,831,222,0,
+ONLINE-RETAIL-II-H,bud,11,every,0,9,10,2,824,214,0,

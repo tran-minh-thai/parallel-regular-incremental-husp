@@ -1,0 +1,8 @@
+dataset,policy,batches,schedule,fault,query,after_batch,n_seqs,oracle_size,returned,missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,gap_rejected,tracked_after,action,r
+LEVIATHAN,keep-sfx-gf,8,every,0,0,1,2084,8937,8937,0,0,0,0,625,7973,75073,66584,8719,9420,,
+LEVIATHAN,keep-sfx-gf,8,every,0,1,2,2709,7873,7873,0,0,0,0,1250,15748,31233,23221,1224,8315,,
+LEVIATHAN,keep-sfx-gf,8,every,0,2,3,3334,7185,7185,0,0,0,0,1875,23902,19632,12338,381,7560,,
+LEVIATHAN,keep-sfx-gf,8,every,0,3,4,3959,6319,6319,0,0,0,0,2500,31356,14172,7755,131,6664,,
+LEVIATHAN,keep-sfx-gf,8,every,0,4,5,4584,5948,5948,0,0,0,0,3125,38602,11999,5950,91,6265,,
+LEVIATHAN,keep-sfx-gf,8,every,0,5,6,5209,5322,5322,0,0,0,0,3750,45474,9877,4458,56,5606,,
+LEVIATHAN,keep-sfx-gf,8,every,0,6,7,5834,5148,5148,0,0,0,0,4375,53080,8981,3738,43,5422,,

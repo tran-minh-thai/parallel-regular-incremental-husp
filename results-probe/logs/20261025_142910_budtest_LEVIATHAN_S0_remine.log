@@ -1,0 +1,17 @@
+LEVIATHAN N=5834 delta=0.005 B=175 k=8 dOld=0.25 schedule=every threads=10 fault=0 reference=independent oracle -> results-probe/20261025_142910_LEVIATHAN
+  oracle after batch 1: N=2084 minUtil=25675 patterns=8937
+  oracle after batch 2: N=2709 minUtil=33450 patterns=7873
+  oracle after batch 3: N=3334 minUtil=41604 patterns=7185
+  oracle after batch 4: N=3959 minUtil=49058 patterns=6319
+  oracle after batch 5: N=4584 minUtil=56304 patterns=5948
+  oracle after batch 6: N=5209 minUtil=63176 patterns=5322
+  oracle after batch 7: N=5834 minUtil=70782 patterns=5148
+  remine q0  after b1  N=2084   oracle=8937   got=8937   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=434ms
+  remine q1  after b2  N=2709   oracle=7873   got=7873   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=308ms
+  remine q2  after b3  N=3334   oracle=7185   got=7185   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=324ms
+  remine q3  after b4  N=3959   oracle=6319   got=6319   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=324ms
+  remine q4  after b5  N=4584   oracle=5948   got=5948   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=353ms
+  remine q5  after b6  N=5209   oracle=5322   got=5322   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=333ms
+  remine q6  after b7  N=5834   oracle=5148   got=5148   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=352ms
+compared queries=7 failing=0
+rc=0

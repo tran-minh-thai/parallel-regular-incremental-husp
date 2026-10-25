@@ -1,0 +1,94 @@
+== BIBLE dOld=0.25  bud=20261025_143551_BIBLE queries=7/7 disagreeing=0
+   actions: discover=1 remine=1 aborted=5
+   q3 violates: cost=1711 bound=576 (K=576 F=803 Fhat=914 action=aborted)
+   q4 violates: cost=1765 bound=667 (K=667 F=864 Fhat=756 action=aborted)
+   q5 violates: cost=1745 bound=607 (K=607 F=835 Fhat=887 action=aborted)
+   q6 violates: cost=1715 bound=686 (K=686 F=866 Fhat=815 action=aborted)
+   H4 per-query bound satisfied 3/7, worst cost/bound = 2.97
+   H5 BUD=11950 K=9557 F=6127 ratio to best=1.95 -> FAIL
+== DUNNHUMBY-H dOld=0.5  bud=20261025_141312_DUNNHUMBY-H queries=20/20 disagreeing=0
+   actions: discover=0 remine=1 aborted=19
+   q1 violates: cost=622 bound=471 (K=inf F=247 Fhat=224 action=aborted)
+   q2 violates: cost=671 bound=467 (K=inf F=246 Fhat=221 action=aborted)
+   q3 violates: cost=704 bound=502 (K=inf F=243 Fhat=259 action=aborted)
+   q4 violates: cost=664 bound=514 (K=inf F=265 Fhat=249 action=aborted)
+   q6 violates: cost=698 bound=493 (K=inf F=237 Fhat=256 action=aborted)
+   q7 violates: cost=674 bound=486 (K=inf F=237 Fhat=249 action=aborted)
+   q8 violates: cost=695 bound=493 (K=inf F=250 Fhat=243 action=aborted)
+   q9 violates: cost=696 bound=505 (K=inf F=249 Fhat=256 action=aborted)
+   q10 violates: cost=691 bound=502 (K=inf F=255 Fhat=247 action=aborted)
+   q11 violates: cost=696 bound=519 (K=inf F=262 Fhat=257 action=aborted)
+   q12 violates: cost=715 bound=518 (K=inf F=262 Fhat=256 action=aborted)
+   q13 violates: cost=724 bound=541 (K=inf F=272 Fhat=269 action=aborted)
+   q14 violates: cost=721 bound=519 (K=inf F=259 Fhat=260 action=aborted)
+   q15 violates: cost=737 bound=544 (K=inf F=271 Fhat=273 action=aborted)
+   q16 violates: cost=725 bound=551 (K=inf F=283 Fhat=268 action=aborted)
+   q17 violates: cost=746 bound=546 (K=inf F=272 Fhat=274 action=aborted)
+   q18 violates: cost=740 bound=550 (K=inf F=275 Fhat=275 action=aborted)
+   q19 violates: cost=749 bound=541 (K=inf F=279 Fhat=262 action=aborted)
+   H4 per-query bound satisfied 2/20, worst cost/bound = 1.44
+   H5 K incomplete: BUD=13894 F=5217 ratio=2.66 -> FAIL
+== DUNNHUMBY-H dOld=0.9  bud=20261025_141332_DUNNHUMBY-H queries=10/10 disagreeing=0
+   actions: discover=0 remine=1 aborted=9
+   q1 violates: cost=742 bound=544 (K=inf F=272 Fhat=272 action=aborted)
+   q2 violates: cost=755 bound=567 (K=inf F=277 Fhat=290 action=aborted)
+   q3 violates: cost=722 bound=558 (K=inf F=284 Fhat=274 action=aborted)
+   q4 violates: cost=743 bound=554 (K=inf F=274 Fhat=280 action=aborted)
+   q5 violates: cost=726 bound=561 (K=inf F=288 Fhat=273 action=aborted)
+   q6 violates: cost=747 bound=569 (K=inf F=302 Fhat=267 action=aborted)
+   q7 violates: cost=755 bound=568 (K=inf F=284 Fhat=284 action=aborted)
+   q8 violates: cost=751 bound=574 (K=inf F=288 Fhat=286 action=aborted)
+   q9 violates: cost=739 bound=556 (K=inf F=279 Fhat=277 action=aborted)
+   H4 per-query bound satisfied 1/10, worst cost/bound = 1.36
+   H5 K incomplete: BUD=7300 F=2818 ratio=2.59 -> FAIL
+== FIFA dOld=0.5  bud=20261025_141343_FIFA queries=20/20 disagreeing=0
+   actions: discover=19 remine=1 aborted=0
+   H4 per-query bound satisfied 20/20, worst cost/bound = 0.98
+   H5 not applied (FIFA formed the hypothesis)
+== FIFA dOld=0.9  bud=20261025_142338_FIFA queries=10/10 disagreeing=0
+   actions: discover=9 remine=1 aborted=0
+   q1 violates: cost=1347 bound=885 (K=885 F=29576 Fhat=27387 action=discover)
+   H4 per-query bound satisfied 9/10, worst cost/bound = 1.52
+   H5 not applied (FIFA formed the hypothesis)
+== LEVIATHAN dOld=0.25  bud=20261025_143107_LEVIATHAN queries=7/7 disagreeing=0
+   actions: discover=0 remine=1 aborted=6
+   H4 per-query bound satisfied 7/7, worst cost/bound = 1.19
+   H5 BUD=5589 K=13442 F=2428 ratio to best=2.30 -> FAIL
+== ONLINE-RETAIL-II-H dOld=0.5  bud=20261025_141244_ONLINE-RETAIL-II-H queries=20/20 disagreeing=0
+   actions: discover=0 remine=1 aborted=19
+   q1 violates: cost=695 bound=530 (K=inf F=258 Fhat=272 action=aborted)
+   q2 violates: cost=726 bound=492 (K=inf F=233 Fhat=259 action=aborted)
+   q3 violates: cost=712 bound=528 (K=inf F=239 Fhat=289 action=aborted)
+   q4 violates: cost=653 bound=478 (K=inf F=233 Fhat=245 action=aborted)
+   q5 violates: cost=658 bound=464 (K=inf F=229 Fhat=235 action=aborted)
+   q6 violates: cost=659 bound=456 (K=inf F=220 Fhat=236 action=aborted)
+   q7 violates: cost=647 bound=459 (K=inf F=225 Fhat=234 action=aborted)
+   q8 violates: cost=642 bound=446 (K=inf F=217 Fhat=229 action=aborted)
+   q9 violates: cost=631 bound=434 (K=inf F=209 Fhat=225 action=aborted)
+   q10 violates: cost=623 bound=430 (K=inf F=211 Fhat=219 action=aborted)
+   q11 violates: cost=621 bound=428 (K=inf F=205 Fhat=223 action=aborted)
+   q12 violates: cost=617 bound=434 (K=inf F=216 Fhat=218 action=aborted)
+   q13 violates: cost=658 bound=433 (K=inf F=213 Fhat=220 action=aborted)
+   q14 violates: cost=648 bound=442 (K=inf F=221 Fhat=221 action=aborted)
+   q15 violates: cost=638 bound=431 (K=inf F=218 Fhat=213 action=aborted)
+   q16 violates: cost=639 bound=429 (K=inf F=209 Fhat=220 action=aborted)
+   q17 violates: cost=619 bound=429 (K=inf F=215 Fhat=214 action=aborted)
+   q18 violates: cost=636 bound=430 (K=inf F=223 Fhat=207 action=aborted)
+   q19 violates: cost=629 bound=432 (K=inf F=222 Fhat=210 action=aborted)
+   H4 per-query bound satisfied 1/20, worst cost/bound = 1.52
+   H5 K incomplete: BUD=12997 F=4495 ratio=2.89 -> FAIL
+== ONLINE-RETAIL-II-H dOld=0.9  bud=20261025_141302_ONLINE-RETAIL-II-H queries=10/10 disagreeing=0
+   actions: discover=0 remine=1 aborted=9
+   q1 violates: cost=646 bound=411 (K=inf F=204 Fhat=207 action=aborted)
+   q2 violates: cost=638 bound=454 (K=inf F=207 Fhat=247 action=aborted)
+   q3 violates: cost=603 bound=421 (K=inf F=215 Fhat=206 action=aborted)
+   q4 violates: cost=635 bound=419 (K=inf F=209 Fhat=210 action=aborted)
+   q5 violates: cost=723 bound=417 (K=inf F=211 Fhat=206 action=aborted)
+   q6 violates: cost=818 bound=428 (K=inf F=212 Fhat=216 action=aborted)
+   q7 violates: cost=857 bound=431 (K=inf F=211 Fhat=220 action=aborted)
+   q8 violates: cost=831 bound=434 (K=inf F=206 Fhat=228 action=aborted)
+   q9 violates: cost=824 bound=435 (K=inf F=213 Fhat=222 action=aborted)
+   H4 per-query bound satisfied 1/10, worst cost/bound = 1.99
+   H5 K incomplete: BUD=7069 F=2097 ratio=3.37 -> FAIL
+H4 overall: 44/104 queries (42.3%) -> FAIL
+H5 overall: 0/6 settings -> FAIL

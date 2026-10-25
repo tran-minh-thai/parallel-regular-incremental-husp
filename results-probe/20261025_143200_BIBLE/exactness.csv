@@ -1,0 +1,8 @@
+dataset,policy,batches,schedule,fault,query,after_batch,n_seqs,oracle_size,returned,missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,gap_rejected,tracked_after,action,r
+BIBLE,remine,8,every,0,0,1,12989,10037,10037,0,0,0,0,,,,,,,,
+BIBLE,remine,8,every,0,1,2,16886,7142,7142,0,0,0,0,,,,,,,,
+BIBLE,remine,8,every,0,2,3,20783,2633,2633,0,0,0,0,,,,,,,,
+BIBLE,remine,8,every,0,3,4,24680,2718,2718,0,0,0,0,,,,,,,,
+BIBLE,remine,8,every,0,4,5,28577,2723,2723,0,0,0,0,,,,,,,,
+BIBLE,remine,8,every,0,5,6,32474,2192,2192,0,0,0,0,,,,,,,,
+BIBLE,remine,8,every,0,6,7,36369,2141,2141,0,0,0,0,,,,,,,,

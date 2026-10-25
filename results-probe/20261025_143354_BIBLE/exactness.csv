@@ -1,0 +1,8 @@
+dataset,policy,batches,schedule,fault,query,after_batch,n_seqs,oracle_size,returned,missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,gap_rejected,tracked_after,action,r
+BIBLE,keep-sfx-gf,8,every,0,0,1,12989,10037,10037,0,0,0,0,3897,19564,15062,6997,1077,12738,,
+BIBLE,keep-sfx-gf,8,every,0,1,2,16886,7142,7142,0,0,0,0,7794,39981,9838,3020,37,8907,,
+BIBLE,keep-sfx-gf,8,every,0,2,3,20783,2633,2633,0,0,0,0,11691,53410,2564,60,6,3422,,
+BIBLE,keep-sfx-gf,8,every,0,3,4,24680,2718,2718,0,0,0,0,15588,73089,2733,81,7,3435,,
+BIBLE,keep-sfx-gf,8,every,0,4,5,28577,2723,2723,0,0,0,0,19485,92823,2759,84,4,3463,,
+BIBLE,keep-sfx-gf,8,every,0,5,6,32474,2192,2192,0,0,0,0,23382,109973,2130,13,0,2903,,
+BIBLE,keep-sfx-gf,8,every,0,6,7,36369,2141,2141,0,0,0,0,27277,129766,2083,23,0,2868,,

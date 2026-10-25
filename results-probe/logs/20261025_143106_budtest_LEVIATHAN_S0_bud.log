@@ -1,0 +1,17 @@
+LEVIATHAN N=5834 delta=0.005 B=175 k=8 dOld=0.25 schedule=every threads=10 fault=0 reference=independent oracle -> results-probe/20261025_143107_LEVIATHAN
+  oracle after batch 1: N=2084 minUtil=25675 patterns=8937
+  oracle after batch 2: N=2709 minUtil=33450 patterns=7873
+  oracle after batch 3: N=3334 minUtil=41604 patterns=7185
+  oracle after batch 4: N=3959 minUtil=49058 patterns=6319
+  oracle after batch 5: N=4584 minUtil=56304 patterns=5948
+  oracle after batch 6: N=5209 minUtil=63176 patterns=5322
+  oracle after batch 7: N=5834 minUtil=70782 patterns=5148
+  bud    q0  after b1  N=2084   oracle=8937   got=8937   miss=0 extra=0 uErr=0 pErr=0  ingest=134ms query=363ms  [REMINE r=3.1 thr=25675 cand=8937 fresh=0 gapRej=0 mine=362ms rebuild=0ms tracked=8648]
+  bud    q1  after b2  N=2709   oracle=7873   got=7873   miss=0 extra=0 uErr=0 pErr=0  ingest=38ms query=795ms  [ABORTED+REMINE r=6.3 thr=33450 cand=7873 fresh=23749 gapRej=0 mine=298ms rebuild=0ms tracked=7554]
+  bud    q2  after b3  N=3334   oracle=7185   got=7185   miss=0 extra=0 uErr=0 pErr=0  ingest=21ms query=695ms  [ABORTED+REMINE r=9.4 thr=41604 cand=7185 fresh=12811 gapRej=0 mine=302ms rebuild=0ms tracked=6867]
+  bud    q3  after b4  N=3959   oracle=6319   got=6319   miss=0 extra=0 uErr=0 pErr=0  ingest=20ms query=693ms  [ABORTED+REMINE r=12.5 thr=49058 cand=6319 fresh=8205 gapRej=0 mine=305ms rebuild=0ms tracked=6000]
+  bud    q4  after b5  N=4584   oracle=5948   got=5948   miss=0 extra=0 uErr=0 pErr=0  ingest=16ms query=741ms  [ABORTED+REMINE r=15.6 thr=56304 cand=5948 fresh=6402 gapRej=0 mine=336ms rebuild=0ms tracked=5625]
+  bud    q5  after b6  N=5209   oracle=5322   got=5322   miss=0 extra=0 uErr=0 pErr=0  ingest=17ms query=760ms  [ABORTED+REMINE r=18.8 thr=63176 cand=5322 fresh=4912 gapRej=0 mine=332ms rebuild=0ms tracked=4987]
+  bud    q6  after b7  N=5834   oracle=5148   got=5148   miss=0 extra=0 uErr=0 pErr=0  ingest=15ms query=794ms  [ABORTED+REMINE r=21.9 thr=70782 cand=5148 fresh=4188 gapRej=0 mine=356ms rebuild=0ms tracked=4814]
+compared queries=7 failing=0
+rc=0

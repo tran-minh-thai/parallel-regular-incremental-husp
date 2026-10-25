@@ -1,0 +1,8 @@
+dataset,policy,batches,schedule,fault,query,after_batch,n_seqs,oracle_size,returned,missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,gap_rejected,tracked_after,action,r
+LEVIATHAN,remine,8,every,0,0,1,2084,8937,8937,0,0,0,0,,,,,,,,
+LEVIATHAN,remine,8,every,0,1,2,2709,7873,7873,0,0,0,0,,,,,,,,
+LEVIATHAN,remine,8,every,0,2,3,3334,7185,7185,0,0,0,0,,,,,,,,
+LEVIATHAN,remine,8,every,0,3,4,3959,6319,6319,0,0,0,0,,,,,,,,
+LEVIATHAN,remine,8,every,0,4,5,4584,5948,5948,0,0,0,0,,,,,,,,
+LEVIATHAN,remine,8,every,0,5,6,5209,5322,5322,0,0,0,0,,,,,,,,
+LEVIATHAN,remine,8,every,0,6,7,5834,5148,5148,0,0,0,0,,,,,,,,

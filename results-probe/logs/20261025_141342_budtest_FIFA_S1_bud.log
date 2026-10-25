@@ -1,0 +1,43 @@
+FIFA N=20450 delta=0.04 B=6135 k=21 dOld=0.5 schedule=every threads=10 fault=0 reference=parallel engine (NOT independent) -> results-probe/20261025_141343_FIFA
+  oracle after batch 1: N=10736 minUtil=761395 patterns=82
+  oracle after batch 2: N=11247 minUtil=797237 patterns=78
+  oracle after batch 3: N=11758 minUtil=832217 patterns=101
+  oracle after batch 4: N=12269 minUtil=866209 patterns=97
+  oracle after batch 5: N=12780 minUtil=904414 patterns=108
+  oracle after batch 6: N=13291 minUtil=941562 patterns=109
+  oracle after batch 7: N=13802 minUtil=978873 patterns=109
+  oracle after batch 8: N=14313 minUtil=1015434 patterns=115
+  oracle after batch 9: N=14824 minUtil=1049587 patterns=115
+  oracle after batch 10: N=15335 minUtil=1083868 patterns=118
+  oracle after batch 11: N=15846 minUtil=1119869 patterns=133
+  oracle after batch 12: N=16357 minUtil=1154653 patterns=134
+  oracle after batch 13: N=16868 minUtil=1190391 patterns=135
+  oracle after batch 14: N=17379 minUtil=1223895 patterns=130
+  oracle after batch 15: N=17890 minUtil=1257899 patterns=135
+  oracle after batch 16: N=18401 minUtil=1294633 patterns=141
+  oracle after batch 17: N=18912 minUtil=1329362 patterns=143
+  oracle after batch 18: N=19423 minUtil=1363551 patterns=132
+  oracle after batch 19: N=19934 minUtil=1396981 patterns=124
+  oracle after batch 20: N=20450 minUtil=1428880 patterns=123
+  bud    q0  after b1  N=10736  oracle=82     got=82     miss=0 extra=0 uErr=0 pErr=0  ingest=14ms query=15703ms  [REMINE r=20.4 thr=761395 cand=82 fresh=0 gapRej=0 mine=15703ms rebuild=0ms tracked=81]
+  bud    q1  after b2  N=11247  oracle=78     got=78     miss=0 extra=0 uErr=0 pErr=0  ingest=1ms query=1491ms  [DISCOVER r=40.9 thr=71190 cand=92 fresh=33 gapRej=0 mine=1427ms rebuild=62ms tracked=114]
+  bud    q2  after b3  N=11758  oracle=101    got=101    miss=0 extra=0 uErr=0 pErr=0  ingest=9ms query=2033ms  [DISCOVER r=61.3 thr=106170 cand=440 fresh=326 gapRej=0 mine=1952ms rebuild=80ms tracked=440]
+  bud    q3  after b4  N=12269  oracle=97     got=97     miss=0 extra=0 uErr=0 pErr=0  ingest=17ms query=2492ms  [DISCOVER r=81.8 thr=140162 cand=204 fresh=0 gapRej=0 mine=2492ms rebuild=0ms tracked=440]
+  bud    q4  after b5  N=12780  oracle=108    got=108    miss=0 extra=0 uErr=0 pErr=0  ingest=1ms query=2684ms  [DISCOVER r=102.2 thr=178367 cand=425 fresh=73 gapRej=0 mine=2662ms rebuild=21ms tracked=513]
+  bud    q5  after b6  N=13291  oracle=109    got=109    miss=0 extra=0 uErr=0 pErr=0  ingest=1ms query=3194ms  [DISCOVER r=122.6 thr=215515 cand=327 fresh=3 gapRej=0 mine=3175ms rebuild=18ms tracked=516]
+  bud    q6  after b7  N=13802  oracle=109    got=109    miss=0 extra=0 uErr=0 pErr=0  ingest=1ms query=4501ms  [DISCOVER r=143.1 thr=252826 cand=260 fresh=4 gapRej=0 mine=4481ms rebuild=19ms tracked=520]
+  bud    q7  after b8  N=14313  oracle=115    got=115    miss=0 extra=0 uErr=0 pErr=0  ingest=1ms query=4965ms  [DISCOVER r=163.5 thr=289387 cand=267 fresh=1 gapRej=0 mine=4941ms rebuild=23ms tracked=521]
+  bud    q8  after b9  N=14824  oracle=115    got=115    miss=0 extra=0 uErr=0 pErr=0  ingest=1ms query=5202ms  [DISCOVER r=184.0 thr=323540 cand=247 fresh=0 gapRej=0 mine=5202ms rebuild=0ms tracked=521]
+  bud    q9  after b10 N=15335  oracle=118    got=118    miss=0 extra=0 uErr=0 pErr=0  ingest=1ms query=5618ms  [DISCOVER r=204.4 thr=357821 cand=233 fresh=0 gapRej=0 mine=5618ms rebuild=0ms tracked=521]
+  bud    q10 after b11 N=15846  oracle=133    got=133    miss=0 extra=0 uErr=0 pErr=0  ingest=1ms query=6796ms  [DISCOVER r=224.8 thr=393822 cand=300 fresh=7 gapRej=0 mine=6745ms rebuild=51ms tracked=528]
+  bud    q11 after b12 N=16357  oracle=134    got=134    miss=0 extra=0 uErr=0 pErr=0  ingest=1ms query=8043ms  [DISCOVER r=245.3 thr=428606 cand=269 fresh=1 gapRej=0 mine=8019ms rebuild=23ms tracked=529]
+  bud    q12 after b13 N=16868  oracle=135    got=135    miss=0 extra=0 uErr=0 pErr=0  ingest=1ms query=8624ms  [DISCOVER r=265.7 thr=464344 cand=268 fresh=2 gapRej=0 mine=8599ms rebuild=24ms tracked=531]
+  bud    q13 after b14 N=17379  oracle=130    got=130    miss=0 extra=0 uErr=0 pErr=0  ingest=1ms query=9432ms  [DISCOVER r=286.2 thr=497848 cand=229 fresh=0 gapRej=0 mine=9432ms rebuild=0ms tracked=531]
+  bud    q14 after b15 N=17890  oracle=135    got=135    miss=0 extra=0 uErr=0 pErr=0  ingest=1ms query=9958ms  [DISCOVER r=306.6 thr=531852 cand=246 fresh=3 gapRej=0 mine=9932ms rebuild=25ms tracked=534]
+  bud    q15 after b16 N=18401  oracle=141    got=141    miss=0 extra=0 uErr=0 pErr=0  ingest=1ms query=10321ms  [DISCOVER r=327.0 thr=568586 cand=268 fresh=3 gapRej=0 mine=10295ms rebuild=26ms tracked=537]
+  bud    q16 after b17 N=18912  oracle=143    got=143    miss=0 extra=0 uErr=0 pErr=0  ingest=1ms query=10752ms  [DISCOVER r=347.5 thr=603315 cand=279 fresh=5 gapRej=0 mine=10725ms rebuild=27ms tracked=542]
+  bud    q17 after b18 N=19423  oracle=132    got=132    miss=0 extra=0 uErr=0 pErr=0  ingest=1ms query=11001ms  [DISCOVER r=367.9 thr=637504 cand=226 fresh=0 gapRej=0 mine=11001ms rebuild=0ms tracked=542]
+  bud    q18 after b19 N=19934  oracle=124    got=124    miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=11005ms  [DISCOVER r=388.4 thr=670934 cand=204 fresh=0 gapRej=0 mine=11005ms rebuild=0ms tracked=542]
+  bud    q19 after b20 N=20450  oracle=123    got=123    miss=0 extra=0 uErr=0 pErr=0  ingest=1ms query=11708ms  [DISCOVER r=409.0 thr=702833 cand=197 fresh=0 gapRej=0 mine=11707ms rebuild=0ms tracked=123]
+compared queries=20 failing=0
+rc=0

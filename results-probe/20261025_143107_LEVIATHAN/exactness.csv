@@ -1,0 +1,8 @@
+dataset,policy,batches,schedule,fault,query,after_batch,n_seqs,oracle_size,returned,missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,gap_rejected,tracked_after,action,r
+LEVIATHAN,bud,8,every,0,0,1,2084,8937,8937,0,0,0,0,625,25675,8937,0,0,8648,remine,3.13
+LEVIATHAN,bud,8,every,0,1,2,2709,7873,7873,0,0,0,0,1250,33450,7873,23749,0,7554,aborted,6.25
+LEVIATHAN,bud,8,every,0,2,3,3334,7185,7185,0,0,0,0,1875,41604,7185,12811,0,6867,aborted,9.38
+LEVIATHAN,bud,8,every,0,3,4,3959,6319,6319,0,0,0,0,2500,49058,6319,8205,0,6000,aborted,12.50
+LEVIATHAN,bud,8,every,0,4,5,4584,5948,5948,0,0,0,0,3125,56304,5948,6402,0,5625,aborted,15.63
+LEVIATHAN,bud,8,every,0,5,6,5209,5322,5322,0,0,0,0,3750,63176,5322,4912,0,4987,aborted,18.75
+LEVIATHAN,bud,8,every,0,6,7,5834,5148,5148,0,0,0,0,4375,70782,5148,4188,0,4814,aborted,21.88

@@ -1,0 +1,22 @@
+kind: H4-H5 batch (development machine), DANG_KY_TRUOC_NGAN_SACH.md
+git_commit: ed5b37f4280428b57d9474f0ca8e5dbde31fad38
+tree_src: 0 modified
+java: openjdk version "26.0.1" 2026-04-21
+script (args: <repo> <build-dir>):
+cd "$1"; OUT="$2"; L=results-probe/logs
+run() { name=$1; delta=$2; B=$3; sid=$4; dold=$5; k=$6; pol=$7; ref=$8
+  t=$(date +%Y%m%d_%H%M%S); log=$L/${t}_budtest_${name}_${sid}_${pol}.log
+  java -Ddold=$dold $ref -Dlimit=900 -Xmx16g -cp "$OUT" test.QueryScheduleProbe datasets/${name}_seq.txt datasets/${name}_eui.txt $delta $B $k every $pol > $log 2>&1
+  echo "rc=$?" >> $log; }
+for ds in "ONLINE-RETAIL-II-H 0.001 68" "DUNNHUMBY-H 0.0005 151" "FIFA 0.04 6135"; do
+  for sch in "S1 0.5 21" "S2 0.9 11"; do run $ds $sch bud -Doracle=remine; done
+done
+for ds in "LEVIATHAN 0.005 175" "BIBLE 0.005 1091"; do
+  for pol in remine keep-sfx-gf bud; do run $ds S0 0.25 8 $pol ""; done
+done
+P="-Dpolicies=bud-c0,bud-c0.001,bud-c1,bud-c1000000000"
+for opts in "-Dfault=0" "-DforceRebuildAbort=true" "-Dfault=5"; do
+  t=$(date +%Y%m%d_%H%M%S); log=$L/${t}_stress150_bud_${opts#-D}.log
+  java -Xmx4g $P $opts -cp "$OUT" test.QueryScheduleStress 150 > $log 2>&1; echo "rc=$?" >> $log
+done
+echo ALLDONE

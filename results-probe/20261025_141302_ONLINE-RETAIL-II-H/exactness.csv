@@ -1,0 +1,11 @@
+dataset,policy,batches,schedule,fault,query,after_batch,n_seqs,oracle_size,returned,missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,gap_rejected,tracked_after,action,r
+ONLINE-RETAIL-II-H,bud,11,every,0,0,1,5265,116,116,0,0,0,0,58,1731970,116,0,0,116,remine,0.06
+ONLINE-RETAIL-II-H,bud,11,every,0,1,2,5323,115,115,0,0,0,0,116,1755835,115,0,0,115,aborted,0.12
+ONLINE-RETAIL-II-H,bud,11,every,0,2,3,5381,113,113,0,0,0,0,174,1780971,113,0,0,114,aborted,0.17
+ONLINE-RETAIL-II-H,bud,11,every,0,3,4,5439,108,108,0,0,0,0,232,1804133,108,0,0,110,aborted,0.23
+ONLINE-RETAIL-II-H,bud,11,every,0,4,5,5497,106,106,0,0,0,0,290,1833688,106,0,0,109,aborted,0.29
+ONLINE-RETAIL-II-H,bud,11,every,0,5,6,5555,106,106,0,0,0,0,348,1867892,106,0,0,109,aborted,0.35
+ONLINE-RETAIL-II-H,bud,11,every,0,6,7,5613,106,106,0,0,0,0,406,1905444,106,0,0,109,aborted,0.41
+ONLINE-RETAIL-II-H,bud,11,every,0,7,8,5671,106,106,0,0,0,0,464,1937803,106,0,0,109,aborted,0.46
+ONLINE-RETAIL-II-H,bud,11,every,0,8,9,5729,106,106,0,0,0,0,522,1968263,106,0,0,109,aborted,0.52
+ONLINE-RETAIL-II-H,bud,11,every,0,9,10,5786,105,105,0,0,0,0,579,2005746,105,0,0,108,aborted,0.58

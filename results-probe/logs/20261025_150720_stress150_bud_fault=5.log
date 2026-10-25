@@ -1,0 +1,8 @@
+  FAIL seed=1 policy=bud-c0 batch=2 oracle=94 miss=25 extra=0 uErr=0 pErr=0
+  FAIL seed=1 policy=bud-c0 batch=3 oracle=55 miss=11 extra=0 uErr=0 pErr=0
+  FAIL seed=1 policy=bud-c0 batch=4 oracle=31 miss=6 extra=0 uErr=0 pErr=0
+  FAIL seed=1 policy=bud-c0 batch=5 oracle=25 miss=6 extra=0 uErr=0 pErr=0
+  FAIL seed=1 policy=bud-c0 batch=6 oracle=19 miss=4 extra=0 uErr=0 pErr=0
+forceRebuildAbort=false aborts-in-mining=934 aborts-in-rebuild=2243
+fault=5 trials=150 sequences-with-multi-item-events=5384 compared-queries=2708 with-non-empty-oracle=2664 failing=850 {bud-c0=317, bud-c0.001=317, bud-c1=216}
+rc=1

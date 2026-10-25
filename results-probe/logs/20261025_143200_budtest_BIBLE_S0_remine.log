@@ -1,0 +1,17 @@
+BIBLE N=36369 delta=0.005 B=1091 k=8 dOld=0.25 schedule=every threads=10 fault=0 reference=independent oracle -> results-probe/20261025_143200_BIBLE
+  oracle after batch 1: N=12989 minUtil=67549 patterns=10037
+  oracle after batch 2: N=16886 minUtil=87966 patterns=7142
+  oracle after batch 3: N=20783 minUtil=101395 patterns=2633
+  oracle after batch 4: N=24680 minUtil=121074 patterns=2718
+  oracle after batch 5: N=28577 minUtil=140808 patterns=2723
+  oracle after batch 6: N=32474 minUtil=157958 patterns=2192
+  oracle after batch 7: N=36369 minUtil=177751 patterns=2141
+  remine q0  after b1  N=12989  oracle=10037  got=10037  miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=1140ms
+  remine q1  after b2  N=16886  oracle=7142   got=7142   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=932ms
+  remine q2  after b3  N=20783  oracle=2633   got=2633   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=687ms
+  remine q3  after b4  N=24680  oracle=2718   got=2718   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=803ms
+  remine q4  after b5  N=28577  oracle=2723   got=2723   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=864ms
+  remine q5  after b6  N=32474  oracle=2192   got=2192   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=835ms
+  remine q6  after b7  N=36369  oracle=2141   got=2141   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=866ms
+compared queries=7 failing=0
+rc=0

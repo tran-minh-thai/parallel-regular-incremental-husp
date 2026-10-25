@@ -1,0 +1,8 @@
+dataset,policy,batches,schedule,fault,query,after_batch,n_seqs,oracle_size,returned,missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,gap_rejected,tracked_after,action,r
+BIBLE,bud,8,every,0,0,1,12989,10037,10037,0,0,0,0,3897,67549,10037,0,0,10363,remine,19.49
+BIBLE,bud,8,every,0,1,2,16886,7142,7142,0,0,0,0,7794,87966,7142,3874,0,6662,aborted,38.97
+BIBLE,bud,8,every,0,2,3,20783,2633,2633,0,0,0,0,11691,53410,2564,249,6,2633,discover,58.46
+BIBLE,bud,8,every,0,3,4,24680,2718,2718,0,0,0,0,3897,121074,2718,24638,0,2632,aborted,19.49
+BIBLE,bud,8,every,0,4,5,28577,2723,2723,0,0,0,0,7794,140808,2723,14028,0,2632,aborted,38.97
+BIBLE,bud,8,every,0,5,6,32474,2192,2192,0,0,0,0,11691,157958,2192,1617,0,2202,aborted,58.46
+BIBLE,bud,8,every,0,6,7,36369,2141,2141,0,0,0,0,15586,177751,2141,1281,0,2187,aborted,77.93
