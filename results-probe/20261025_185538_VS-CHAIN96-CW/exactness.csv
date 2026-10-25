@@ -1,0 +1,12 @@
+dataset,policy,batches,schedule,fault,query,after_batch,n_seqs,oracle_size,returned,missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,gap_rejected,tracked_after,action,r,kept_on_abort,budget_ms,attempt_ms,attempt_load_ms,attempt_preprocess_ms,attempt_enum_ms,attempt_rebuild_ms,abort_phase
+VS-CHAIN96-CW,bud2,11,every,0,0,1,592322,1529,1529,0,0,0,0,6509,3360555,1529,0,0,1529,remine,3.25,0,0,0,0,0,0,0,
+VS-CHAIN96-CW,bud2,11,every,0,1,2,598831,1534,1534,0,0,0,0,13018,3397512,1534,0,0,1528,aborted,6.51,0,64230,64243,5,262,63976,0,mining
+VS-CHAIN96-CW,bud2,11,every,0,2,3,605340,1533,1533,0,0,0,0,19527,3432786,1533,0,0,1528,aborted,9.76,0,73865,73879,8,634,73237,0,mining
+VS-CHAIN96-CW,bud2,11,every,0,3,4,611849,1532,1532,0,0,0,0,26036,3467601,1532,0,0,1528,aborted,13.02,0,68126,68128,14,709,67404,0,mining
+VS-CHAIN96-CW,bud2,11,every,0,4,5,618358,1536,1536,0,0,0,0,32545,3499232,1536,0,0,1528,aborted,16.27,0,68113,68114,10,639,67465,0,mining
+VS-CHAIN96-CW,bud2,11,every,0,5,6,624867,1537,1537,0,0,0,0,39054,3531262,1537,0,0,1528,aborted,19.53,0,69642,69643,11,697,68935,0,mining
+VS-CHAIN96-CW,bud2,11,every,0,6,7,631376,1532,1532,0,0,0,0,45563,3565892,1532,0,0,1528,aborted,22.78,0,70121,70121,13,1038,69071,0,mining
+VS-CHAIN96-CW,bud2,11,every,0,7,8,637885,1528,1528,0,0,0,0,52072,3601579,1528,0,0,1528,aborted,26.04,0,69856,69856,15,888,68954,0,mining
+VS-CHAIN96-CW,bud2,11,every,0,8,9,644394,1524,1524,0,0,0,0,58581,3633494,1524,0,0,1527,aborted,29.29,0,77605,77606,16,1084,76506,0,mining
+VS-CHAIN96-CW,bud2,11,every,0,9,10,650903,1518,1518,0,0,0,0,65090,3660918,1518,0,0,1527,aborted,32.55,0,78970,78970,22,1057,77892,0,mining
+VS-CHAIN96-CW,bud2-c10,11,every,0,0,1,592322,1529,1529,0,0,0,0,6509,3360555,1529,0,0,1529,remine,3.25,0,0,0,0,0,0,0,

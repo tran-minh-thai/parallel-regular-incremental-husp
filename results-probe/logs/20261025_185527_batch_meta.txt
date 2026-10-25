@@ -1,0 +1,10 @@
+kind: diagnostic phase split, VS-CHAIN96-CW schedule S2 (development machine)
+git_commit: 8be47a98b3c192c0252399e3687e51aca5b9cc29
+tree_src: 0 modified
+java: openjdk version "26.0.1" 2026-04-21
+script (args: <repo> <build-dir>):
+cd "$1"; OUT="$2"; L=results-probe/logs
+t=$(date +%Y%m%d_%H%M%S); log=$L/${t}_diag_VS-CHAIN96-CW_S2.log
+java -Ddold=0.9 -Doracle=remine -Dlimit=3600 -Xmx16g -cp "$OUT" test.QueryScheduleProbe datasets/VS-CHAIN96-CW_seq.txt datasets/VS-CHAIN96-CW_eui.txt 0.0005 17592 11 every bud2,bud2-c10 > $log 2>&1
+echo "rc=$?" >> $log
+echo ALLDONE

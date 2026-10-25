@@ -1,0 +1,12 @@
+dataset,policy,batches,schedule,fault,query,after_batch,ingest_ms,query_ms,discovery_mine_ms,rebuild_ms,seed_ms
+VS-CHAIN96-CW,bud2,11,every,0,0,1,57,64230,64230,0,62141
+VS-CHAIN96-CW,bud2,11,every,0,1,2,10,140460,73865,0,
+VS-CHAIN96-CW,bud2,11,every,0,2,3,79,142626,68126,0,
+VS-CHAIN96-CW,bud2,11,every,0,3,4,11,136402,68113,0,
+VS-CHAIN96-CW,bud2,11,every,0,4,5,8,137836,69642,0,
+VS-CHAIN96-CW,bud2,11,every,0,5,6,9,139834,70121,0,
+VS-CHAIN96-CW,bud2,11,every,0,6,7,7,140038,69856,0,
+VS-CHAIN96-CW,bud2,11,every,0,7,8,9,147519,77605,0,
+VS-CHAIN96-CW,bud2,11,every,0,8,9,6,156640,78970,0,
+VS-CHAIN96-CW,bud2,11,every,0,9,10,5,154098,75065,0,
+VS-CHAIN96-CW,bud2-c10,11,every,0,0,1,7,57404,57404,0,68240
