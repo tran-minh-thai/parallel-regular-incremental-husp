@@ -121,7 +121,19 @@ public class QueryScheduleProbe {
                     + "gap_rejected,tracked_after,action,r\n");
             tm.write("dataset,policy,batches,schedule,fault,query,after_batch,ingest_ms,query_ms,"
                     + "discovery_mine_ms,rebuild_ms,seed_ms\n");
+            final long limitS = Long.getLong("limit", 0);         // per-policy time limit, reference excluded
             for (String policy : policies) {
+                if (limitS > 0) {
+                    final String pol = policy;
+                    Thread dog = new Thread(() -> {
+                        try { Thread.sleep(limitS * 1000L); } catch (InterruptedException ie) { return; }
+                        System.out.printf("  %s TIMEOUT after %d s (policy time, reference excluded)%n", pol, limitS);
+                        System.out.flush();
+                        Runtime.getRuntime().halt(4);
+                    });
+                    dog.setDaemon(true);
+                    dog.start();
+                }
                 IncrementalHUSPMiner m = build(policy, threads, absB);
                 long t0 = System.nanoTime();
                 m.initialBuild(batches.get(0), delta, 0.0);
@@ -168,6 +180,7 @@ public class QueryScheduleProbe {
                                             + String.format(java.util.Locale.ROOT, "%.1f ", p.lastQueryR) : "",
                                     p.lastQueryThreshold, p.lastQueryCandidates, p.lastQueryFresh, p.lastQueryGapRejected,
                                     p.lastQueryMineMs, p.lastQueryRebuildMs, m.trackedCount()));
+                    ex.flush(); tm.flush();                          // a timeout halts the JVM: keep finished rows
                     ingestMs = 0;
                     q++;
                 }
@@ -249,7 +262,7 @@ public class QueryScheduleProbe {
     private static void writeMeta(File dir, String[] args, String seqFile, String euiFile, int threads)
             throws Exception {
         StringBuilder props = new StringBuilder();
-        for (String key : new String[]{"fault", "threads", "dold", "oracle"})
+        for (String key : new String[]{"fault", "threads", "dold", "oracle", "limit"})
             if (System.getProperty(key) != null) props.append("-D").append(key).append('=').append(System.getProperty(key)).append(' ');
         String src = "src/main/java/";
         StringBuilder sb = new StringBuilder("{\n");
