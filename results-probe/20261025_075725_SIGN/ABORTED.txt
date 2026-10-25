@@ -1,0 +1,1 @@
+ABORTED by hand after 6 min in seeding: the probe built the miner before declaring the absolute bound in ExpConfig, so floor pruning and permanent eviction were off (not the reported configuration). No numbers; kept as a record.

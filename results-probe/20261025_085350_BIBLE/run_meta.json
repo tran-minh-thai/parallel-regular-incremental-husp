@@ -1,0 +1,17 @@
+{
+  "kind": "probe (development machine, feasibility only)",
+  "command": "java test.QueryScheduleProbe datasets/BIBLE_seq.txt datasets/BIBLE_eui.txt 0.005 1091 8 every keep-sfx-gf,keep-sfx-gf-l0.7,keep-sfx-gf-l0.5,keep-sfx-gf-l0.3,remine",
+  "git_commit": "1fb151c4640c7bd6c4d56f5461f1f3b994220563",
+  "tree": "clean",
+  "sha256_AlgoPRIncHUSP": "59dc80c43eec17fbfefb8c8f08e8596f43be70e8a0ff5e4b73e2cdaa5d275b25",
+  "sha256_AlgoParRemine": "ed31e48b26eb31e1a6ecb3c067dbaf8f1decc15484bfbad4a7a540643e5eb37b",
+  "sha256_AlgoRHUSPMinerParallel": "b795516d437c8ea8777241771f12a5d36a30edb23340ca7eaebb1b97a8d3b9fd",
+  "sha256_QueryScheduleProbe": "27a4ca121013756c05f15906de4ecc8991fae6abec4fa03ba193c4f4b474ecd5",
+  "sha256_seq": "8030ba1631d776e2b94592f5be9d6cac775c2613afb23084c80401443b65a51f",
+  "sha256_eui": "691d9d00bb444cdf63f6033450602493e9ffa089cdd383fbf3160cd7f65f50c1",
+  "java": "26.0.1+8-34 Oracle Corporation",
+  "os": "Mac OS X 27.0.1 aarch64",
+  "threads": "10",
+  "max_heap_mb": "16384",
+  "started": "2026-10-25T08:53:50+07:00"
+}

@@ -1,0 +1,9 @@
+kind: probe batch (development machine)
+git_commit: 1fb151c4640c7bd6c4d56f5461f1f3b994220563
+tree_src: 0 modified
+java: openjdk version "26.0.1" 2026-04-21
+script:
+cd "<repo>"
+L=results-probe/logs
+for spec in "SIGN 21" "LEVIATHAN 175" "BIBLE 1091"; do set -- $spec; t=$(date +%Y%m%d_%H%M%S); java -Xmx16g -cp <build-dir> test.QueryScheduleProbe datasets/$1_seq.txt datasets/$1_eui.txt 0.005 $2 8 every keep-sfx-gf,keep-sfx-gf-l0.7,keep-sfx-gf-l0.5,keep-sfx-gf-l0.3,remine > $L/${t}_$1_k8_every_lambda.log 2>&1; echo "rc=$?" >> $L/${t}_$1_k8_every_lambda.log; done
+echo ALLDONE

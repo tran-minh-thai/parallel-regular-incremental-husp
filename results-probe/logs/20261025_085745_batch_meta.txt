@@ -1,0 +1,12 @@
+kind: probe batch (development machine)
+git_commit: 29feb6138b06b24c034bc8edf53cb2a3763966eb
+tree_src: 0 modified
+java: openjdk version "26.0.1" 2026-04-21
+script:
+cd "<repo>"
+L=results-probe/logs
+run() { t=$(date +%Y%m%d_%H%M%S); java -Ddold=0.9 $4 -Xmx16g -cp <build-dir> test.QueryScheduleProbe datasets/$1_seq.txt datasets/$1_eui.txt $2 $3 11 every keep-sfx-gf,keep-sfx-gf-l0.5,reset-sfx-gf,remine > $L/${t}_$1_dold90_k11_every.log 2>&1; echo "rc=$?" >> $L/${t}_$1_dold90_k11_every.log; }
+run BIBLE 0.005 1091 ""
+run C8T1S5I8N5K 0.001 2827 -Doracle=remine
+run KOSARAK 0.015 297000 -Doracle=remine
+echo ALLDONE

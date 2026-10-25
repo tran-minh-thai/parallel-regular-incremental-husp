@@ -1,0 +1,17 @@
+{
+  "kind": "probe (development machine, feasibility only)",
+  "command": "java -Ddold=0.9 -Doracle=remine test.QueryScheduleProbe datasets/C8T1S5I8N5K_seq.txt datasets/C8T1S5I8N5K_eui.txt 0.001 2827 11 every keep-sfx-gf,keep-sfx-gf-l0.5,reset-sfx-gf,remine",
+  "git_commit": "29feb6138b06b24c034bc8edf53cb2a3763966eb",
+  "tree": "clean",
+  "sha256_AlgoPRIncHUSP": "59dc80c43eec17fbfefb8c8f08e8596f43be70e8a0ff5e4b73e2cdaa5d275b25",
+  "sha256_AlgoParRemine": "ed31e48b26eb31e1a6ecb3c067dbaf8f1decc15484bfbad4a7a540643e5eb37b",
+  "sha256_AlgoRHUSPMinerParallel": "b795516d437c8ea8777241771f12a5d36a30edb23340ca7eaebb1b97a8d3b9fd",
+  "sha256_QueryScheduleProbe": "118b436fb41be76a36debb20eb6d6467dead5aff050b8762d98b77559a993e6e",
+  "sha256_seq": "37f8dd5ab5c00d191c8bb54eccab34367d8811c1306ac63d9ce9fe302f7063d9",
+  "sha256_eui": "81c960709e7663d44bf2e0c79afecd76c6409b045415a0f82443b2ee8f46b5b6",
+  "java": "26.0.1+8-34 Oracle Corporation",
+  "os": "Mac OS X 27.0.1 aarch64",
+  "threads": "10",
+  "max_heap_mb": "16384",
+  "started": "2026-10-25T09:07:00+07:00"
+}

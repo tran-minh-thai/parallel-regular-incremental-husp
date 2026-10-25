@@ -1,0 +1,16 @@
+{
+  "kind": "probe (development machine, feasibility only)",
+  "command": "java test.QueryScheduleProbe datasets/SIGN_seq.txt datasets/SIGN_eui.txt 0.005 21 8 every",
+  "git_commit": "7015f09d282c799a66e8828c7cb53ae65ec783f8",
+  "tree": "clean",
+  "sha256_AlgoPRIncHUSP": "cab67f00229c9f5149dd43780aa2326c16adca74ad281822ce0657f11050cea3",
+  "sha256_AlgoParRemine": "ed31e48b26eb31e1a6ecb3c067dbaf8f1decc15484bfbad4a7a540643e5eb37b",
+  "sha256_QueryScheduleProbe": "f2b22fc23af0fb87874769211448776aef50e62f81eeb3724d0688c34b24b4d8",
+  "sha256_seq": "bb610dc06a57f2bfb18ed35ea2ab1213b250b368bcb481f45d35b34a9db1467d",
+  "sha256_eui": "728f185ab13339a7a3af501259e6fe0e30b9aa73474a923c66beddddc02bd173",
+  "java": "26.0.1+8-34 Oracle Corporation",
+  "os": "Mac OS X 27.0.1 aarch64",
+  "threads": "10",
+  "max_heap_mb": "16384",
+  "started": "2026-10-25T08:04:12+07:00"
+}

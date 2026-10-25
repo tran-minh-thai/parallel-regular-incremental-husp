@@ -1,0 +1,9 @@
+kind: probe batch (development machine), replaces 20261025_082423 batch
+git_commit: 046b2b864597829ab43b4d6e01f1c4971e0cfc42
+java: openjdk version "26.0.1" 2026-04-21
+script:
+cd "<repo>"
+L=results-probe/logs
+for spec in "SIGN 21" "LEVIATHAN 175" "BIBLE 1091"; do set -- $spec; t=$(date +%Y%m%d_%H%M%S); java -Xmx16g -cp <build-dir> test.QueryScheduleProbe datasets/$1_seq.txt datasets/$1_eui.txt 0.005 $2 8 every > $L/${t}_$1_k8_every.log 2>&1; echo "rc=$?" >> $L/${t}_$1_k8_every.log; done
+for ft in "0 500" "1 150" "2 150" "3 150"; do set -- $ft; t=$(date +%Y%m%d_%H%M%S); java -Dfault=$1 -Xmx4g -cp <build-dir> test.QueryScheduleStress $2 > $L/${t}_stress$2_fault$1.log 2>&1; echo "rc=$?" >> $L/${t}_stress$2_fault$1.log; done
+echo ALLDONE

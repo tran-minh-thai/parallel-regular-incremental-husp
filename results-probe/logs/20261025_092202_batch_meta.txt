@@ -1,0 +1,9 @@
+kind: randomised exactness check (development machine)
+git_commit: 29feb6138b06b24c034bc8edf53cb2a3763966eb
+tree_src: 0 modified
+java: openjdk version "26.0.1" 2026-04-21
+script:
+cd "<repo>"
+L=results-probe/logs
+for ft in "1 150" "2 150" "3 100" "0 300"; do set -- $ft; t=$(date +%Y%m%d_%H%M%S); java -Dfault=$1 -Xmx4g -cp <build-dir> test.QueryScheduleStress $2 > $L/${t}_stress$2_fault$1.log 2>&1; echo "rc=$?" >> $L/${t}_stress$2_fault$1.log; done
+echo ALLDONE

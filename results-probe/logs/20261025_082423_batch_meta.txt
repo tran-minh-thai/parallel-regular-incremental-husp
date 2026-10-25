@@ -1,0 +1,11 @@
+kind: probe batch (development machine)
+git_commit: 046b2b864597829ab43b4d6e01f1c4971e0cfc42
+tree_src: 0 modified files
+java: openjdk version "26.0.1" 2026-04-21 OpenJDK Runtime Environment (build 26.0.1+8-34) 
+host: Darwin 27.0.0 arm64
+script:
+cd "<repo>"
+L=results-probe/logs
+for f in 0 1 2 3; do t=$(date +%Y%m%d_%H%M%S); java -Dfault=$f -Xmx4g -cp <build-dir> test.QueryScheduleStress 500 > $L/${t}_stress500_fault$f.log 2>&1; echo "rc=$?" >> $L/${t}_stress500_fault$f.log; done
+for spec in "SIGN 21" "LEVIATHAN 175" "BIBLE 1091"; do set -- $spec; t=$(date +%Y%m%d_%H%M%S); java -Xmx16g -cp <build-dir> test.QueryScheduleProbe datasets/$1_seq.txt datasets/$1_eui.txt 0.005 $2 8 every > $L/${t}_$1_k8_every.log 2>&1; echo "rc=$?" >> $L/${t}_$1_k8_every.log; done
+echo ALLDONE

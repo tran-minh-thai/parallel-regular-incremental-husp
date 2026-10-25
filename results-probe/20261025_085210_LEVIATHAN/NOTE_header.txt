@@ -1,0 +1,1 @@
+exactness.csv header is one column short (code at 1fb151c): data rows have 20 fields; field 19 is gap_rejected and field 20 is tracked_after, while the header names field 19 tracked_after. Fields 1-18, including every exactness column, are aligned. Fixed in the next commit; this file is left as written.
