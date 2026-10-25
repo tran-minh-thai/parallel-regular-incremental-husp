@@ -1,0 +1,27 @@
+{
+  "name": "ONLINE-RETAIL-II-H",
+  "builder": "tools/build_stream_datasets.py",
+  "builder_sha256": "3d94c7efda13c2552ae0b06991018040ebed9ca7218bce29ee8d403bc83e3e59",
+  "raw_file": "online_retail_II.xlsx",
+  "raw_sha256": "bcbe73b35f5b7babf197fb0cb983a11f5d9ff929078d4aa53d171b1f2df2e980",
+  "roles": "sequence=calendar hour with an invoice, time order; event=invoice, by invoice time; item=StockCode; utility=round(quantity*price*100); cancellations netted against the latest earlier purchase line with the same customer, code and quantity",
+  "values": "measured",
+  "sequences": 5786,
+  "events": 39549,
+  "item_occurrences": 989929,
+  "distinct_items": 4905,
+  "total_utility": 2005745965,
+  "counts": {
+    "rows": 1067371,
+    "cancellation_lines": 19494,
+    "cancellations_matched": 6984,
+    "dropped_nonpositive_price_or_quantity": 6204,
+    "purchase_lines_removed_by_cancellation": 6984,
+    "dropped_zero_value": 17,
+    "days": 604
+  },
+  "regularity_bound_rule": "7 days of sequences, ceil(7 * N / days)",
+  "regularity_bound_B": 68,
+  "seq_sha256": "cf312cdb3baa15dbebc117b5d345c0d3754ecc64dec00599e50fa96500385f83",
+  "eui_sha256": "5863fa3867809c97a311db50cb9422a5a638d0a82d18bb569bcd3aad0f3d687b"
+}

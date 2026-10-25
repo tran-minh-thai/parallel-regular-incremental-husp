@@ -1,0 +1,23 @@
+{
+  "name": "YOOCHOOSE-BUYS",
+  "builder": "tools/build_stream_datasets.py",
+  "builder_sha256": "3d94c7efda13c2552ae0b06991018040ebed9ca7218bce29ee8d403bc83e3e59",
+  "raw_file": "yoochoose-buys.dat",
+  "raw_sha256": "0c5c0f5084da2ff703c15d7d72298136e4243806adc3e29eccfa920ce3e24e23",
+  "roles": "sequence=session ordered by first purchase time; event=items bought at one timestamp; item=item id; utility=price*quantity",
+  "values": "measured",
+  "sequences": 234300,
+  "events": 533064,
+  "item_occurrences": 540565,
+  "distinct_items": 16004,
+  "total_utility": 1929487461,
+  "counts": {
+    "rows": 1150753,
+    "dropped_nonpositive_price_or_quantity": 610030,
+    "days": 79
+  },
+  "regularity_bound_rule": "sessions per day, ceil(N / days)",
+  "regularity_bound_B": 2966,
+  "seq_sha256": "0a7cbf65ec9165222efe200108b746fde5088d52926945d253cb5bad0ad1d538",
+  "eui_sha256": "65733454b587efc7f7946dca725ae6b314425fa6848da28f46da62ceaba8ab89"
+}

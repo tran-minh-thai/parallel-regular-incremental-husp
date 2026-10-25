@@ -1,0 +1,23 @@
+{
+  "name": "DUNNHUMBY-H",
+  "builder": "tools/build_stream_datasets.py",
+  "builder_sha256": "3d94c7efda13c2552ae0b06991018040ebed9ca7218bce29ee8d403bc83e3e59",
+  "raw_file": "transaction_data.csv",
+  "raw_sha256": "3a685c0729cef664d634486189f774518b84f53cde7cbf701a5963238692b476",
+  "roles": "sequence=(DAY, hour of TRANS_TIME) slot with a basket, time order; event=basket, by TRANS_TIME; item=PRODUCT_ID; utility=round(SALES_VALUE*100)",
+  "values": "measured",
+  "sequences": 15240,
+  "events": 275539,
+  "item_occurrences": 2576815,
+  "distinct_items": 91905,
+  "total_utility": 805744380,
+  "counts": {
+    "rows": 2595732,
+    "dropped_nonpositive_quantity_or_value": 18917,
+    "days": 711
+  },
+  "regularity_bound_rule": "7 days of sequences, ceil(7 * N / days)",
+  "regularity_bound_B": 151,
+  "seq_sha256": "87ef87e049dbab47b6c976b3078570214c34ee51051b8ff28d46189329c8dcad",
+  "eui_sha256": "2b6ab0bac87e753a8a9d23855a923f7aebd0bf9d7969c35c7924be7df68aa59d"
+}
