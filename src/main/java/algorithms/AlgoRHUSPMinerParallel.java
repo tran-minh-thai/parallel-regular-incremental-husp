@@ -176,6 +176,20 @@ public class AlgoRHUSPMinerParallel {
     public boolean windowMode = false;
 
     /**
+     * The window is a contiguous SUFFIX of the database: it starts right after an anchor prefix and
+     * ends at the last sequence. Two boundary quantities then become usable in {@link #windowMode}:
+     * <ul>
+     *   <li>the leading gap measured from the window's start (first local SID + 1) is a LOWER BOUND of
+     *       the true gap, because the previous occurrence, if any, lies before the window; extensions
+     *       start no earlier, so the bound is anti-monotone and pruning on it is sound;</li>
+     *   <li>the trailing gap is the true trailing gap, so the floor prune may also filter items.</li>
+     * </ul>
+     * Without the leading bound, a pattern confined to the last {@code maxRegularity} sequences of a
+     * small window cannot be pruned on regularity at all, which is where small windows explode.
+     */
+    public boolean windowIsSuffix = false;
+
+    /**
      * FLOOR prune for the relaxed modes. The trailing gap as a component can shrink -- a recurrence
      * resets it -- which is why the relaxed modes switch the trailing-gap prune off. But the floor
      * max(inner, trailing) cannot shrink: the same recurrence crystallizes an inner gap at least as
@@ -489,12 +503,13 @@ public class AlgoRHUSPMinerParallel {
                     // boundary periods: from virtual sequence 0 to first occurrence, and from
                     // last occurrence to virtual sequence N (one past the end)
                     int mp = maxPer[it];
-                    if (!windowMode) {
-                        // Leading gap is a TRUE gap only when the data starts at global sequence 0.
+                    if (!windowMode || windowIsSuffix) {
+                        // Leading gap is a TRUE gap only when the data starts at global sequence 0;
+                        // for a suffix window it is a lower bound of the true gap (windowIsSuffix).
                         int head = globalFirst[it] + 1;    // = firstSid + 1, with virtual boundary at 0
                         if (head > mp) mp = head;
                     }
-                    if (!seedMode && !windowMode) {
+                    if ((!seedMode && !windowMode) || (windowIsSuffix && floorPrune)) {
                         // The TRAILING gap shrinks as soon as a later batch contains the item, so it must
                         // not filter items when seeding an incremental miner (see the seedMode javadoc).
                         int tail = numSeq - globalLast[it];    // = N - lastSid
@@ -854,7 +869,7 @@ public class AlgoRHUSPMinerParallel {
             if (useRegPruning) {
                 // windowMode: the leading gap (prevSid == -1) is measured from the WINDOW's start, not
                 // from the true predecessor occurrence in D_old -> it is not a real gap and must not prune.
-                if (!(windowMode && prevSid == -1)) {
+                if (!(windowMode && prevSid == -1 && !windowIsSuffix)) {
                     int gap = (prevSid == -1) ? (s + 1) : (s - prevSid);
                     if (gap > maxRegularity) { prunedRegularityA.increment(); return; }
                 }

@@ -1146,6 +1146,13 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
     public boolean integerDiscoveryThreshold = false;
 
     /**
+     * Tell the engine that the discovery window is a suffix of the database (it always is: the raw
+     * increment since the anchor), so it may prune on the leading-gap lower bound and filter items by
+     * the trailing gap. See {@link AlgoRHUSPMinerParallel#windowIsSuffix}.
+     */
+    public boolean suffixWindowPrune = false;
+
+    /**
      * Deliberate defects for checking that the query-schedule probe can fail (0 = none). Never set
      * outside that probe. 1: discovery threshold one unit too high; 2: anchor reset also drops every
      * answer pattern whose last occurrence lies in the first half of the data; 3: fresh candidates are
@@ -1245,6 +1252,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
             e.useEUCS = true;
             e.boundMode = AlgoRHUSPMinerParallel.BOUND_LA_PEU;
             e.useRegPruning = true;
+            e.windowIsSuffix = suffixWindowPrune && !partitionMine;
             e.windowMode = true;                               // a mid-stream part: neither leading nor
                                                                // trailing gap is a real gap of α in D
             e.floorPrune = floorPruneSeeds && soundCeilingBound();

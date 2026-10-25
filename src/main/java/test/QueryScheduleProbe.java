@@ -31,6 +31,8 @@ import java.util.Map;
  * <ul>
  *   <li>{@code keep}: the proposed miner, anchor fixed at seeding (the reported behaviour);</li>
  *   <li>{@code reset}: the proposed miner, anchor moved to the current prefix after every query;</li>
+ *   <li>suffix {@code -sfx} on either: discovery also prunes on the leading-gap lower bound of the
+ *       suffix window ({@link AlgoPRIncHUSP#suffixWindowPrune});</li>
  *   <li>{@code remine}: the parallel static engine run from scratch at each query only.</li>
  * </ul>
  * All three use the same engine scheduler, so timing differences are not a scheduler artefact.
@@ -59,7 +61,7 @@ public class QueryScheduleProbe {
         int absB = Integer.parseInt(args[3]);
         int k = Integer.parseInt(args[4]);
         String schedule = args[5];
-        String[] policies = (args.length > 6 ? args[6] : "keep,reset,remine").split(",");
+        String[] policies = (args.length > 6 ? args[6] : "keep-sfx,reset-sfx,remine").split(",");
         int threads = Integer.getInteger("threads", Runtime.getRuntime().availableProcessors());
         AlgoPRIncHUSP.FAULT = Integer.getInteger("fault", 0);
         // Declare the bound before any miner is built: ExpConfig switches on the floor prune and the
@@ -161,10 +163,13 @@ public class QueryScheduleProbe {
         IncrementalHUSPMiner m;
         switch (policy) {
             case "keep":
-            case "reset": {
+            case "keep-sfx":
+            case "reset":
+            case "reset-sfx": {
                 AlgoPRIncHUSP p = ExpConfig.newProposed(threads);
                 p.integerDiscoveryThreshold = true;
-                p.anchorPolicy = policy.equals("reset") ? AlgoPRIncHUSP.ANCHOR_RESET : AlgoPRIncHUSP.ANCHOR_KEEP;
+                p.anchorPolicy = policy.startsWith("reset") ? AlgoPRIncHUSP.ANCHOR_RESET : AlgoPRIncHUSP.ANCHOR_KEEP;
+                p.suffixWindowPrune = policy.endsWith("-sfx");
                 m = p;
                 break;
             }
@@ -223,6 +228,7 @@ public class QueryScheduleProbe {
         sb.append(kv("tree", dirty.isEmpty() ? "clean" : "MODIFIED (" + dirty.split("\n").length + " files)")).append(",\n");
         sb.append(kv("sha256_AlgoPRIncHUSP", sha(src + "algorithms/AlgoPRIncHUSP.java"))).append(",\n");
         sb.append(kv("sha256_AlgoParRemine", sha(src + "algorithms/AlgoParRemine.java"))).append(",\n");
+        sb.append(kv("sha256_AlgoRHUSPMinerParallel", sha(src + "algorithms/AlgoRHUSPMinerParallel.java"))).append(",\n");
         sb.append(kv("sha256_QueryScheduleProbe", sha(src + "test/QueryScheduleProbe.java"))).append(",\n");
         sb.append(kv("sha256_seq", sha(seqFile))).append(",\n");
         sb.append(kv("sha256_eui", sha(euiFile))).append(",\n");
