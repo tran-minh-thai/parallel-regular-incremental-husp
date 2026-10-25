@@ -1,0 +1,14 @@
+kind: delta calibration, 300 s limit (DANG_KY_TRUOC_NGAN_SACH_2.md section 5)
+git_commit: 527b3acb3d7ccb4005d6623d561848715deeaee5
+java: openjdk version "26.0.1" 2026-04-21
+script (args: <repo> <build-dir>):
+cd "$1"; OUT="$2"; L=results-probe/logs
+GRID="0.0005 0.001 0.002 0.005 0.01 0.02 0.05"
+for spec in "VS-CHAIN96-CW 17592" "HM-CW 152612"; do
+  set -- $spec; t=$(date +%Y%m%d_%H%M%S); log=$L/${t}_calibrate300_$1.log; rest="$GRID"
+  while [ -n "$rest" ]; do
+    g=$(echo $rest | tr ' ' ','); java -Xmx16g -cp "$OUT" test.CalibrateDelta datasets/$1_seq.txt datasets/$1_eui.txt $2 300 50 5000 $g >> $log 2>&1; rc=$?
+    if [ $rc -eq 3 ]; then first=$(echo $rest | cut -d' ' -f1); rest=$(echo $rest | cut -s -d' ' -f2-); echo "(restart after timeout at $first)" >> $log; else break; fi
+  done; echo "rc=$rc" >> $log
+done
+echo ALLDONE

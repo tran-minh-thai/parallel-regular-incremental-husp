@@ -1,0 +1,10 @@
+dataset,policy,batches,schedule,fault,query,after_batch,n_seqs,oracle_size,returned,missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,gap_rejected,tracked_after,action,r,kept_on_abort
+SIGN,remine-nogc,4,every,0,0,1,366,4723,4723,0,0,0,0,,,,,,,,,
+SIGN,remine-nogc,4,every,0,1,2,549,1522,1522,0,0,0,0,,,,,,,,,
+SIGN,remine-nogc,4,every,0,2,3,730,830,830,0,0,0,0,,,,,,,,,
+SIGN,remine-nogc,4,every,0,0,1,366,4723,4723,0,0,0,0,,,,,,,,,
+SIGN,remine-nogc,4,every,0,1,2,549,1522,1522,0,0,0,0,,,,,,,,,
+SIGN,remine-nogc,4,every,0,2,3,730,830,830,0,0,0,0,,,,,,,,,
+SIGN,remine-nogc,4,every,0,0,1,366,4723,4723,0,0,0,0,,,,,,,,,
+SIGN,remine-nogc,4,every,0,1,2,549,1522,1522,0,0,0,0,,,,,,,,,
+SIGN,remine-nogc,4,every,0,2,3,730,830,830,0,0,0,0,,,,,,,,,

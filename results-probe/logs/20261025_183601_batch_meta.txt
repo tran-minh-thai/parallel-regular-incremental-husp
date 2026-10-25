@@ -1,0 +1,11 @@
+kind: randomised exactness check for BUD2, rerun after the H6-H7 batch (development machine)
+git_commit: 1b6bfb24d8af1db009dd8188243bb8e0a429767b
+tree_src: 0 modified
+java: openjdk version "26.0.1" 2026-04-21
+script (args: <repo> <build-dir>):
+cd "$1"; OUT="$2"; L=results-probe/logs; P="-Dpolicies=bud2-c0,bud2-c0.001,bud2-c1,bud2-c1000000000"
+for opts in "-Dfault=0" "-DforceRebuildAbort=true" "-DforceMidCandidateAbort=true" "-Dfault=5" "-DforceMidCandidateAbort=true -Dfault=6"; do
+  tag=$(echo "$opts" | tr ' =' '__' | tr -d '-'); t=$(date +%Y%m%d_%H%M%S); log=$L/${t}_stress150_bud2_${tag}.log
+  java -Xmx4g $P $opts -cp "$OUT" test.QueryScheduleStress 150 > $log 2>&1; echo "rc=$?" >> $log
+done
+echo ALLDONE

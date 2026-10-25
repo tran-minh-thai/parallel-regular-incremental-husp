@@ -1,0 +1,81 @@
+== VS-CHAIN96-CW dOld=0.9 run=20261025_154603_VS-CHAIN96-CW
+   remine-nogc       queries=10/10 disagreeing=0 finished=True total_ms=484780
+   bud2              queries=10/10 disagreeing=0 finished=True total_ms=903596
+   keep-sfx-gf-nogc  queries=0/10 disagreeing=0 finished=False total_ms=0
+   BUD2 actions: discover=0 remine=1 aborted=9 skipped=0 kept_on_abort=0
+   H6 9/9 queries within bound, worst cost/bound=1.04
+   H7b BUD2=903596 F=484780 ratio=1.86 -> FAIL
+== VS-CHAIN96-CW dOld=0.5 run=20261025_162411_VS-CHAIN96-CW
+   remine-nogc       queries=20/20 disagreeing=0 finished=True total_ms=644389
+   bud2              queries=20/20 disagreeing=0 finished=True total_ms=299559
+   keep-sfx-gf-nogc  queries=0/20 disagreeing=0 finished=False total_ms=0
+   BUD2 actions: discover=17 remine=1 aborted=2 skipped=0 kept_on_abort=0
+   H6 19/19 queries within bound, worst cost/bound=1.01
+   H7b BUD2=299559 F=644389 ratio=0.46 -> PASS
+== ONLINE-RETAIL-II-H dOld=0.5 run=20261025_165903_ONLINE-RETAIL-II-H
+   remine-nogc       queries=20/20 disagreeing=0 finished=True total_ms=1368
+   bud2              queries=20/20 disagreeing=0 finished=True total_ms=3663
+   keep-sfx-gf-nogc  queries=0/20 disagreeing=0 finished=False total_ms=0
+   BUD2 actions: discover=0 remine=1 aborted=19 skipped=0 kept_on_abort=0
+   H6 violation q1: cost=296 bound=201 (F=93 Fhat=108 action=aborted)
+   H6 18/19 queries within bound, worst cost/bound=1.47
+   H7a (K unfinished) BUD2=3663 F=1368 ratio=2.68 -> FAIL
+== ONLINE-RETAIL-II-H dOld=0.9 run=20261025_171413_ONLINE-RETAIL-II-H
+   remine-nogc       queries=10/10 disagreeing=0 finished=True total_ms=619
+   bud2              queries=10/10 disagreeing=0 finished=True total_ms=2472
+   keep-sfx-gf-nogc  queries=0/10 disagreeing=0 finished=False total_ms=0
+   BUD2 actions: discover=0 remine=1 aborted=9 skipped=0 kept_on_abort=0
+   H6 violation q1: cost=273 bound=129 (F=66 Fhat=63 action=aborted)
+   H6 violation q2: cost=280 bound=122 (F=60 Fhat=62 action=aborted)
+   H6 violation q3: cost=295 bound=120 (F=59 Fhat=61 action=aborted)
+   H6 violation q6: cost=209 bound=116 (F=60 Fhat=56 action=aborted)
+   H6 violation q7: cost=225 bound=120 (F=61 Fhat=59 action=aborted)
+   H6 violation q8: cost=249 bound=123 (F=65 Fhat=58 action=aborted)
+   H6 violation q9: cost=263 bound=131 (F=66 Fhat=65 action=aborted)
+   H6 2/9 queries within bound, worst cost/bound=2.46
+   H7a (K unfinished) BUD2=2472 F=619 ratio=3.99 -> FAIL
+== DUNNHUMBY-H dOld=0.5 run=20261025_172442_DUNNHUMBY-H
+   remine-nogc       queries=20/20 disagreeing=0 finished=True total_ms=1747
+   bud2              queries=20/20 disagreeing=0 finished=True total_ms=4549
+   keep-sfx-gf-nogc  queries=0/20 disagreeing=0 finished=False total_ms=0
+   BUD2 actions: discover=0 remine=1 aborted=19 skipped=0 kept_on_abort=0
+   H6 violation q1: cost=238 bound=130 (F=64 Fhat=66 action=aborted)
+   H6 18/19 queries within bound, worst cost/bound=1.83
+   H7a (K unfinished) BUD2=4549 F=1747 ratio=2.60 -> FAIL
+== DUNNHUMBY-H dOld=0.9 run=20261025_173955_DUNNHUMBY-H
+   remine-nogc       queries=10/10 disagreeing=0 finished=True total_ms=1490
+   bud2              queries=10/10 disagreeing=0 finished=True total_ms=3794
+   keep-sfx-gf-nogc  queries=0/10 disagreeing=0 finished=False total_ms=0
+   BUD2 actions: discover=0 remine=1 aborted=9 skipped=0 kept_on_abort=0
+   H6 violation q1: cost=416 bound=301 (F=150 Fhat=151 action=aborted)
+   H6 8/9 queries within bound, worst cost/bound=1.38
+   H7a (K unfinished) BUD2=3794 F=1490 ratio=2.55 -> FAIL
+== FIFA dOld=0.5 run=20261025_174409_FIFA
+   remine-nogc       queries=19/20 disagreeing=0 finished=False total_ms=852719
+   bud2              queries=0/20 disagreeing=0 finished=False total_ms=0
+   keep-sfx-gf-nogc  queries=0/20 disagreeing=0 finished=False total_ms=0
+   BUD2 actions: discover=0 remine=0 aborted=0 skipped=0 kept_on_abort=0
+   H6 0/0 queries within bound, worst cost/bound=0.00
+== FIFA dOld=0.9 run=20261025_180900_FIFA
+   remine-nogc       queries=10/10 disagreeing=0 finished=True total_ms=454659
+   bud2              queries=10/10 disagreeing=0 finished=True total_ms=101866
+   keep-sfx-gf-nogc  queries=10/10 disagreeing=0 finished=True total_ms=74220
+   BUD2 actions: discover=9 remine=1 aborted=0 skipped=0 kept_on_abort=0
+   H6 9/9 queries within bound, worst cost/bound=0.03
+== LEVIATHAN dOld=0.25 run=20261025_182809_LEVIATHAN
+   remine-nogc       queries=7/7 disagreeing=0 finished=True total_ms=1824
+   bud2              queries=7/7 disagreeing=0 finished=True total_ms=3753
+   keep-sfx-gf-nogc  queries=7/7 disagreeing=0 finished=True total_ms=18454
+   BUD2 actions: discover=0 remine=1 aborted=6 skipped=0 kept_on_abort=0
+   H6 6/6 queries within bound, worst cost/bound=1.20
+   H7a BUD2=3753 K=18454 F=1824 ratio=2.06 -> FAIL
+== BIBLE dOld=0.25 run=20261025_183009_BIBLE
+   remine-nogc       queries=7/7 disagreeing=0 finished=True total_ms=9922
+   bud2              queries=7/7 disagreeing=0 finished=True total_ms=16740
+   keep-sfx-gf-nogc  queries=7/7 disagreeing=0 finished=True total_ms=14616
+   BUD2 actions: discover=1 remine=1 aborted=4 skipped=1 kept_on_abort=1248
+   H6 6/6 queries within bound, worst cost/bound=1.03
+   H7a BUD2=16740 K=14616 F=9922 ratio=1.69 -> FAIL
+H6: 95/105 (90.5%) -> FAIL
+H7a: 0/6 -> FAIL
+H7b: 1/2 -> FAIL

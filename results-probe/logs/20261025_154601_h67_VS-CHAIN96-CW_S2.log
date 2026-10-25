@@ -1,0 +1,80 @@
+VS-CHAIN96-CW N=650903 delta=0.0005 B=17592 k=11 dOld=0.9 schedule=every threads=10 fault=0 reference=parallel engine (NOT independent) -> results-probe/20261025_154603_VS-CHAIN96-CW
+  oracle after batch 1: N=592322 minUtil=3360555 patterns=1529
+  oracle after batch 2: N=598831 minUtil=3397512 patterns=1534
+  oracle after batch 3: N=605340 minUtil=3432786 patterns=1533
+  oracle after batch 4: N=611849 minUtil=3467601 patterns=1532
+  oracle after batch 5: N=618358 minUtil=3499232 patterns=1536
+  oracle after batch 6: N=624867 minUtil=3531262 patterns=1537
+  oracle after batch 7: N=631376 minUtil=3565892 patterns=1532
+  oracle after batch 8: N=637885 minUtil=3601579 patterns=1528
+  oracle after batch 9: N=644394 minUtil=3633494 patterns=1524
+  oracle after batch 10: N=650903 minUtil=3660918 patterns=1518
+  remine-nogc q0  after b1  N=592322 oracle=1529   got=1529   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=45759ms
+  remine-nogc q1  after b2  N=598831 oracle=1534   got=1534   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=43054ms
+  remine-nogc q2  after b3  N=605340 oracle=1533   got=1533   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=44262ms
+  remine-nogc q3  after b4  N=611849 oracle=1532   got=1532   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=44737ms
+  remine-nogc q4  after b5  N=618358 oracle=1536   got=1536   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=47978ms
+  remine-nogc q5  after b6  N=624867 oracle=1537   got=1537   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=48203ms
+  remine-nogc q6  after b7  N=631376 oracle=1532   got=1532   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=51685ms
+  remine-nogc q7  after b8  N=637885 oracle=1528   got=1528   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=54914ms
+  remine-nogc q8  after b9  N=644394 oracle=1524   got=1524   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=52207ms
+  remine-nogc q9  after b10 N=650903 oracle=1518   got=1518   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=51981ms
+  bud2   q0  after b1  N=592322 oracle=1529   got=1529   miss=0 extra=0 uErr=0 pErr=0  ingest=70ms query=45638ms  [REMINE r=3.3 thr=3360555 cand=1529 fresh=0 gapRej=0 mine=45638ms rebuild=0ms tracked=1529]
+  bud2   q1  after b2  N=598831 oracle=1534   got=1534   miss=0 extra=0 uErr=0 pErr=0  ingest=15ms query=90635ms  [ABORTED+REMINE r=6.5 thr=3397512 cand=1534 fresh=0 gapRej=0 mine=44849ms rebuild=0ms tracked=1528]
+  bud2   q2  after b3  N=605340 oracle=1533   got=1533   miss=0 extra=0 uErr=0 pErr=0  ingest=42ms query=92481ms  [ABORTED+REMINE r=9.8 thr=3432786 cand=1533 fresh=0 gapRej=0 mine=47569ms rebuild=0ms tracked=1528]
+  bud2   q3  after b4  N=611849 oracle=1532   got=1532   miss=0 extra=0 uErr=0 pErr=0  ingest=5ms query=93248ms  [ABORTED+REMINE r=13.0 thr=3467601 cand=1532 fresh=0 gapRej=0 mine=45623ms rebuild=0ms tracked=1528]
+  bud2   q4  after b5  N=618358 oracle=1536   got=1536   miss=0 extra=0 uErr=0 pErr=0  ingest=5ms query=89796ms  [ABORTED+REMINE r=16.3 thr=3499232 cand=1536 fresh=0 gapRej=0 mine=44121ms rebuild=0ms tracked=1528]
+  bud2   q5  after b6  N=624867 oracle=1537   got=1537   miss=0 extra=0 uErr=0 pErr=0  ingest=4ms query=90616ms  [ABORTED+REMINE r=19.5 thr=3531262 cand=1537 fresh=0 gapRej=0 mine=46442ms rebuild=0ms tracked=1528]
+  bud2   q6  after b7  N=631376 oracle=1532   got=1532   miss=0 extra=0 uErr=0 pErr=0  ingest=4ms query=90717ms  [ABORTED+REMINE r=22.8 thr=3565892 cand=1532 fresh=0 gapRej=0 mine=44224ms rebuild=0ms tracked=1528]
+  bud2   q7  after b8  N=637885 oracle=1528   got=1528   miss=0 extra=0 uErr=0 pErr=0  ingest=3ms query=89184ms  [ABORTED+REMINE r=26.0 thr=3601579 cand=1528 fresh=0 gapRej=0 mine=44911ms rebuild=0ms tracked=1528]
+  bud2   q8  after b9  N=644394 oracle=1524   got=1524   miss=0 extra=0 uErr=0 pErr=0  ingest=3ms query=90565ms  [ABORTED+REMINE r=29.3 thr=3633494 cand=1524 fresh=0 gapRej=0 mine=45607ms rebuild=0ms tracked=1527]
+  bud2   q9  after b10 N=650903 oracle=1518   got=1518   miss=0 extra=0 uErr=0 pErr=0  ingest=3ms query=91251ms  [ABORTED+REMINE r=32.5 thr=3660918 cand=1518 fresh=0 gapRej=0 mine=45595ms rebuild=0ms tracked=1527]
+Exception in thread "main" java.lang.OutOfMemoryError
+	at java.base/jdk.internal.reflect.DirectConstructorHandleAccessor.newInstance(DirectConstructorHandleAccessor.java:62)
+	at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:499)
+	at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:483)
+	at java.base/java.util.concurrent.ForkJoinTask.getException(ForkJoinTask.java:564)
+	at java.base/java.util.concurrent.ForkJoinTask.reportException(ForkJoinTask.java:580)
+	at java.base/java.util.concurrent.ForkJoinTask.join(ForkJoinTask.java:670)
+	at java.base/java.util.concurrent.ForkJoinPool.invoke(ForkJoinPool.java:3149)
+	at algorithms.AlgoRHUSPMinerParallel.mineCore(AlgoRHUSPMinerParallel.java:352)
+	at algorithms.AlgoRHUSPMinerParallel.runAlgorithmInMemory(AlgoRHUSPMinerParallel.java:320)
+	at algorithms.AlgoPRIncHUSP.runEngineWithinBudget(AlgoPRIncHUSP.java:1648)
+	at algorithms.AlgoPRIncHUSP.discoverFrom(AlgoPRIncHUSP.java:1472)
+	at algorithms.AlgoPRIncHUSP.reconcile(AlgoPRIncHUSP.java:1283)
+	at algorithms.AlgoPRIncHUSP.getHighUtilityPatterns(AlgoPRIncHUSP.java:1264)
+	at test.QueryScheduleProbe.main(QueryScheduleProbe.java:153)
+Caused by: java.lang.OutOfMemoryError: Java heap space
+	at algorithms.AlgoRHUSPMinerParallel$InstanceList.<init>(AlgoRHUSPMinerParallel.java:746)
+	at algorithms.AlgoRHUSPMinerParallel.processOne(AlgoRHUSPMinerParallel.java:865)
+	at algorithms.AlgoRHUSPMinerParallel.mine(AlgoRHUSPMinerParallel.java:1013)
+	at algorithms.AlgoRHUSPMinerParallel.processOne(AlgoRHUSPMinerParallel.java:947)
+	at algorithms.AlgoRHUSPMinerParallel.mine(AlgoRHUSPMinerParallel.java:1013)
+	at algorithms.AlgoRHUSPMinerParallel.processOne(AlgoRHUSPMinerParallel.java:947)
+	at algorithms.AlgoRHUSPMinerParallel.mine(AlgoRHUSPMinerParallel.java:1013)
+	at algorithms.AlgoRHUSPMinerParallel.processOne(AlgoRHUSPMinerParallel.java:947)
+	at algorithms.AlgoRHUSPMinerParallel.mine(AlgoRHUSPMinerParallel.java:1013)
+	at algorithms.AlgoRHUSPMinerParallel.processOne(AlgoRHUSPMinerParallel.java:947)
+	at algorithms.AlgoRHUSPMinerParallel.mine(AlgoRHUSPMinerParallel.java:1013)
+	at algorithms.AlgoRHUSPMinerParallel.processOne(AlgoRHUSPMinerParallel.java:947)
+	at algorithms.AlgoRHUSPMinerParallel.mine(AlgoRHUSPMinerParallel.java:1024)
+	at algorithms.AlgoRHUSPMinerParallel.processOne(AlgoRHUSPMinerParallel.java:947)
+	at algorithms.AlgoRHUSPMinerParallel.mine(AlgoRHUSPMinerParallel.java:1013)
+	at algorithms.AlgoRHUSPMinerParallel.processOne(AlgoRHUSPMinerParallel.java:947)
+	at algorithms.AlgoRHUSPMinerParallel.mine(AlgoRHUSPMinerParallel.java:1024)
+	at algorithms.AlgoRHUSPMinerParallel.processOne(AlgoRHUSPMinerParallel.java:947)
+	at algorithms.AlgoRHUSPMinerParallel.mine(AlgoRHUSPMinerParallel.java:1013)
+	at algorithms.AlgoRHUSPMinerParallel.processOne(AlgoRHUSPMinerParallel.java:947)
+	at algorithms.AlgoRHUSPMinerParallel.mine(AlgoRHUSPMinerParallel.java:1013)
+	at algorithms.AlgoRHUSPMinerParallel.processOne(AlgoRHUSPMinerParallel.java:947)
+	at algorithms.AlgoRHUSPMinerParallel.mine(AlgoRHUSPMinerParallel.java:1024)
+	at algorithms.AlgoRHUSPMinerParallel.processOne(AlgoRHUSPMinerParallel.java:947)
+	at algorithms.AlgoRHUSPMinerParallel.mine(AlgoRHUSPMinerParallel.java:1013)
+	at algorithms.AlgoRHUSPMinerParallel.processOne(AlgoRHUSPMinerParallel.java:947)
+	at algorithms.AlgoRHUSPMinerParallel.mine(AlgoRHUSPMinerParallel.java:1013)
+	at algorithms.AlgoRHUSPMinerParallel.processOne(AlgoRHUSPMinerParallel.java:947)
+	at algorithms.AlgoRHUSPMinerParallel.mine(AlgoRHUSPMinerParallel.java:1013)
+	at algorithms.AlgoRHUSPMinerParallel.processOne(AlgoRHUSPMinerParallel.java:947)
+	at algorithms.AlgoRHUSPMinerParallel.mine(AlgoRHUSPMinerParallel.java:1013)
+	at algorithms.AlgoRHUSPMinerParallel.processOne(AlgoRHUSPMinerParallel.java:947)
+rc=1

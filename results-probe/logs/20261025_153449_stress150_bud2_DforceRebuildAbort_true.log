@@ -1,0 +1,3 @@
+forceRebuildAbort=true forceMidCandidateAbort=false aborts-in-mining=209 aborts-in-rebuild=3829 half-built=0
+fault=0 trials=150 sequences-with-multi-item-events=5384 compared-queries=2708 with-non-empty-oracle=2664 failing=0 {}
+rc=0

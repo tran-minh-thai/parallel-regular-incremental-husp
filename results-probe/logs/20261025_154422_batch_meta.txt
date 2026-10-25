@@ -1,0 +1,18 @@
+kind: H6-H7 batch (development machine), DANG_KY_TRUOC_NGAN_SACH_2.md with its amendment
+git_commit: 1b6bfb24d8af1db009dd8188243bb8e0a429767b  (updated before launch: watchdog fix)
+tree_src: 0 modified
+java: openjdk version "26.0.1" 2026-04-21
+script (args: <repo> <build-dir>):
+cd "$1"; OUT="$2"; L=results-probe/logs
+run() { name=$1; delta=$2; B=$3; sid=$4; dold=$5; k=$6; pols=$7; ref=$8; lim=$9
+  t=$(date +%Y%m%d_%H%M%S); log=$L/${t}_h67_${name}_${sid}.log
+  java -Ddold=$dold $ref -Dlimit=$lim -Xmx16g -cp "$OUT" test.QueryScheduleProbe datasets/${name}_seq.txt datasets/${name}_eui.txt $delta $B $k every $pols > $log 2>&1
+  echo "rc=$?" >> $log; }
+P=remine-nogc,bud2,keep-sfx-gf-nogc
+run VS-CHAIN96-CW 0.0005 17592 S2 0.9 11 $P -Doracle=remine 3600
+run VS-CHAIN96-CW 0.0005 17592 S1 0.5 21 $P -Doracle=remine 3600
+for ds in "ONLINE-RETAIL-II-H 0.001 68" "DUNNHUMBY-H 0.0005 151" "FIFA 0.04 6135"; do
+  for sch in "S1 0.5 21" "S2 0.9 11"; do run $ds $sch $P -Doracle=remine 900; done
+done
+for ds in "LEVIATHAN 0.005 175" "BIBLE 0.005 1091"; do run $ds S0 0.25 8 $P "" 900; done
+echo ALLDONE

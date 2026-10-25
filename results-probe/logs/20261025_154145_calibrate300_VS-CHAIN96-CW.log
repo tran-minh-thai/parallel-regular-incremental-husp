@@ -1,0 +1,4 @@
+VS-CHAIN96-CW N=650903 B=17592 limit=300s band=[50,5000] threads=10
+delta=0.0005 time=74716 ms patterns=1518 ACCEPT
+chosen delta=0.0005
+rc=0

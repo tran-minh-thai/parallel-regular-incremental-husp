@@ -1,0 +1,10 @@
+HM-CW N=8088422 B=152612 limit=300s band=[50,5000] threads=10
+delta=0.0005 time=3642 ms patterns=8 reject
+delta=0.001 time=2880 ms patterns=1 reject
+delta=0.002 time=2358 ms patterns=0 reject
+delta=0.005 time=2156 ms patterns=0 reject
+delta=0.01 time=2142 ms patterns=0 reject
+delta=0.02 time=2165 ms patterns=0 reject
+delta=0.05 time=2152 ms patterns=0 reject
+chosen delta=NONE
+rc=0

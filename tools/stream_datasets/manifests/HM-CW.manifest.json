@@ -1,0 +1,22 @@
+{
+  "name": "HM-CW",
+  "builder": "tools/build_stream_datasets.py",
+  "builder_sha256": "fbb82ef5df27c33277165f36eb5f4fb3aa359e0e9c7e20725a68fe97fdafbaa8",
+  "raw_file": "transactions_train.csv",
+  "raw_sha256": "fff5e3b35c1b26016aa0bf2231be9525bc766eed32c94f1653420b465aef84fa",
+  "roles": "sequence=(customer, ISO week), ordered by week then customer id; event=one purchase day of that customer in the week; item=article_id; utility=round(price*1e6) per row (one row = one unit), summed per item and day; the price column is scaled by an undisclosed constant",
+  "values": "measured",
+  "sequences": 8088422,
+  "events": 9080179,
+  "item_occurrences": 28575395,
+  "distinct_items": 104547,
+  "total_utility": 884646511241,
+  "counts": {
+    "rows": 31788324,
+    "weeks": 106
+  },
+  "regularity_bound_rule": "2 weeks of sequences, ceil(2 * N / weeks)",
+  "regularity_bound_B": 152612,
+  "seq_sha256": "939231c6a37be126507b69937aa8a7662d71041499655c3e2b1023f5a8ccdcc7",
+  "eui_sha256": "cda39f4e7170c86dca7d5c79289a8785c935284cb9013cbbe03ef4ad98c3f091"
+}

@@ -1,0 +1,10 @@
+dataset,policy,batches,schedule,fault,query,after_batch,ingest_ms,query_ms,discovery_mine_ms,rebuild_ms,seed_ms
+SIGN,remine-nogc,4,every,0,0,1,0,344,,,0
+SIGN,remine-nogc,4,every,0,1,2,0,74,,,
+SIGN,remine-nogc,4,every,0,2,3,0,48,,,
+SIGN,remine-nogc,4,every,0,0,1,0,58,,,0
+SIGN,remine-nogc,4,every,0,1,2,0,40,,,
+SIGN,remine-nogc,4,every,0,2,3,0,36,,,
+SIGN,remine-nogc,4,every,0,0,1,0,57,,,0
+SIGN,remine-nogc,4,every,0,1,2,0,32,,,
+SIGN,remine-nogc,4,every,0,2,3,0,30,,,

@@ -1,0 +1,43 @@
+{
+  "name": "VS-CHAIN96-CW",
+  "builder": "tools/build_stream_datasets.py",
+  "builder_sha256": "fbb82ef5df27c33277165f36eb5f4fb3aa359e0e9c7e20725a68fe97fdafbaa8",
+  "raw_file": "transactions.csv.gz",
+  "raw_sha256": "75cc4fa0d0006b9c43454e3dc1dea502b297ed5c75f3d679aae1df1acf633303",
+  "roles": "one chain (96); sequence=(customer, ISO week), ordered by week then customer id; event=one purchase day; item=category|company|brand; utility=round(purchaseamount*100)",
+  "values": "measured",
+  "sequences": 650903,
+  "events": 1234092,
+  "item_occurrences": 13983149,
+  "distinct_items": 18196,
+  "total_utility": 7321835738,
+  "counts": {
+    "rows": 349655789,
+    "rows_in_chain": 15955983,
+    "dropped_nonpositive_quantity_or_amount": 1205103,
+    "weeks": 74
+  },
+  "regularity_bound_rule": "2 weeks of sequences, ceil(2 * N / weeks)",
+  "regularity_bound_B": 17592,
+  "seq_sha256": "8f8287a7c24f8337b8c41a9df64e9e1e9fcf795e24628e2846cf5af49acc6f83",
+  "eui_sha256": "f19cfa96f54476c11f4c98f5cc073bf3cbe6860cd678dba9bcfe3bcb41eea08a"
+}
+      411.02 real       404.37 user         4.07 sys
+          2968928256  maximum resident set size
+                   0  average shared memory size
+                   0  average unshared data size
+                   0  average unshared stack size
+              182407  page reclaims
+                  83  page faults
+                   0  swaps
+                   0  block input operations
+                   0  block output operations
+                   0  messages sent
+                   0  messages received
+                   0  signals received
+                  26  voluntary context switches
+              236007  involuntary context switches
+       4910815722876  instructions retired
+        908801952434  cycles elapsed
+          2959837704  peak memory footprint
+BUILDDONE

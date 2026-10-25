@@ -1,0 +1,48 @@
+DUNNHUMBY-H N=15240 delta=0.0005 B=151 k=11 dOld=0.9 schedule=every threads=10 fault=0 reference=parallel engine (NOT independent) -> results-probe/20261025_173955_DUNNHUMBY-H
+  oracle after batch 1: N=13868 minUtil=360715 patterns=95
+  oracle after batch 2: N=14020 minUtil=365919 patterns=95
+  oracle after batch 3: N=14172 minUtil=370616 patterns=95
+  oracle after batch 4: N=14324 minUtil=375016 patterns=95
+  oracle after batch 5: N=14476 minUtil=379549 patterns=94
+  oracle after batch 6: N=14628 minUtil=384196 patterns=94
+  oracle after batch 7: N=14780 minUtil=389108 patterns=93
+  oracle after batch 8: N=14932 minUtil=394139 patterns=94
+  oracle after batch 9: N=15084 minUtil=398399 patterns=93
+  oracle after batch 10: N=15240 minUtil=402873 patterns=93
+  remine-nogc q0  after b1  N=13868  oracle=95     got=95     miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=135ms
+  remine-nogc q1  after b2  N=14020  oracle=95     got=95     miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=150ms
+  remine-nogc q2  after b3  N=14172  oracle=95     got=95     miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=143ms
+  remine-nogc q3  after b4  N=14324  oracle=95     got=95     miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=151ms
+  remine-nogc q4  after b5  N=14476  oracle=94     got=94     miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=134ms
+  remine-nogc q5  after b6  N=14628  oracle=94     got=94     miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=161ms
+  remine-nogc q6  after b7  N=14780  oracle=93     got=93     miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=144ms
+  remine-nogc q7  after b8  N=14932  oracle=94     got=94     miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=163ms
+  remine-nogc q8  after b9  N=15084  oracle=93     got=93     miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=157ms
+  remine-nogc q9  after b10 N=15240  oracle=93     got=93     miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=152ms
+  bud2   q0  after b1  N=13868  oracle=95     got=95     miss=0 extra=0 uErr=0 pErr=0  ingest=30ms query=151ms  [REMINE r=0.1 thr=360715 cand=95 fresh=0 gapRej=0 mine=151ms rebuild=0ms tracked=95]
+  bud2   q1  after b2  N=14020  oracle=95     got=95     miss=0 extra=0 uErr=0 pErr=0  ingest=3ms query=416ms  [ABORTED+REMINE r=0.2 thr=365919 cand=95 fresh=0 gapRej=0 mine=130ms rebuild=0ms tracked=95]
+  bud2   q2  after b3  N=14172  oracle=95     got=95     miss=0 extra=0 uErr=0 pErr=0  ingest=3ms query=363ms  [ABORTED+REMINE r=0.2 thr=370616 cand=95 fresh=0 gapRej=0 mine=148ms rebuild=0ms tracked=95]
+  bud2   q3  after b4  N=14324  oracle=95     got=95     miss=0 extra=0 uErr=0 pErr=0  ingest=3ms query=360ms  [ABORTED+REMINE r=0.3 thr=375016 cand=95 fresh=0 gapRej=0 mine=143ms rebuild=0ms tracked=95]
+  bud2   q4  after b5  N=14476  oracle=94     got=94     miss=0 extra=0 uErr=0 pErr=0  ingest=3ms query=325ms  [ABORTED+REMINE r=0.4 thr=379549 cand=94 fresh=0 gapRej=0 mine=126ms rebuild=0ms tracked=94]
+  bud2   q5  after b6  N=14628  oracle=94     got=94     miss=0 extra=0 uErr=0 pErr=0  ingest=3ms query=373ms  [ABORTED+REMINE r=0.5 thr=384196 cand=94 fresh=0 gapRej=0 mine=173ms rebuild=0ms tracked=94]
+  bud2   q6  after b7  N=14780  oracle=93     got=93     miss=0 extra=0 uErr=0 pErr=0  ingest=2ms query=401ms  [ABORTED+REMINE r=0.5 thr=389108 cand=93 fresh=0 gapRej=0 mine=194ms rebuild=0ms tracked=94]
+  bud2   q7  after b8  N=14932  oracle=94     got=94     miss=0 extra=0 uErr=0 pErr=0  ingest=1ms query=363ms  [ABORTED+REMINE r=0.6 thr=394139 cand=94 fresh=0 gapRej=0 mine=140ms rebuild=0ms tracked=94]
+  bud2   q8  after b9  N=15084  oracle=93     got=93     miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=312ms  [ABORTED+REMINE r=0.7 thr=398399 cand=93 fresh=0 gapRej=0 mine=138ms rebuild=0ms tracked=94]
+  bud2   q9  after b10 N=15240  oracle=93     got=93     miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=341ms  [ABORTED+REMINE r=0.8 thr=402873 cand=93 fresh=0 gapRej=0 mine=158ms rebuild=0ms tracked=94]
+Exception in thread "main" java.lang.OutOfMemoryError
+	at java.base/jdk.internal.reflect.DirectConstructorHandleAccessor.newInstance(DirectConstructorHandleAccessor.java:62)
+	at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:499)
+	at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:483)
+	at java.base/java.util.concurrent.ForkJoinTask.getException(ForkJoinTask.java:564)
+	at java.base/java.util.concurrent.ForkJoinTask.reportException(ForkJoinTask.java:580)
+	at java.base/java.util.concurrent.ForkJoinTask.join(ForkJoinTask.java:670)
+	at java.base/java.util.concurrent.ForkJoinPool.invoke(ForkJoinPool.java:3149)
+	at algorithms.AlgoRHUSPMinerParallel.mineCore(AlgoRHUSPMinerParallel.java:352)
+	at algorithms.AlgoRHUSPMinerParallel.runAlgorithmInMemory(AlgoRHUSPMinerParallel.java:320)
+	at algorithms.AlgoPRIncHUSP.runEngineWithinBudget(AlgoPRIncHUSP.java:1648)
+	at algorithms.AlgoPRIncHUSP.discoverFrom(AlgoPRIncHUSP.java:1472)
+	at algorithms.AlgoPRIncHUSP.reconcile(AlgoPRIncHUSP.java:1283)
+	at algorithms.AlgoPRIncHUSP.getHighUtilityPatterns(AlgoPRIncHUSP.java:1264)
+	at test.QueryScheduleProbe.main(QueryScheduleProbe.java:153)
+Caused by: java.lang.OutOfMemoryError: Java heap space
+rc=1

@@ -1,0 +1,17 @@
+{
+  "kind": "probe (development machine, feasibility only)",
+  "command": "java -Dlimit=1 test.QueryScheduleProbe datasets/SIGN_seq.txt datasets/SIGN_eui.txt 0.005 21 4 every remine-nogc,remine-nogc,remine-nogc",
+  "git_commit": "527b3acb3d7ccb4005d6623d561848715deeaee5",
+  "tree": "MODIFIED (1 files)",
+  "sha256_AlgoPRIncHUSP": "109135603a1bde9bc65cdc643fce93afa932cfbfb2ef2dee7d980e7abbe451b8",
+  "sha256_AlgoParRemine": "1c2d15b22aa6bef9a6bc5f24022edb6b4b564bba984c6cd07f932e6c335364e4",
+  "sha256_AlgoRHUSPMinerParallel": "01f3ff33a00c7d5c70916d13f122345e69f420567eeb79116e1fab88518800db",
+  "sha256_QueryScheduleProbe": "eca6d0b2c146951a14308b2f745d16a1fc6da2d0657b2854ef331dda239d0dd2",
+  "sha256_seq": "bb610dc06a57f2bfb18ed35ea2ab1213b250b368bcb481f45d35b34a9db1467d",
+  "sha256_eui": "728f185ab13339a7a3af501259e6fe0e30b9aa73474a923c66beddddc02bd173",
+  "java": "26.0.1+8-34 Oracle Corporation",
+  "os": "Mac OS X 27.0.1 aarch64",
+  "threads": "10",
+  "max_heap_mb": "4096",
+  "started": "2026-10-25T15:44:56+07:00"
+}

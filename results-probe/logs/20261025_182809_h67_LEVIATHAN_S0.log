@@ -1,0 +1,31 @@
+LEVIATHAN N=5834 delta=0.005 B=175 k=8 dOld=0.25 schedule=every threads=10 fault=0 reference=independent oracle -> results-probe/20261025_182809_LEVIATHAN
+  oracle after batch 1: N=2084 minUtil=25675 patterns=8937
+  oracle after batch 2: N=2709 minUtil=33450 patterns=7873
+  oracle after batch 3: N=3334 minUtil=41604 patterns=7185
+  oracle after batch 4: N=3959 minUtil=49058 patterns=6319
+  oracle after batch 5: N=4584 minUtil=56304 patterns=5948
+  oracle after batch 6: N=5209 minUtil=63176 patterns=5322
+  oracle after batch 7: N=5834 minUtil=70782 patterns=5148
+  remine-nogc q0  after b1  N=2084   oracle=8937   got=8937   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=380ms
+  remine-nogc q1  after b2  N=2709   oracle=7873   got=7873   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=204ms
+  remine-nogc q2  after b3  N=3334   oracle=7185   got=7185   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=213ms
+  remine-nogc q3  after b4  N=3959   oracle=6319   got=6319   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=231ms
+  remine-nogc q4  after b5  N=4584   oracle=5948   got=5948   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=242ms
+  remine-nogc q5  after b6  N=5209   oracle=5322   got=5322   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=264ms
+  remine-nogc q6  after b7  N=5834   oracle=5148   got=5148   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=290ms
+  bud2   q0  after b1  N=2084   oracle=8937   got=8937   miss=0 extra=0 uErr=0 pErr=0  ingest=104ms query=131ms  [REMINE r=3.1 thr=25675 cand=8937 fresh=0 gapRej=0 mine=129ms rebuild=0ms tracked=8648]
+  bud2   q1  after b2  N=2709   oracle=7873   got=7873   miss=0 extra=0 uErr=0 pErr=0  ingest=58ms query=401ms  [ABORTED+REMINE r=6.3 thr=33450 cand=7873 fresh=0 gapRej=0 mine=229ms rebuild=0ms tracked=7554]
+  bud2   q2  after b3  N=3334   oracle=7185   got=7185   miss=0 extra=0 uErr=0 pErr=0  ingest=30ms query=466ms  [ABORTED+REMINE r=9.4 thr=41604 cand=7185 fresh=0 gapRej=0 mine=196ms rebuild=0ms tracked=6867]
+  bud2   q3  after b4  N=3959   oracle=6319   got=6319   miss=0 extra=0 uErr=0 pErr=0  ingest=32ms query=436ms  [ABORTED+REMINE r=12.5 thr=49058 cand=6319 fresh=0 gapRej=0 mine=200ms rebuild=0ms tracked=6000]
+  bud2   q4  after b5  N=4584   oracle=5948   got=5948   miss=0 extra=0 uErr=0 pErr=0  ingest=24ms query=471ms  [ABORTED+REMINE r=15.6 thr=56304 cand=5948 fresh=0 gapRej=0 mine=231ms rebuild=0ms tracked=5625]
+  bud2   q5  after b6  N=5209   oracle=5322   got=5322   miss=0 extra=0 uErr=0 pErr=0  ingest=32ms query=525ms  [ABORTED+REMINE r=18.8 thr=63176 cand=5322 fresh=0 gapRej=0 mine=261ms rebuild=0ms tracked=4987]
+  bud2   q6  after b7  N=5834   oracle=5148   got=5148   miss=0 extra=0 uErr=0 pErr=0  ingest=19ms query=598ms  [ABORTED+REMINE r=21.9 thr=70782 cand=5148 fresh=0 gapRej=0 mine=296ms rebuild=0ms tracked=4814]
+  keep-sfx-gf-nogc q0  after b1  N=2084   oracle=8937   got=8937   miss=0 extra=0 uErr=0 pErr=0  ingest=31ms query=5702ms  [thr=7973 cand=75073 fresh=66584 gapRej=8719 mine=268ms rebuild=5237ms tracked=9420]
+  keep-sfx-gf-nogc q1  after b2  N=2709   oracle=7873   got=7873   miss=0 extra=0 uErr=0 pErr=0  ingest=36ms query=2992ms  [thr=15748 cand=31233 fresh=23221 gapRej=1224 mine=226ms rebuild=2724ms tracked=8315]
+  keep-sfx-gf-nogc q2  after b3  N=3334   oracle=7185   got=7185   miss=0 extra=0 uErr=0 pErr=0  ingest=30ms query=2330ms  [thr=23902 cand=19632 fresh=12338 gapRej=381 mine=245ms rebuild=2064ms tracked=7560]
+  keep-sfx-gf-nogc q3  after b4  N=3959   oracle=6319   got=6319   miss=0 extra=0 uErr=0 pErr=0  ingest=31ms query=1896ms  [thr=31356 cand=14172 fresh=7755 gapRej=131 mine=265ms rebuild=1616ms tracked=6664]
+  keep-sfx-gf-nogc q4  after b5  N=4584   oracle=5948   got=5948   miss=0 extra=0 uErr=0 pErr=0  ingest=25ms query=1812ms  [thr=38602 cand=11999 fresh=5950 gapRej=91 mine=302ms rebuild=1499ms tracked=6265]
+  keep-sfx-gf-nogc q5  after b6  N=5209   oracle=5322   got=5322   miss=0 extra=0 uErr=0 pErr=0  ingest=24ms query=1594ms  [thr=45474 cand=9877 fresh=4458 gapRej=56 mine=305ms rebuild=1282ms tracked=5606]
+  keep-sfx-gf-nogc q6  after b7  N=5834   oracle=5148   got=5148   miss=0 extra=0 uErr=0 pErr=0  ingest=21ms query=1623ms  [thr=53080 cand=8981 fresh=3738 gapRej=43 mine=342ms rebuild=1273ms tracked=5422]
+compared queries=21 failing=0
+rc=0
