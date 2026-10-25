@@ -32,7 +32,8 @@ public class QueryScheduleStress {
     public static void main(String[] args) throws Exception {
         int trials = args.length > 0 ? Integer.parseInt(args[0]) : 200;
         AlgoPRIncHUSP.FAULT = Integer.getInteger("fault", 0);
-        String[] policies = System.getProperty("policies", "keep-sfx,reset-sfx,keep-sfx-gf,keep-sfx-gf-l0.5,sel-k0,sel-k5,sel-k1000000000").split(",");
+        AlgoPRIncHUSP.FORCE_REBUILD_ABORT = Boolean.getBoolean("forceRebuildAbort");
+        String[] policies = System.getProperty("policies", "keep-sfx,reset-sfx,keep-sfx-gf,keep-sfx-gf-l0.5,sel-k0,sel-k5,sel-k1000000000,bud-c0,bud-c0.001,bud-c1,bud-c1000000000").split(",");
         int compared = 0, failing = 0, nonEmpty = 0, multiItemSeqs = 0;
         Map<String, Integer> failsByPolicy = new TreeMap<>();
         for (int seed = 1; seed <= trials; seed++) {
@@ -79,6 +80,8 @@ public class QueryScheduleStress {
                 mm.close();
             }
         }
+        System.out.printf("forceRebuildAbort=%s aborts-in-mining=%d aborts-in-rebuild=%d%n", AlgoPRIncHUSP.FORCE_REBUILD_ABORT,
+                AlgoPRIncHUSP.ABORTS_IN_MINING.get(), AlgoPRIncHUSP.ABORTS_IN_REBUILD.get());
         System.out.printf("fault=%d trials=%d sequences-with-multi-item-events=%d compared-queries=%d "
                         + "with-non-empty-oracle=%d failing=%d %s%n",
                 AlgoPRIncHUSP.FAULT, trials, multiItemSeqs, compared, nonEmpty, failing, failsByPolicy);

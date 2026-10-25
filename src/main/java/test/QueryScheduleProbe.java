@@ -164,8 +164,9 @@ public class QueryScheduleProbe {
                             p == null ? "" : "" + p.lastQueryFresh,
                             p == null ? "" : "" + p.lastQueryGapRejected,
                             p == null ? "" : "" + m.trackedCount(),
-                            p == null || !p.adaptiveQuery ? "" : (p.lastQueryAction == 0 ? "discover" : p.lastQueryAction == 1 ? "remine" : "none"),
-                            p == null || !p.adaptiveQuery ? "" : String.format(java.util.Locale.ROOT, "%.2f", p.lastQueryR)) + "\n");
+                            p == null || !(p.adaptiveQuery || p.costCapped) ? "" : (p.lastQueryAction == 0 ? "discover"
+                                    : p.lastQueryAction == 1 ? "remine" : p.lastQueryAction == 2 ? "aborted" : "none"),
+                            p == null || !(p.adaptiveQuery || p.costCapped) ? "" : String.format(java.util.Locale.ROOT, "%.2f", p.lastQueryR)) + "\n");
                     tm.write(String.join(",", tag, policy, "" + batches.size(), schedule, "" + AlgoPRIncHUSP.FAULT,
                             "" + q, "" + b, "" + ingestMs, "" + queryMs,
                             p == null ? "" : "" + p.lastQueryMineMs,
@@ -176,7 +177,8 @@ public class QueryScheduleProbe {
                             policy, q, b, n, oracle.get(b).size(), res.size(), d[0], d[1], d[2], d[3],
                             ingestMs, queryMs, p == null ? ""
                                     : String.format(java.util.Locale.ROOT, "  [%sthr=%d cand=%d fresh=%d gapRej=%d mine=%dms rebuild=%dms tracked=%d]",
-                                    p.adaptiveQuery ? (p.lastQueryAction == 0 ? "DISCOVER r=" : "REMINE r=")
+                                    p.adaptiveQuery || p.costCapped ? (p.lastQueryAction == 0 ? "DISCOVER r="
+                                            : p.lastQueryAction == 2 ? "ABORTED+REMINE r=" : "REMINE r=")
                                             + String.format(java.util.Locale.ROOT, "%.1f ", p.lastQueryR) : "",
                                     p.lastQueryThreshold, p.lastQueryCandidates, p.lastQueryFresh, p.lastQueryGapRejected,
                                     p.lastQueryMineMs, p.lastQueryRebuildMs, m.trackedCount()));
@@ -208,9 +210,13 @@ public class QueryScheduleProbe {
                 // sel[-k<kappa>]: the adaptive selector (keep anchor, suffix prune, gap filter, lambda 1)
                 List<String> parts = new ArrayList<>(java.util.Arrays.asList(policy.split("-")));
                 boolean sel = parts.get(0).equals("sel");
+                boolean bud = parts.get(0).equals("bud");            // bud[-c<factor>]: cost-capped discovery
+                double budget = 1.0;
+                for (String s : parts) if (s.startsWith("c")) budget = Double.parseDouble(s.substring(1));
+                if (bud) { parts.set(0, "sel"); sel = false; }
                 double kappa = 50.0;
                 for (String s : parts) if (s.startsWith("k") && !s.equals("keep")) kappa = Double.parseDouble(s.substring(1));
-                if (sel) { parts.set(0, "keep"); parts.add("sfx"); parts.add("gf"); }
+                if (sel || bud) { parts.set(0, "keep"); parts.add("sfx"); parts.add("gf"); }
                 if (!parts.get(0).equals("keep") && !parts.get(0).equals("reset"))
                     throw new IllegalArgumentException("unknown policy " + policy);
                 double lambda = 1.0;
@@ -223,6 +229,8 @@ public class QueryScheduleProbe {
                 p.suffixWindowPrune = parts.contains("sfx");
                 p.rebuildGapFilter = parts.contains("gf");
                 p.adaptiveQuery = sel;
+                p.costCapped = bud;
+                p.budgetFactor = budget;
                 p.selectorKappa = kappa;
                 m = p;
             }

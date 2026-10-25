@@ -352,7 +352,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
             deucs.incUpdate(dOld);
             deucs.buildAdjacency();      // adjacency index for fast candidate generation
         }
-        if (adaptiveQuery) allRaw.addAll(dOld);
+        if (adaptiveQuery || costCapped) allRaw.addAll(dOld);
         data.appendBatch(dOld);
         recomputeThresholds(0, 0, dOld.size(), 0);   // first batch: μ = μ_min
         // Seeding-time regularity pruning. Only a bound that holds for EVERY future batch may be used
@@ -590,7 +590,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         if (!initialized) { initialBuild(deltaD, minUtilRatio, maxRegRatio); return System.currentTimeMillis() - t0; }
 
         if (discoverExact) { increments.addAll(deltaD); reconciled = false; }   // ΔD kept raw; new data ⇒ must re-reconcile
-        if (adaptiveQuery) { allRaw.addAll(deltaD); incrementUtility += AdaptiveBuffer.batchUtility(deltaD); }
+        if (adaptiveQuery || costCapped) { allRaw.addAll(deltaD); incrementUtility += AdaptiveBuffer.batchUtility(deltaD); }
         long prevUD = data.totalDbUtility; int prevN = data.numSequences;
         long batchUtil = AdaptiveBuffer.batchUtility(deltaD);
         int[] range = data.appendBatch(deltaD);        // append at tail -> [lo,hi); update totalDbUtility/numSequences
@@ -1175,7 +1175,10 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
      * Deliberate defects for checking that the query-schedule probe can fail (0 = none). Never set
      * outside that probe. 1: discovery threshold one unit too high; 2: anchor reset also drops
      * about one answer pattern in ten (chosen by a hash of its items), breaking the coverage invariant; 3: fresh candidates are
-     * rebuilt from the increment only, so their utility and periods ignore the anchor prefix.
+     * rebuilt from the increment only, so their utility and periods ignore the anchor prefix; 4: an aborted
+     * cost-capped discovery leaves its half-built candidates in the tracked set (measured harmless: each
+     * candidate is either fully rebuilt or untouched, and untouched ones carry no last occurrence and
+     * are evicted at the next classification); 5: an aborted discovery skips the fallback re-mine.
      */
     public static int FAULT = 0;
 
@@ -1190,10 +1193,38 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
      * anchor moves to the current prefix. Every choice returns the exact answer, so a wrong choice
      * costs time, never patterns.
      */
+    /**
+     * Cost-capped discovery with exact fallback. The first query re-mines the whole database and
+     * records its cost F. Every later query runs discovery from the anchor under a budget of
+     * {@link #budgetFactor} times the last re-mine cost; if discovery overruns the budget or the heap,
+     * all of its candidates are discarded before they touch the tracked set and the whole database
+     * is re-mined instead. Each query is exact whatever the budget; the budget bounds only the cost,
+     * at min(K, c*F_last + F) per query. Unrelated to {@link #memoryBudgetMB}, which narrows the
+     * guaranteed pattern class.
+     */
+    public boolean costCapped = false;
+    public double budgetFactor = 1.0;
+    public int abortedQueries = 0;
+    private long lastRemineNanos = -1;
+    private long discoveryDeadlineNanos = Long.MAX_VALUE;
+    private List<Pat> pendingFresh = null;                        // FAULT 4 only
+    /** Test hook: abort every cost-capped discovery halfway through the state rebuild. */
+    public static boolean FORCE_REBUILD_ABORT = false;
+    /** Aborts by phase, for checking that a test reached the path it targets. */
+    public static final java.util.concurrent.atomic.AtomicInteger ABORTS_IN_MINING = new java.util.concurrent.atomic.AtomicInteger(),
+            ABORTS_IN_REBUILD = new java.util.concurrent.atomic.AtomicInteger();
+
+    /** Thrown when cost-capped discovery overruns its budget outside the engine. */
+    private static final class BudgetExceeded extends RuntimeException {
+        private static final long serialVersionUID = 1L;
+        BudgetExceeded() { super("DISCOVERY_BUDGET", null, false, false); }
+    }
+
     public boolean adaptiveQuery = false;
     public double selectorKappa = 50.0;
     public double reanchorFraction = 0.5;
-    public int lastQueryAction;                 // 0 = discovery, 1 = full re-mine, -1 = nothing to do
+    public int lastQueryAction;                 // 0 = discovery, 1 = full re-mine, 2 = discovery aborted then
+                                                // full re-mine, -1 = nothing to do
     public double lastQueryR;
     private final List<List<int[]>> allRaw = new ArrayList<>();   // references, for the full re-mine
     private long incrementUtility = 0;                             // U(W) since the anchor
@@ -1204,7 +1235,12 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
 
     /** Querying the result triggers the reconciliation when {@link #discoverExact} is on (exact on demand). */
     @Override public Map<String, long[]> getHighUtilityPatterns() {
-        if (discoverExact && !reconciled && adaptiveQuery) {
+        if (discoverExact && !reconciled && costCapped) {
+            long t0 = System.currentTimeMillis();
+            cappedAnswer();
+            discMs += System.currentTimeMillis() - t0;
+            reconciled = true;
+        } else if (discoverExact && !reconciled && adaptiveQuery) {
             long t0 = System.currentTimeMillis();
             selectAndAnswer();
             discMs += System.currentTimeMillis() - t0;
@@ -1247,24 +1283,76 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
             if (increments.size() >= reanchorFraction * data.numSequences) { resetAnchor(); incrementUtility = 0; }
         } else {
             lastQueryAction = 1;
-            lastQueryThreshold = minUtil;
-            long t = System.nanoTime();
-            AlgoRHUSPMinerParallel e = new AlgoRHUSPMinerParallel();
-            e.numThreads = numThreads;
-            e.parallelStrategy = AlgoRHUSPMinerParallel.STRAT_RDLB;
-            e.denseBuffers = true;
-            e.useEUCS = true;
-            e.boundMode = AlgoRHUSPMinerParallel.BOUND_LA_PEU;
-            e.useRegPruning = true;
-            e.forcedMaxReg = maxReg;
-            e.forcedMinUtil = minUtil;
-            e.runAlgorithmInMemory(allRaw, minUtilRatio, maxRegRatio);
-            highUtility.clear();
-            for (Map.Entry<String, AlgoRHUSPMinerParallel.PatternResult> en : e.finalPatterns.entrySet())
-                highUtility.put(en.getKey(), new long[]{en.getValue().utility, en.getValue().periodicity});
-            lastQueryMineMs = (System.nanoTime() - t) / 1_000_000;
-            lastQueryCandidates = e.finalPatterns.size();
+            fullRemine();
         }
+    }
+
+    /** Cost-capped discovery with exact fallback; see {@link #costCapped}. */
+    private void cappedAnswer() {
+        lastQueryMineMs = lastQueryRebuildMs = lastQueryThreshold = 0;
+        lastQueryCandidates = lastQueryFresh = lastQueryGapRejected = 0;
+        lastQueryIncrementSeqs = increments.size();
+        long tau = minUtil - (long) Math.ceil(seedThreshold0) + 1;
+        lastQueryR = incrementUtility > 0 ? (double) tau * increments.size() / incrementUtility : 0;
+        if (increments.isEmpty()) { lastQueryAction = -1; return; }
+        if (lastRemineNanos < 0) { lastQueryAction = 1; fullRemine(); return; }
+        discoveryDeadlineNanos = System.nanoTime() + (long) (budgetFactor * lastRemineNanos);
+        try {
+            reconcile();
+            lastQueryAction = 0;
+            if (increments.size() >= reanchorFraction * data.numSequences) { resetAnchor(); incrementUtility = 0; }
+        } catch (RuntimeException | OutOfMemoryError ex) {
+            if (ex instanceof RuntimeException && !isDiscoveryAbort(ex)) throw (RuntimeException) ex;
+            if (pendingFresh == null) ABORTS_IN_MINING.incrementAndGet();
+            if (FAULT == 4 && pendingFresh != null) {              // deliberate defect: keep the half-built candidates
+                Pat[] np = java.util.Arrays.copyOf(pats, pats.length + pendingFresh.size());
+                for (int i = 0; i < pendingFresh.size(); i++) np[pats.length + i] = pendingFresh.get(i);
+                pats = np;
+                trieRoot = null;
+            }
+            abortedQueries++;
+            lastQueryAction = 2;
+            settleHeapQuick();
+            if (FAULT != 5) fullRemine();                           // FAULT 5: answer from the stale maintained set
+        } finally {
+            discoveryDeadlineNanos = Long.MAX_VALUE;
+            pendingFresh = null;
+        }
+    }
+
+    private static boolean isDiscoveryAbort(Throwable e) {
+        for (Throwable c = e; c != null; c = c.getCause()) {
+            if (c instanceof BudgetExceeded || c instanceof OutOfMemoryError) return true;
+            if (c.getMessage() != null && c.getMessage().contains("TIMEOUT_INTERRUPT")) return true;
+        }
+        return false;
+    }
+
+    private static void settleHeapQuick() {
+        System.gc();
+        try { Thread.sleep(20); } catch (InterruptedException ie) { Thread.currentThread().interrupt(); }
+    }
+
+    /** Re-mine the whole database with a fresh engine and answer from it; records the cost. */
+    private void fullRemine() {
+        lastQueryThreshold = minUtil;
+        long t = System.nanoTime();
+        AlgoRHUSPMinerParallel e = new AlgoRHUSPMinerParallel();
+        e.numThreads = numThreads;
+        e.parallelStrategy = AlgoRHUSPMinerParallel.STRAT_RDLB;
+        e.denseBuffers = true;
+        e.useEUCS = true;
+        e.boundMode = AlgoRHUSPMinerParallel.BOUND_LA_PEU;
+        e.useRegPruning = true;
+        e.forcedMaxReg = maxReg;
+        e.forcedMinUtil = minUtil;
+        e.runAlgorithmInMemory(allRaw, minUtilRatio, maxRegRatio);
+        highUtility.clear();
+        for (Map.Entry<String, AlgoRHUSPMinerParallel.PatternResult> en : e.finalPatterns.entrySet())
+            highUtility.put(en.getKey(), new long[]{en.getValue().utility, en.getValue().periodicity});
+        lastRemineNanos = System.nanoTime() - t;
+        lastQueryMineMs = lastRemineNanos / 1_000_000;
+        lastQueryCandidates = e.finalPatterns.size();
     }
 
     /**
@@ -1330,6 +1418,8 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
             e.boundMode = AlgoRHUSPMinerParallel.BOUND_LA_PEU;
             e.useRegPruning = true;
             e.windowIsSuffix = suffixWindowPrune && !partitionMine;
+            if (discoveryDeadlineNanos != Long.MAX_VALUE)
+                e.timeoutMs = Math.max(1, (discoveryDeadlineNanos - System.nanoTime()) / 1_000_000);
             e.windowMode = true;                               // a mid-stream part: neither leading nor
                                                                // trailing gap is a real gap of α in D
             e.floorPrune = floorPruneSeeds && soundCeilingBound();
@@ -1358,6 +1448,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         }
         if (fresh.isEmpty()) return;
         lastQueryFresh += fresh.size();
+        if (discoveryDeadlineNanos != Long.MAX_VALUE) pendingFresh = fresh;
 
         // Exact full-DB state for each fresh candidate, from scratch over [0, n).
         long tRebuild = System.nanoTime();
@@ -1365,9 +1456,16 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         final Map<Integer, int[]> inv = buildInvertedIndex(0, n);
         final int incrementSeqs = part.size();
         final int gapBound = finalMaxReg();
+        final java.util.concurrent.atomic.AtomicInteger rebuilt = new java.util.concurrent.atomic.AtomicInteger();
         final java.util.concurrent.atomic.LongAdder gapRejected = new java.util.concurrent.atomic.LongAdder();
         runParallelIndexed(fresh.size(), i -> {
             Pat p = fresh.get(i);
+            if (System.nanoTime() > discoveryDeadlineNanos
+                    || (FORCE_REBUILD_ABORT && discoveryDeadlineNanos != Long.MAX_VALUE
+                        && rebuilt.incrementAndGet() > fresh.size() / 2)) {
+                ABORTS_IN_REBUILD.incrementAndGet();
+                throw new BudgetExceeded();
+            }
             int[] cand = candidateSeqs(p, inv);
             if (cand == null) return;
             if (rebuildGapFilter && gapBound != Integer.MAX_VALUE && supersetGap(cand, n) > gapBound) {
