@@ -123,9 +123,10 @@ public class QueryScheduleProbe {
                     + "discovery_mine_ms,rebuild_ms,seed_ms\n");
             final long limitS = Long.getLong("limit", 0);         // per-policy time limit, reference excluded
             for (String policy : policies) {
+                Thread dog = null;
                 if (limitS > 0) {
                     final String pol = policy;
-                    Thread dog = new Thread(() -> {
+                    dog = new Thread(() -> {
                         try { Thread.sleep(limitS * 1000L); } catch (InterruptedException ie) { return; }
                         System.out.printf("  %s TIMEOUT after %d s (policy time, reference excluded)%n", pol, limitS);
                         System.out.flush();
@@ -190,6 +191,7 @@ public class QueryScheduleProbe {
                 }
                 ex.flush(); tm.flush();
                 m.close();
+                if (dog != null) dog.interrupt();                     // this policy finished: cancel its limit
             }
         }
         System.out.printf("compared queries=%d failing=%d%n", compared, failing);
