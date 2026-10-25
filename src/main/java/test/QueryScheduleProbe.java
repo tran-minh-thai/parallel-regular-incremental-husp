@@ -118,7 +118,7 @@ public class QueryScheduleProbe {
              BufferedWriter tm = new BufferedWriter(new FileWriter(new File(dir, "timing_feasibility.csv")))) {
             ex.write("dataset,policy,batches,schedule,fault,query,after_batch,n_seqs,oracle_size,returned,"
                     + "missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,"
-                    + "gap_rejected,tracked_after\n");
+                    + "gap_rejected,tracked_after,action,r\n");
             tm.write("dataset,policy,batches,schedule,fault,query,after_batch,ingest_ms,query_ms,"
                     + "discovery_mine_ms,rebuild_ms,seed_ms\n");
             for (String policy : policies) {
@@ -151,7 +151,9 @@ public class QueryScheduleProbe {
                             p == null ? "" : "" + p.lastQueryCandidates,
                             p == null ? "" : "" + p.lastQueryFresh,
                             p == null ? "" : "" + p.lastQueryGapRejected,
-                            p == null ? "" : "" + m.trackedCount()) + "\n");
+                            p == null ? "" : "" + m.trackedCount(),
+                            p == null || !p.adaptiveQuery ? "" : (p.lastQueryAction == 0 ? "discover" : p.lastQueryAction == 1 ? "remine" : "none"),
+                            p == null || !p.adaptiveQuery ? "" : String.format(java.util.Locale.ROOT, "%.2f", p.lastQueryR)) + "\n");
                     tm.write(String.join(",", tag, policy, "" + batches.size(), schedule, "" + AlgoPRIncHUSP.FAULT,
                             "" + q, "" + b, "" + ingestMs, "" + queryMs,
                             p == null ? "" : "" + p.lastQueryMineMs,
@@ -161,7 +163,9 @@ public class QueryScheduleProbe {
                                     + "uErr=%d pErr=%d  ingest=%dms query=%dms%s%n",
                             policy, q, b, n, oracle.get(b).size(), res.size(), d[0], d[1], d[2], d[3],
                             ingestMs, queryMs, p == null ? ""
-                                    : String.format("  [thr=%d cand=%d fresh=%d gapRej=%d mine=%dms rebuild=%dms tracked=%d]",
+                                    : String.format(java.util.Locale.ROOT, "  [%sthr=%d cand=%d fresh=%d gapRej=%d mine=%dms rebuild=%dms tracked=%d]",
+                                    p.adaptiveQuery ? (p.lastQueryAction == 0 ? "DISCOVER r=" : "REMINE r=")
+                                            + String.format(java.util.Locale.ROOT, "%.1f ", p.lastQueryR) : "",
                                     p.lastQueryThreshold, p.lastQueryCandidates, p.lastQueryFresh, p.lastQueryGapRejected,
                                     p.lastQueryMineMs, p.lastQueryRebuildMs, m.trackedCount()));
                     ingestMs = 0;
@@ -188,7 +192,12 @@ public class QueryScheduleProbe {
             default: {
                 // keep|reset, optionally followed by -sfx (suffix-window prune), -gf (rebuild gap filter)
                 // and -l<lambda> (anchor threshold = lambda * minUtil at seeding; default 1)
-                List<String> parts = java.util.Arrays.asList(policy.split("-"));
+                // sel[-k<kappa>]: the adaptive selector (keep anchor, suffix prune, gap filter, lambda 1)
+                List<String> parts = new ArrayList<>(java.util.Arrays.asList(policy.split("-")));
+                boolean sel = parts.get(0).equals("sel");
+                double kappa = 50.0;
+                for (String s : parts) if (s.startsWith("k") && !s.equals("keep")) kappa = Double.parseDouble(s.substring(1));
+                if (sel) { parts.set(0, "keep"); parts.add("sfx"); parts.add("gf"); }
                 if (!parts.get(0).equals("keep") && !parts.get(0).equals("reset"))
                     throw new IllegalArgumentException("unknown policy " + policy);
                 double lambda = 1.0;
@@ -200,6 +209,8 @@ public class QueryScheduleProbe {
                 p.anchorPolicy = parts.get(0).equals("reset") ? AlgoPRIncHUSP.ANCHOR_RESET : AlgoPRIncHUSP.ANCHOR_KEEP;
                 p.suffixWindowPrune = parts.contains("sfx");
                 p.rebuildGapFilter = parts.contains("gf");
+                p.adaptiveQuery = sel;
+                p.selectorKappa = kappa;
                 m = p;
             }
         }

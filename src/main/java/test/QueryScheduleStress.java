@@ -32,7 +32,7 @@ public class QueryScheduleStress {
     public static void main(String[] args) throws Exception {
         int trials = args.length > 0 ? Integer.parseInt(args[0]) : 200;
         AlgoPRIncHUSP.FAULT = Integer.getInteger("fault", 0);
-        String[] policies = System.getProperty("policies", "keep-sfx,reset-sfx,keep-sfx-gf,keep-sfx-gf-l0.5").split(",");
+        String[] policies = System.getProperty("policies", "keep-sfx,reset-sfx,keep-sfx-gf,keep-sfx-gf-l0.5,sel-k0,sel-k5,sel-k1000000000").split(",");
         int compared = 0, failing = 0, nonEmpty = 0, multiItemSeqs = 0;
         Map<String, Integer> failsByPolicy = new TreeMap<>();
         for (int seed = 1; seed <= trials; seed++) {

@@ -352,6 +352,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
             deucs.incUpdate(dOld);
             deucs.buildAdjacency();      // adjacency index for fast candidate generation
         }
+        if (adaptiveQuery) allRaw.addAll(dOld);
         data.appendBatch(dOld);
         recomputeThresholds(0, 0, dOld.size(), 0);   // first batch: μ = μ_min
         // Seeding-time regularity pruning. Only a bound that holds for EVERY future batch may be used
@@ -589,6 +590,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         if (!initialized) { initialBuild(deltaD, minUtilRatio, maxRegRatio); return System.currentTimeMillis() - t0; }
 
         if (discoverExact) { increments.addAll(deltaD); reconciled = false; }   // ΔD kept raw; new data ⇒ must re-reconcile
+        if (adaptiveQuery) { allRaw.addAll(deltaD); incrementUtility += AdaptiveBuffer.batchUtility(deltaD); }
         long prevUD = data.totalDbUtility; int prevN = data.numSequences;
         long batchUtil = AdaptiveBuffer.batchUtility(deltaD);
         int[] range = data.appendBatch(deltaD);        // append at tail -> [lo,hi); update totalDbUtility/numSequences
@@ -1177,13 +1179,37 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
      */
     public static int FAULT = 0;
 
+    /**
+     * Choose, at each query, between discovery from the anchor and a full re-mine. The decisive
+     * quantity is r = tau * |W| / U(W): the discovery threshold measured in average sequences of the
+     * window W since the anchor. A small r means a single sequence can clear the window's threshold,
+     * and the number of qualifying subsequences grows exponentially; a large r leaves few candidates.
+     * Discovery runs when r >= {@link #selectorKappa}; otherwise the whole database is re-mined, the
+     * anchor and the tracked set are left as they are, and the window keeps growing toward kappa.
+     * After a discovery whose window covers at least {@link #reanchorFraction} of the database the
+     * anchor moves to the current prefix. Every choice returns the exact answer, so a wrong choice
+     * costs time, never patterns.
+     */
+    public boolean adaptiveQuery = false;
+    public double selectorKappa = 50.0;
+    public double reanchorFraction = 0.5;
+    public int lastQueryAction;                 // 0 = discovery, 1 = full re-mine, -1 = nothing to do
+    public double lastQueryR;
+    private final List<List<int[]>> allRaw = new ArrayList<>();   // references, for the full re-mine
+    private long incrementUtility = 0;                             // U(W) since the anchor
+
     /** Per-query instrumentation of the last reconciliation (probe use). */
     public long lastQueryMineMs, lastQueryRebuildMs, lastQueryThreshold;
     public int lastQueryCandidates, lastQueryFresh, lastQueryIncrementSeqs;
 
     /** Querying the result triggers the reconciliation when {@link #discoverExact} is on (exact on demand). */
     @Override public Map<String, long[]> getHighUtilityPatterns() {
-        if (discoverExact && !reconciled) {
+        if (discoverExact && !reconciled && adaptiveQuery) {
+            long t0 = System.currentTimeMillis();
+            selectAndAnswer();
+            discMs += System.currentTimeMillis() - t0;
+            reconciled = true;
+        } else if (discoverExact && !reconciled) {
             long t0 = System.currentTimeMillis();
             reconcile();
             if (anchorPolicy == ANCHOR_RESET) resetAnchor();
@@ -1205,6 +1231,40 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         if (FAULT == 1) threshold += 1;
         lastQueryThreshold = (long) Math.ceil(threshold);
         discoverFrom(increments, threshold);
+    }
+
+    /** The adaptive query: discovery from the anchor or a full re-mine, by r against kappa. */
+    private void selectAndAnswer() {
+        lastQueryMineMs = lastQueryRebuildMs = lastQueryThreshold = 0;
+        lastQueryCandidates = lastQueryFresh = lastQueryGapRejected = 0;
+        lastQueryIncrementSeqs = increments.size();
+        if (increments.isEmpty()) { lastQueryAction = -1; lastQueryR = 0; return; }
+        long tau = minUtil - (long) Math.ceil(seedThreshold0) + 1;
+        lastQueryR = incrementUtility > 0 ? (double) tau * increments.size() / incrementUtility : 0;
+        if (lastQueryR >= selectorKappa) {
+            lastQueryAction = 0;
+            reconcile();
+            if (increments.size() >= reanchorFraction * data.numSequences) { resetAnchor(); incrementUtility = 0; }
+        } else {
+            lastQueryAction = 1;
+            lastQueryThreshold = minUtil;
+            long t = System.nanoTime();
+            AlgoRHUSPMinerParallel e = new AlgoRHUSPMinerParallel();
+            e.numThreads = numThreads;
+            e.parallelStrategy = AlgoRHUSPMinerParallel.STRAT_RDLB;
+            e.denseBuffers = true;
+            e.useEUCS = true;
+            e.boundMode = AlgoRHUSPMinerParallel.BOUND_LA_PEU;
+            e.useRegPruning = true;
+            e.forcedMaxReg = maxReg;
+            e.forcedMinUtil = minUtil;
+            e.runAlgorithmInMemory(allRaw, minUtilRatio, maxRegRatio);
+            highUtility.clear();
+            for (Map.Entry<String, AlgoRHUSPMinerParallel.PatternResult> en : e.finalPatterns.entrySet())
+                highUtility.put(en.getKey(), new long[]{en.getValue().utility, en.getValue().periodicity});
+            lastQueryMineMs = (System.nanoTime() - t) / 1_000_000;
+            lastQueryCandidates = e.finalPatterns.size();
+        }
     }
 
     /**
