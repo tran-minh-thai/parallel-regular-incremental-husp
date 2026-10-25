@@ -146,22 +146,23 @@ public class AlgoRHUSP {
             int seqId = en.getKey();
             List<int[]> seq = db.get(seqId);
             List<int[]> remSeq = ruDB.get(seqId);
-            long maxCur = 0;
-            for (int[] inst : en.getValue()) maxCur = Math.max(maxCur, inst[2]);
-            Set<Integer> seen = new HashSet<>();
+            // Per sequence, the bound of candidate id is the MAX over every reachable position of
+            // (prefix utility + utility at the position + remaining utility). An earlier version took
+            // only the first position met while scanning, which is the largest one only if instances
+            // are scanned in ascending position order; they come from a HashMap, so a later position
+            // could be met first, the bound came out too low, and qualifying patterns were pruned.
+            Map<Integer, Long> local = new HashMap<>();
             for (int[] inst : en.getValue()) {
                 int startE = iExt ? inst[0] : inst[0] + 1;
                 int endE = iExt ? Math.min(inst[0] + 1, seq.size()) : seq.size();
                 for (int k = startE; k < endE; k++) {
                     int[] ev = seq.get(k);
                     int startJ = (iExt && k == inst[0]) ? inst[1] + 1 : 0;
-                    for (int j = startJ; j < ev.length / 2; j++) {
-                        int id = ev[j * 2];
-                        if (seen.add(id))
-                            peu.merge(id, maxCur + ev[j * 2 + 1] + remSeq.get(k)[j], Long::sum);
-                    }
+                    for (int j = startJ; j < ev.length / 2; j++)
+                        local.merge(ev[j * 2], (long) inst[2] + ev[j * 2 + 1] + remSeq.get(k)[j], Math::max);
                 }
             }
+            local.forEach((id, v) -> peu.merge(id, v, Long::sum));
         }
         List<Integer> out = new ArrayList<>();
         peu.forEach((k, v) -> { if (v >= minUtil) out.add(k); });

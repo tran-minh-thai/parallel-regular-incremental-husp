@@ -1154,8 +1154,8 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
 
     /**
      * Deliberate defects for checking that the query-schedule probe can fail (0 = none). Never set
-     * outside that probe. 1: discovery threshold one unit too high; 2: anchor reset also drops every
-     * answer pattern whose last occurrence lies in the first half of the data; 3: fresh candidates are
+     * outside that probe. 1: discovery threshold one unit too high; 2: anchor reset also drops
+     * about one answer pattern in ten (chosen by a hash of its items), breaking the coverage invariant; 3: fresh candidates are
      * rebuilt from the increment only, so their utility and periods ignore the anchor prefix.
      */
     public static int FAULT = 0;
@@ -1200,7 +1200,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         int w = 0;
         for (Pat p : pats)
             if (p.lastSeqId != -1 && p.utility >= minUtil && p.trueMaxPer(n) <= maxReg
-                    && !(FAULT == 2 && p.lastSeqId < n / 2)) pats[w++] = p;
+                    && !(FAULT == 2 && Math.floorMod(java.util.Arrays.hashCode(p.item), 10) == 0)) pats[w++] = p;
         if (w < pats.length) { pats = java.util.Arrays.copyOf(pats, w); trieRoot = null; }
         seedThreshold0 = minUtil;
         increments.clear();
