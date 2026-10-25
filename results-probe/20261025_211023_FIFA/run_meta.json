@@ -1,0 +1,17 @@
+{
+  "kind": "probe (development machine, feasibility only)",
+  "command": "java -Ddold=0.9 -Doracle=remine -Dlimit=900 test.QueryScheduleProbe datasets/FIFA_seq.txt datasets/FIFA_eui.txt 0.04 6135 11 every remine-nogc,bud3",
+  "git_commit": "cb705d3ee32f7149a145b74f72d7319231af8ebf",
+  "tree": "clean",
+  "sha256_AlgoPRIncHUSP": "629c21e735356700550c20bc61b9feb0abf60bd03a44b148b47a4d23be13e99a",
+  "sha256_AlgoParRemine": "1c2d15b22aa6bef9a6bc5f24022edb6b4b564bba984c6cd07f932e6c335364e4",
+  "sha256_AlgoRHUSPMinerParallel": "01f3ff33a00c7d5c70916d13f122345e69f420567eeb79116e1fab88518800db",
+  "sha256_QueryScheduleProbe": "ed9a831e0986984857a0b69df16f11474cd824e0b5202df19f91facbb9bcae2e",
+  "sha256_seq": "8cd5da319a24c7610312b391167ac27d4ee8ecfbee335fd3a3bb11bddf6045ae",
+  "sha256_eui": "d2f4699e2585c2fba25d88bdcaeddfd732d51f9991aa5af3553e79de56363964",
+  "java": "26.0.1+8-34 Oracle Corporation",
+  "os": "Mac OS X 27.0.1 aarch64",
+  "threads": "10",
+  "max_heap_mb": "16384",
+  "started": "2026-10-25T21:10:24+07:00"
+}

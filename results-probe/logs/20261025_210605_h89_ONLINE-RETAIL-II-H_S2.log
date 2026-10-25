@@ -1,0 +1,33 @@
+ONLINE-RETAIL-II-H N=5786 delta=0.001 B=68 k=11 dOld=0.9 schedule=every threads=10 fault=0 reference=parallel engine (NOT independent) -> results-probe/20261025_210606_ONLINE-RETAIL-II-H
+  oracle after batch 1: N=5265 minUtil=1731970 patterns=116
+  oracle after batch 2: N=5323 minUtil=1755835 patterns=115
+  oracle after batch 3: N=5381 minUtil=1780971 patterns=113
+  oracle after batch 4: N=5439 minUtil=1804133 patterns=108
+  oracle after batch 5: N=5497 minUtil=1833688 patterns=106
+  oracle after batch 6: N=5555 minUtil=1867892 patterns=106
+  oracle after batch 7: N=5613 minUtil=1905444 patterns=106
+  oracle after batch 8: N=5671 minUtil=1937803 patterns=106
+  oracle after batch 9: N=5729 minUtil=1968263 patterns=106
+  oracle after batch 10: N=5786 minUtil=2005746 patterns=105
+  remine-nogc q0  after b1  N=5265   oracle=116    got=116    miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=85ms
+  remine-nogc q1  after b2  N=5323   oracle=115    got=115    miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=86ms
+  remine-nogc q2  after b3  N=5381   oracle=113    got=113    miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=80ms
+  remine-nogc q3  after b4  N=5439   oracle=108    got=108    miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=91ms
+  remine-nogc q4  after b5  N=5497   oracle=106    got=106    miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=84ms
+  remine-nogc q5  after b6  N=5555   oracle=106    got=106    miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=80ms
+  remine-nogc q6  after b7  N=5613   oracle=106    got=106    miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=85ms
+  remine-nogc q7  after b8  N=5671   oracle=106    got=106    miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=82ms
+  remine-nogc q8  after b9  N=5729   oracle=106    got=106    miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=83ms
+  remine-nogc q9  after b10 N=5786   oracle=105    got=105    miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=90ms
+  bud3   q0  after b1  N=5265   oracle=116    got=116    miss=0 extra=0 uErr=0 pErr=0  ingest=16ms query=82ms  {budget=0 attempt=0 load=0 pre=0 enum=0 rebuild=0 abort=}  [REMINE r=0.1 thr=1731970 cand=116 fresh=0 gapRej=0 mine=82ms rebuild=0ms tracked=116]
+  bud3   q1  after b2  N=5323   oracle=115    got=115    miss=0 extra=0 uErr=0 pErr=0  ingest=1ms query=445ms  {budget=82 attempt=323 load=1 pre=0 enum=322 rebuild=0 abort=mining}  [ABORTED+REMINE r=0.1 thr=1755835 cand=115 fresh=0 gapRej=0 mine=90ms rebuild=0ms tracked=115]
+  bud3   q2  after b3  N=5381   oracle=113    got=113    miss=0 extra=0 uErr=0 pErr=0  ingest=1ms query=188ms  {budget=0 attempt=0 load=0 pre=0 enum=0 rebuild=0 abort=}  [SKIP+REMINE r=0.2 thr=1780971 cand=113 fresh=0 gapRej=0 mine=188ms rebuild=0ms tracked=114]
+  bud3   q3  after b4  N=5439   oracle=108    got=108    miss=0 extra=0 uErr=0 pErr=0  ingest=2ms query=498ms  {budget=190 attempt=380 load=0 pre=0 enum=380 rebuild=0 abort=mining}  [ABORTED+REMINE r=0.2 thr=1804133 cand=108 fresh=0 gapRej=0 mine=89ms rebuild=0ms tracked=110]
+  bud3   q4  after b5  N=5497   oracle=106    got=106    miss=0 extra=0 uErr=0 pErr=0  ingest=2ms query=84ms  {budget=0 attempt=0 load=0 pre=0 enum=0 rebuild=0 abort=}  [SKIP+REMINE r=0.3 thr=1833688 cand=106 fresh=0 gapRej=0 mine=84ms rebuild=0ms tracked=109]
+  bud3   q5  after b6  N=5555   oracle=106    got=106    miss=0 extra=0 uErr=0 pErr=0  ingest=2ms query=85ms  {budget=0 attempt=0 load=0 pre=0 enum=0 rebuild=0 abort=}  [SKIP+REMINE r=0.3 thr=1867892 cand=106 fresh=0 gapRej=0 mine=85ms rebuild=0ms tracked=109]
+  bud3   q6  after b7  N=5613   oracle=106    got=106    miss=0 extra=0 uErr=0 pErr=0  ingest=2ms query=85ms  {budget=0 attempt=0 load=0 pre=0 enum=0 rebuild=0 abort=}  [SKIP+REMINE r=0.4 thr=1905444 cand=106 fresh=0 gapRej=0 mine=85ms rebuild=0ms tracked=109]
+  bud3   q7  after b8  N=5671   oracle=106    got=106    miss=0 extra=0 uErr=0 pErr=0  ingest=2ms query=328ms  {budget=86 attempt=210 load=1 pre=0 enum=209 rebuild=0 abort=mining}  [ABORTED+REMINE r=0.5 thr=1937803 cand=106 fresh=0 gapRej=0 mine=86ms rebuild=0ms tracked=109]
+  bud3   q8  after b9  N=5729   oracle=106    got=106    miss=0 extra=0 uErr=0 pErr=0  ingest=2ms query=83ms  {budget=0 attempt=0 load=0 pre=0 enum=0 rebuild=0 abort=}  [SKIP+REMINE r=0.5 thr=1968263 cand=106 fresh=0 gapRej=0 mine=83ms rebuild=0ms tracked=109]
+  bud3   q9  after b10 N=5786   oracle=105    got=105    miss=0 extra=0 uErr=0 pErr=0  ingest=2ms query=85ms  {budget=0 attempt=0 load=0 pre=0 enum=0 rebuild=0 abort=}  [SKIP+REMINE r=0.6 thr=2005746 cand=105 fresh=0 gapRej=0 mine=85ms rebuild=0ms tracked=108]
+compared queries=20 failing=0
+rc=0

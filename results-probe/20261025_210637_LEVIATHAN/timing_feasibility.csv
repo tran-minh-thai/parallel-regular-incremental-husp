@@ -1,0 +1,15 @@
+dataset,policy,batches,schedule,fault,query,after_batch,ingest_ms,query_ms,discovery_mine_ms,rebuild_ms,seed_ms
+LEVIATHAN,remine-nogc,8,every,0,0,1,0,310,,,0
+LEVIATHAN,remine-nogc,8,every,0,1,2,0,155,,,
+LEVIATHAN,remine-nogc,8,every,0,2,3,0,142,,,
+LEVIATHAN,remine-nogc,8,every,0,3,4,0,154,,,
+LEVIATHAN,remine-nogc,8,every,0,4,5,0,157,,,
+LEVIATHAN,remine-nogc,8,every,0,5,6,0,175,,,
+LEVIATHAN,remine-nogc,8,every,0,6,7,0,190,,,
+LEVIATHAN,bud3,8,every,0,0,1,69,95,94,0,337
+LEVIATHAN,bud3,8,every,0,1,2,32,290,137,0,
+LEVIATHAN,bud3,8,every,0,2,3,24,135,135,0,
+LEVIATHAN,bud3,8,every,0,3,4,20,336,145,0,
+LEVIATHAN,bud3,8,every,0,4,5,14,162,162,0,
+LEVIATHAN,bud3,8,every,0,5,6,20,172,172,0,
+LEVIATHAN,bud3,8,every,0,6,7,12,188,188,0,

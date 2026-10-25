@@ -1,0 +1,24 @@
+kind: H8-H9 batch and BUD3 randomised checks (development machine), DANG_KY_TRUOC_NGAN_SACH_3.md
+git_commit: cb705d3ee32f7149a145b74f72d7319231af8ebf
+tree_src: 0 modified
+java: openjdk version "26.0.1" 2026-04-21
+script (args: <repo> <build-dir>):
+cd "$1"; OUT="$2"; L=results-probe/logs
+run() { name=$1; delta=$2; B=$3; sid=$4; dold=$5; k=$6; ref=$7; lim=$8
+  t=$(date +%Y%m%d_%H%M%S); log=$L/${t}_h89_${name}_${sid}.log
+  java -Ddold=$dold $ref -Dlimit=$lim -Xmx16g -cp "$OUT" test.QueryScheduleProbe datasets/${name}_seq.txt datasets/${name}_eui.txt $delta $B $k every remine-nogc,bud3 > $log 2>&1
+  echo "rc=$?" >> $log; }
+run VS-CHAIN96-CW 0.0005 17592 S1 0.5 21 -Doracle=remine 3600
+run VS-CHAIN96-CW 0.0005 17592 S2 0.9 11 -Doracle=remine 3600
+for ds in "ONLINE-RETAIL-II-H 0.001 68" "DUNNHUMBY-H 0.0005 151"; do
+  for sch in "S1 0.5 21" "S2 0.9 11"; do run $ds $sch -Doracle=remine 900; done
+done
+run LEVIATHAN 0.005 175 S0 0.25 8 "" 900
+run BIBLE 0.005 1091 S0 0.25 8 "" 900
+run FIFA 0.04 6135 S2 0.9 11 -Doracle=remine 900
+P="-Dpolicies=bud3-c0,bud3-c0.001,bud3-c1,bud3-c1000000000"
+for opts in "-Dfault=0" "-DforceRebuildAbort=true" "-DforceMidCandidateAbort=true" "-Dfault=5" "-DforceMidCandidateAbort=true -Dfault=6" "-Dfault=7"; do
+  tag=$(echo "$opts" | tr ' =' '__' | tr -d '-'); t=$(date +%Y%m%d_%H%M%S); log=$L/${t}_stress150_bud3_${tag}.log
+  java -Xmx4g $P $opts -cp "$OUT" test.QueryScheduleStress 150 > $log 2>&1; echo "rc=$?" >> $log
+done
+echo ALLDONE

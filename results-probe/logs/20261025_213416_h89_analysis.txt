@@ -1,0 +1,67 @@
+== VS-CHAIN96-CW dOld=0.5 run=20261025_194803_VS-CHAIN96-CW
+   F    queries=20/20 disagreeing=0 finished=True total_ms=963476
+   BUD3 queries=20/20 disagreeing=0 finished=True total_ms=525942
+   actions: discover=17 aborted=1 skipped=1 remine=1; abort phases=['mining']
+   epoch: attempts=18 aborts=1 windows=32546..325451 log-bound=5
+   H8 aborts within log bound: True; query cost 493701 <= 1177279: True
+   H9a BUD3/F = 0.55 -> PASS
+   H9b BUD3/F = 0.55 -> PASS
+== VS-CHAIN96-CW dOld=0.9 run=20261025_202818_VS-CHAIN96-CW
+   F    queries=10/10 disagreeing=0 finished=True total_ms=693573
+   BUD3 queries=10/10 disagreeing=0 finished=True total_ms=873378
+   actions: discover=0 aborted=3 skipped=6 remine=1; abort phases=['mining', 'mining', 'mining']
+   epoch: attempts=3 aborts=3 windows=13018..52072 log-bound=3
+   H8 aborts within log bound: True; query cost 808573 <= 1041517: True
+   H9a BUD3/F = 1.26 -> PASS
+== ONLINE-RETAIL-II-H dOld=0.5 run=20261025_210554_ONLINE-RETAIL-II-H
+   F    queries=20/20 disagreeing=0 finished=True total_ms=2165
+   BUD3 queries=20/20 disagreeing=0 finished=True total_ms=3372
+   actions: discover=0 aborted=4 skipped=15 remine=1; abort phases=['mining', 'mining', 'mining', 'mining']
+   epoch: attempts=4 aborts=4 windows=290..2320 log-bound=4
+   H8 aborts within log bound: True; query cost 2927 <= 4267: True
+   H9a BUD3/F = 1.56 -> FAIL
+== ONLINE-RETAIL-II-H dOld=0.9 run=20261025_210606_ONLINE-RETAIL-II-H
+   F    queries=10/10 disagreeing=0 finished=True total_ms=846
+   BUD3 queries=10/10 disagreeing=0 finished=True total_ms=2270
+   actions: discover=0 aborted=3 skipped=6 remine=1; abort phases=['mining', 'mining', 'mining']
+   epoch: attempts=3 aborts=3 windows=116..464 log-bound=3
+   H8 aborts within log bound: True; query cost 1963 <= 2128: True
+   H9a BUD3/F = 2.68 -> FAIL
+== DUNNHUMBY-H dOld=0.5 run=20261025_210613_DUNNHUMBY-H
+   F    queries=20/20 disagreeing=0 finished=True total_ms=2996
+   BUD3 queries=20/20 disagreeing=0 finished=True total_ms=4241
+   actions: discover=0 aborted=4 skipped=15 remine=1; abort phases=['mining', 'mining', 'mining', 'mining']
+   epoch: attempts=4 aborts=4 windows=762..6096 log-bound=4
+   H8 aborts within log bound: True; query cost 3818 <= 5237: True
+   H9a BUD3/F = 1.42 -> FAIL
+== DUNNHUMBY-H dOld=0.9 run=20261025_210628_DUNNHUMBY-H
+   F    queries=10/10 disagreeing=0 finished=True total_ms=1847
+   BUD3 queries=10/10 disagreeing=0 finished=True total_ms=3436
+   actions: discover=0 aborted=3 skipped=6 remine=1; abort phases=['mining', 'mining', 'mining']
+   epoch: attempts=3 aborts=3 windows=304..1216 log-bound=3
+   H8 aborts within log bound: True; query cost 2983 <= 3283: True
+   H9a BUD3/F = 1.86 -> FAIL
+== LEVIATHAN dOld=0.25 run=20261025_210637_LEVIATHAN
+   F    queries=7/7 disagreeing=0 finished=True total_ms=1283
+   BUD3 queries=7/7 disagreeing=0 finished=True total_ms=1906
+   actions: discover=0 aborted=2 skipped=4 remine=1; abort phases=['mining', 'mining']
+   epoch: attempts=2 aborts=2 windows=1250..2500 log-bound=2
+   H8 aborts within log bound: True; query cost 1378 <= 2193: True
+   H9a BUD3/F = 1.49 -> FAIL
+== BIBLE dOld=0.25 run=20261025_210819_BIBLE
+   F    queries=7/7 disagreeing=0 finished=True total_ms=5184
+   BUD3 queries=7/7 disagreeing=0 finished=True total_ms=8719
+   actions: discover=1 aborted=3 skipped=2 remine=1; abort phases=['rebuild', 'rebuild', 'rebuild']
+   epoch: attempts=2 aborts=1 windows=7794..15588 log-bound=2
+   epoch: attempts=2 aborts=2 windows=3897..7794 log-bound=2
+   H8 aborts within log bound: True; query cost 7266 <= 9524: True
+   H9a BUD3/F = 1.68 -> FAIL
+== FIFA dOld=0.9 run=20261025_211023_FIFA
+   F    queries=10/10 disagreeing=0 finished=True total_ms=297668
+   BUD3 queries=10/10 disagreeing=0 finished=True total_ms=67532
+   actions: discover=9 aborted=0 skipped=0 remine=1; abort phases=[]
+   H8 aborts within log bound: True; query cost 38716 <= 342818: True
+   H9a BUD3/F = 0.23 -> PASS
+H8: 9/9 -> PASS
+H9a: 3/9 -> FAIL
+H9b: 1/1 -> PASS
