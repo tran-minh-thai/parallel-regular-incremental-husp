@@ -73,7 +73,9 @@ public class QueryScheduleProbe {
         String tag = ExpUtil.datasetTag(seqFile);
 
         List<List<int[]>> all = ExpUtil.loadAll(seqFile, euiFile);
-        List<List<List<int[]>>> batches = ExpUtil.split(all, ExpConfig.fineRatios(k, 0.25));
+        double dOld = Double.parseDouble(System.getProperty("dold", "0.25"));
+        boolean remineReference = "remine".equals(System.getProperty("oracle"));
+        List<List<List<int[]>>> batches = ExpUtil.split(all, ExpConfig.fineRatios(k, dOld));
         boolean[] queryAfter = schedule(schedule, batches.size());
 
         File dir = new File("results-probe",
@@ -81,8 +83,9 @@ public class QueryScheduleProbe {
                         + (AlgoPRIncHUSP.FAULT != 0 ? "_fault" + AlgoPRIncHUSP.FAULT : ""));
         if (!dir.mkdirs()) throw new IOException("cannot create " + dir);
         writeMeta(dir, args, seqFile, euiFile, threads);
-        System.out.printf("%s N=%d delta=%s B=%d k=%d schedule=%s threads=%d fault=%d -> %s%n",
-                tag, all.size(), args[2], absB, batches.size(), schedule, threads, AlgoPRIncHUSP.FAULT, dir);
+        System.out.printf("%s N=%d delta=%s B=%d k=%d dOld=%s schedule=%s threads=%d fault=%d reference=%s -> %s%n",
+                tag, all.size(), args[2], absB, batches.size(), dOld, schedule, threads, AlgoPRIncHUSP.FAULT,
+                remineReference ? "parallel engine (NOT independent)" : "independent oracle", dir);
 
         // Oracle per queried prefix, computed once and shared by every policy.
         Map<Integer, Map<String, long[]>> oracle = new HashMap<>();
@@ -91,10 +94,20 @@ public class QueryScheduleProbe {
             prefix.addAll(batches.get(b));
             if (!queryAfter[b]) continue;
             long minUtil = (long) Math.ceil(delta * ExpUtil.totalUtil(prefix));
-            AlgoRHUSP o = new AlgoRHUSP();
             Map<String, long[]> canon = new HashMap<>();
-            for (Map.Entry<String, long[]> e : o.mine(new ArrayList<>(prefix), minUtil, absB).entrySet())
-                canon.put(SeqConverter.canonical(e.getKey()), e.getValue());
+            if (remineReference) {
+                // Reference = the parallel engine re-run on the prefix. NOT independent of the proposal's
+                // discovery engine; used only where the independent oracle is too slow (hours per prefix).
+                IncrementalHUSPMiner ref = build("remine", threads, absB);
+                ref.initialBuild(new ArrayList<>(prefix), delta, 0.0);
+                for (Map.Entry<String, long[]> e : ref.getHighUtilityPatterns().entrySet())
+                    canon.put(SeqConverter.canonical(e.getKey()), e.getValue());
+                ref.close();
+            } else {
+                AlgoRHUSP o = new AlgoRHUSP();
+                for (Map.Entry<String, long[]> e : o.mine(new ArrayList<>(prefix), minUtil, absB).entrySet())
+                    canon.put(SeqConverter.canonical(e.getKey()), e.getValue());
+            }
             oracle.put(b, canon);
             System.out.printf("  oracle after batch %d: N=%d minUtil=%d patterns=%d%n",
                     b, prefix.size(), minUtil, canon.size());
@@ -105,7 +118,7 @@ public class QueryScheduleProbe {
              BufferedWriter tm = new BufferedWriter(new FileWriter(new File(dir, "timing_feasibility.csv")))) {
             ex.write("dataset,policy,batches,schedule,fault,query,after_batch,n_seqs,oracle_size,returned,"
                     + "missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,"
-                    + "tracked_after\n");
+                    + "gap_rejected,tracked_after\n");
             tm.write("dataset,policy,batches,schedule,fault,query,after_batch,ingest_ms,query_ms,"
                     + "discovery_mine_ms,rebuild_ms,seed_ms\n");
             for (String policy : policies) {
@@ -225,7 +238,7 @@ public class QueryScheduleProbe {
     private static void writeMeta(File dir, String[] args, String seqFile, String euiFile, int threads)
             throws Exception {
         StringBuilder props = new StringBuilder();
-        for (String key : new String[]{"fault", "threads"})
+        for (String key : new String[]{"fault", "threads", "dold", "oracle"})
             if (System.getProperty(key) != null) props.append("-D").append(key).append('=').append(System.getProperty(key)).append(' ');
         String src = "src/main/java/";
         StringBuilder sb = new StringBuilder("{\n");
