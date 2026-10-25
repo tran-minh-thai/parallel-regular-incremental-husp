@@ -118,7 +118,7 @@ public class QueryScheduleProbe {
              BufferedWriter tm = new BufferedWriter(new FileWriter(new File(dir, "timing_feasibility.csv")))) {
             ex.write("dataset,policy,batches,schedule,fault,query,after_batch,n_seqs,oracle_size,returned,"
                     + "missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,"
-                    + "gap_rejected,tracked_after,action,r\n");
+                    + "gap_rejected,tracked_after,action,r,kept_on_abort\n");
             tm.write("dataset,policy,batches,schedule,fault,query,after_batch,ingest_ms,query_ms,"
                     + "discovery_mine_ms,rebuild_ms,seed_ms\n");
             final long limitS = Long.getLong("limit", 0);         // per-policy time limit, reference excluded
@@ -165,8 +165,10 @@ public class QueryScheduleProbe {
                             p == null ? "" : "" + p.lastQueryGapRejected,
                             p == null ? "" : "" + m.trackedCount(),
                             p == null || !(p.adaptiveQuery || p.costCapped) ? "" : (p.lastQueryAction == 0 ? "discover"
-                                    : p.lastQueryAction == 1 ? "remine" : p.lastQueryAction == 2 ? "aborted" : "none"),
-                            p == null || !(p.adaptiveQuery || p.costCapped) ? "" : String.format(java.util.Locale.ROOT, "%.2f", p.lastQueryR)) + "\n");
+                                    : p.lastQueryAction == 1 ? "remine" : p.lastQueryAction == 2 ? "aborted"
+                                    : p.lastQueryAction == 3 ? "skipped" : "none"),
+                            p == null || !(p.adaptiveQuery || p.costCapped) ? "" : String.format(java.util.Locale.ROOT, "%.2f", p.lastQueryR),
+                            p == null || !p.costCapped ? "" : "" + p.lastQueryKept) + "\n");
                     tm.write(String.join(",", tag, policy, "" + batches.size(), schedule, "" + AlgoPRIncHUSP.FAULT,
                             "" + q, "" + b, "" + ingestMs, "" + queryMs,
                             p == null ? "" : "" + p.lastQueryMineMs,
@@ -178,7 +180,7 @@ public class QueryScheduleProbe {
                             ingestMs, queryMs, p == null ? ""
                                     : String.format(java.util.Locale.ROOT, "  [%sthr=%d cand=%d fresh=%d gapRej=%d mine=%dms rebuild=%dms tracked=%d]",
                                     p.adaptiveQuery || p.costCapped ? (p.lastQueryAction == 0 ? "DISCOVER r="
-                                            : p.lastQueryAction == 2 ? "ABORTED+REMINE r=" : "REMINE r=")
+                                            : p.lastQueryAction == 2 ? "ABORTED+REMINE r=" : p.lastQueryAction == 3 ? "SKIP+REMINE r=" : "REMINE r=")
                                             + String.format(java.util.Locale.ROOT, "%.1f ", p.lastQueryR) : "",
                                     p.lastQueryThreshold, p.lastQueryCandidates, p.lastQueryFresh, p.lastQueryGapRejected,
                                     p.lastQueryMineMs, p.lastQueryRebuildMs, m.trackedCount()));
@@ -197,10 +199,12 @@ public class QueryScheduleProbe {
     static IncrementalHUSPMiner build(String policy, int threads, int absB) {
         IncrementalHUSPMiner m;
         switch (policy) {
-            case "remine": {
+            case "remine":
+            case "remine-nogc": {
                 AlgoParRemine r = ExpConfig.newParRemine(threads);
                 r.parallelStrategy = AlgoRHUSPMinerParallel.STRAT_RDLB;   // same scheduler as the proposal
                 r.mineOnQuery = true;
+                r.measureMemory = !policy.endsWith("-nogc");
                 m = r;
                 break;
             }
@@ -210,6 +214,8 @@ public class QueryScheduleProbe {
                 // sel[-k<kappa>]: the adaptive selector (keep anchor, suffix prune, gap filter, lambda 1)
                 List<String> parts = new ArrayList<>(java.util.Arrays.asList(policy.split("-")));
                 boolean sel = parts.get(0).equals("sel");
+                boolean bud2 = parts.get(0).equals("bud2");          // bud2: bud + keep rebuilt + overhead gate + no GC
+                if (bud2) { parts.set(0, "bud"); parts.add("nogc"); }
                 boolean bud = parts.get(0).equals("bud");            // bud[-c<factor>]: cost-capped discovery
                 double budget = 1.0;
                 for (String s : parts) if (s.startsWith("c")) budget = Double.parseDouble(s.substring(1));
@@ -231,6 +237,9 @@ public class QueryScheduleProbe {
                 p.adaptiveQuery = sel;
                 p.costCapped = bud;
                 p.budgetFactor = budget;
+                p.keepRebuiltOnAbort = bud2;
+                p.gateByOverhead = bud2;
+                p.measureMemoryOnQuery = !parts.contains("nogc");
                 p.selectorKappa = kappa;
                 m = p;
             }

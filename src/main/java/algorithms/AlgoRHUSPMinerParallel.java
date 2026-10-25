@@ -94,6 +94,10 @@ public class AlgoRHUSPMinerParallel {
     // checkMemory() (called once per node) and throws TIMEOUT_INTERRUPT when it expires --
     // the exception propagates out of pool.invoke(). timeoutMs <= 0 means no limit.
     public long timeoutMs = -1;
+    /** Absolute deadline (epoch ms) overriding {@link #timeoutMs}, so a caller's budget also covers loading. */
+    public long deadlineEpochMillis = -1;
+    /** Run the GC-based peak-memory reset before mining; off on latency-critical paths (it sleeps). */
+    public boolean measureMemory = true;
     private volatile long deadlineMillis = Long.MAX_VALUE;
 
     /**
@@ -318,10 +322,11 @@ public class AlgoRHUSPMinerParallel {
 
     /** Timed mining core: Phase 1 (parallel preprocessing) + Phase 2 (parallel recursive mining). */
     private void mineCore() {
-        MemMeter.reset(); // GC prior garbage + re-base peak marker for a clean per-run measurement
+        if (measureMemory) MemMeter.reset(); // GC prior garbage + re-base peak marker for a clean per-run measurement
 
         startTimestamp = System.currentTimeMillis();
-        deadlineMillis = (timeoutMs > 0) ? startTimestamp + timeoutMs : Long.MAX_VALUE;
+        deadlineMillis = deadlineEpochMillis > 0 ? deadlineEpochMillis
+                : (timeoutMs > 0) ? startTimestamp + timeoutMs : Long.MAX_VALUE;
         cpuStartNanos = THREAD_MX.isCurrentThreadCpuTimeSupported()
                 ? THREAD_MX.getCurrentThreadCpuTime() : -1L;
         checkMemory();

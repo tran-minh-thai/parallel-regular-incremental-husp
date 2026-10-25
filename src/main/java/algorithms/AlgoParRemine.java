@@ -42,6 +42,8 @@ public class AlgoParRemine implements IncrementalHUSPMiner {
      */
     public int parallelStrategy = AlgoRHUSPMinerParallel.STRAT_STEAL;
     public boolean denseBuffers = true;
+    /** Passed to the engine: false skips its GC-based peak-memory reset (latency probes). */
+    public boolean measureMemory = true;
 
     private final List<List<int[]>> db = new ArrayList<>();
     private double minUtilRatio, maxRegRatio;
@@ -86,6 +88,7 @@ public class AlgoParRemine implements IncrementalHUSPMiner {
         m.numThreads = numThreads;
         m.parallelStrategy = parallelStrategy;
         m.denseBuffers = denseBuffers;
+        m.measureMemory = measureMemory;
         m.useEUCS = true;
         m.boundMode = AlgoRHUSPMinerParallel.BOUND_LA_PEU;
         m.useRegPruning = true;
