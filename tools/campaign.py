@@ -47,21 +47,23 @@ def load_config(path=CONFIG):
 
 
 def cells(cfg, only=None):
-    """Every cell of the selected experiments, in a fixed order."""
+    """Every cell of the selected experiments, in a fixed order. An experiment either crosses its datasets
+    with its schedules, or lists (dataset, schedule) pairs explicitly (generated repeats)."""
     out = []
     for exp, spec in cfg["experiments"].items():
         if only and exp not in only:
             continue
-        for ds in spec["datasets"]:
+        pairs = spec.get("pairs") or [[ds, sch] for ds in spec["datasets"] for sch in spec["schedules"]]
+        first = spec.get("first_rep", 0)
+        for ds, sch in pairs:
             if ds not in cfg["datasets"]:
                 raise SystemExit("experiment %s names dataset %s, which the dataset table lacks" % (exp, ds))
-            for sch in spec["schedules"]:
-                for th in spec.get("threads", [cfg["threads"]]):
-                    for rep in range(spec.get("reps", 1)):
-                        pol = ",".join(spec["policies"])
-                        key = "|".join([exp, ds, sch, pol, "t%d" % th, "r%d" % rep])
-                        out.append({"key": key, "experiment": exp, "dataset": ds, "schedule": sch, "policies": pol,
-                                    "threads": th, "rep": rep, "oracle": spec["oracle"], "limit_s": spec["limit_s"]})
+            for th in spec.get("threads", [cfg["threads"]]):
+                for rep in range(first, first + spec.get("reps", 1)):
+                    pol = ",".join(spec["policies"])
+                    key = "|".join([exp, ds, sch, pol, "t%d" % th, "r%d" % rep])
+                    out.append({"key": key, "experiment": exp, "dataset": ds, "schedule": sch, "policies": pol,
+                                "threads": th, "rep": rep, "oracle": spec["oracle"], "limit_s": spec["limit_s"]})
     return out
 
 

@@ -1179,7 +1179,9 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
      *       current prefix a valid anchor with θ₀ = minUtil: the tracked set shrinks to the answer, the
      *       raw increment is dropped, and the next query mines only the data since this one.</li>
      * </ul>
-     * Both are exact; they differ in cost only.
+     * Both are exact; they differ in cost only. Measured: resetting makes later windows small, their
+     * discovery threshold small and their candidate sets explode, so ANCHOR_RESET is kept for the
+     * exactness tests and is not the policy of the measurement campaign.
      */
     public static final int ANCHOR_KEEP = 0, ANCHOR_RESET = 1;
     public int anchorPolicy = ANCHOR_KEEP;
@@ -1248,7 +1250,11 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
     public int abortedQueries = 0;
     /** Keep the candidates whose state was fully rebuilt when a cost-capped discovery is aborted. */
     public boolean keepRebuiltOnAbort = false;
-    /** Attempt discovery only when budgetFactor * F_last >= 2 * the fixed overhead of the last attempt. */
+    /**
+     * Attempt discovery only when budgetFactor * F_last >= 2 * the fixed overhead of the last attempt.
+     * Not used by the campaign policy (bud3): aborted attempts cost about the whole budget, so the gate
+     * never closes; kept for the exactness tests.
+     */
     public boolean gateByOverhead = false;
     /** False skips the engine's GC-based memory reset on the query path (discovery and full re-mine). */
     public boolean measureMemoryOnQuery = true;
@@ -1286,6 +1292,11 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         BudgetExceeded() { super("DISCOVERY_BUDGET", null, false, false); }
     }
 
+    /**
+     * The selector by r = tau * |W| / U(W) against selectorKappa (policy "sel"). Not the campaign policy:
+     * the cost of discovery is not monotone in r across datasets (the same r wins on one dataset and loses
+     * on another), so the cost-capped policy replaced it; kept for the exactness tests.
+     */
     public boolean adaptiveQuery = false;
     public double selectorKappa = 50.0;
     public double reanchorFraction = 0.5;
