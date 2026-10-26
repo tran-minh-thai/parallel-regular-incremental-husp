@@ -74,23 +74,32 @@ public class QueryScheduleProbe {
 
         List<List<int[]>> all = ExpUtil.loadAll(seqFile, euiFile);
         double dOld = Double.parseDouble(System.getProperty("dold", "0.25"));
-        boolean remineReference = "remine".equals(System.getProperty("oracle"));
+        String oracleMode = System.getProperty("oracle", "independent");
+        boolean remineReference = "remine".equals(oracleMode);
+        // first: the first policy of the run is the reference for the others (no extra mining; used by the timing
+        //        campaign, where exactness against an independent oracle is a separate experiment);
+        // none:  no comparison at all (single-policy timing cells).
+        boolean firstReference = "first".equals(oracleMode), noReference = "none".equals(oracleMode);
+        String outRoot = System.getProperty("out", "results-probe");
+        String cell = System.getProperty("cell", "");
         List<List<List<int[]>>> batches = ExpUtil.split(all, ExpConfig.fineRatios(k, dOld));
         boolean[] queryAfter = schedule(schedule, batches.size());
 
-        File dir = new File("results-probe",
+        File dir = new File(outRoot,
                 new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + "_" + tag
+                        + (cell.isEmpty() ? "" : "_" + cell)
                         + (AlgoPRIncHUSP.FAULT != 0 ? "_fault" + AlgoPRIncHUSP.FAULT : ""));
         if (!dir.mkdirs()) throw new IOException("cannot create " + dir);
         writeMeta(dir, args, seqFile, euiFile, threads);
         System.out.printf("%s N=%d delta=%s B=%d k=%d dOld=%s schedule=%s threads=%d fault=%d reference=%s -> %s%n",
                 tag, all.size(), args[2], absB, batches.size(), dOld, schedule, threads, AlgoPRIncHUSP.FAULT,
-                remineReference ? "parallel engine (NOT independent)" : "independent oracle", dir);
+                firstReference ? "first policy of this run (NOT independent)" : noReference ? "none"
+                        : remineReference ? "parallel engine (NOT independent)" : "independent oracle", dir);
 
         // Oracle per queried prefix, computed once and shared by every policy.
         Map<Integer, Map<String, long[]>> oracle = new HashMap<>();
         List<List<int[]>> prefix = new ArrayList<>();
-        for (int b = 0; b < batches.size(); b++) {
+        for (int b = 0; b < batches.size() && !firstReference && !noReference; b++) {
             prefix.addAll(batches.get(b));
             if (!queryAfter[b]) continue;
             long minUtil = (long) Math.ceil(delta * ExpUtil.totalUtil(prefix));
@@ -154,9 +163,18 @@ public class QueryScheduleProbe {
                     long t2 = System.nanoTime();
                     Map<String, long[]> res = new HashMap<>(m.getHighUtilityPatterns());
                     long queryMs = (System.nanoTime() - t2) / 1_000_000;
-                    int[] d = diff(res, oracle.get(b));
-                    compared++;
-                    if (d[0] + d[1] + d[2] + d[3] > 0) failing++;
+                    boolean isReference = (firstReference && policy.equals(policies[0])) || noReference;
+                    if (firstReference && policy.equals(policies[0])) {
+                        Map<String, long[]> canon = new HashMap<>();
+                        for (Map.Entry<String, long[]> e : res.entrySet()) canon.put(SeqConverter.canonical(e.getKey()), e.getValue());
+                        oracle.put(b, canon);
+                    }
+                    if (!oracle.containsKey(b)) oracle.put(b, new HashMap<>());
+                    int[] d = isReference ? new int[4] : diff(res, oracle.get(b));
+                    if (!isReference) {
+                        compared++;
+                        if (d[0] + d[1] + d[2] + d[3] > 0) failing++;
+                    }
                     AlgoPRIncHUSP p = (m instanceof AlgoPRIncHUSP) ? (AlgoPRIncHUSP) m : null;
                     ex.write(String.join(",", tag, policy, "" + batches.size(), schedule, "" + AlgoPRIncHUSP.FAULT,
                             "" + q, "" + b, "" + n, "" + oracle.get(b).size(), "" + res.size(),
@@ -213,7 +231,7 @@ public class QueryScheduleProbe {
             }
         }
         System.out.printf("compared queries=%d failing=%d%n", compared, failing);
-        if (compared == 0 || failing > 0) System.exit(1);
+        if ((compared == 0 && !noReference) || failing > 0) System.exit(1);
     }
 
     static IncrementalHUSPMiner build(String policy, int threads, int absB) {
@@ -308,11 +326,12 @@ public class QueryScheduleProbe {
     private static void writeMeta(File dir, String[] args, String seqFile, String euiFile, int threads)
             throws Exception {
         StringBuilder props = new StringBuilder();
-        for (String key : new String[]{"fault", "threads", "dold", "oracle", "limit"})
+        for (String key : new String[]{"fault", "threads", "dold", "oracle", "limit", "out", "cell", "kind"})
             if (System.getProperty(key) != null) props.append("-D").append(key).append('=').append(System.getProperty(key)).append(' ');
         String src = "src/main/java/";
         StringBuilder sb = new StringBuilder("{\n");
-        sb.append(kv("kind", "probe (development machine, feasibility only)")).append(",\n");
+        sb.append(kv("kind", System.getProperty("kind", "probe (development machine, feasibility only)"))).append(",\n");
+        sb.append(kv("cell", System.getProperty("cell", ""))).append(",\n");
         sb.append(kv("command", ("java " + props + "test.QueryScheduleProbe " + String.join(" ", args)).trim())).append(",\n");
         sb.append(kv("git_commit", git("rev-parse", "HEAD"))).append(",\n");
         String dirty = git("status", "--porcelain", "--", "src");
