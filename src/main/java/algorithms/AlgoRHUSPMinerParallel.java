@@ -1084,9 +1084,11 @@ public class AlgoRHUSPMinerParallel {
         final long[] distinctI = new long[P], distinctS = new long[P], mergedSlots = new long[P];
         forBlocksExact(P, q -> {
             if (EUCS_FAULT == 4 && q == 0) { keptP[q] = new long[0]; return; }   // deliberate defect: a partition lost
-            int total = 0;
-            for (int t = 0; t < T; t++) total += parts[t][q].size;
-            PairAccMap m = new PairAccMap(total);
+            // The same pair usually sits in several thread tables, so the sum of their sizes overstates the distinct
+            // count by up to T times; start from the largest one (a lower bound) and let the table grow.
+            int largest = 0;
+            for (int t = 0; t < T; t++) largest = Math.max(largest, parts[t][q].size);
+            PairAccMap m = new PairAccMap(largest + (largest >> 1));
             for (int t = 0; t < T; t++) { mergeInto(m, parts[t][q]); parts[t][q] = null; }
             long[] kept = new long[16];
             int nk = 0; long di = 0, ds = 0;
