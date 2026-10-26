@@ -1,0 +1,46 @@
+# python3 tools/build_stream_datasets.py rees46 <data-local>/rees46/ecommerce-events-history-in-cosmetics-shop/ecommerce-events-history-in-cosmetics-shop.zip datasets tools/stream_datasets/manifests REES46-COSMETICS-CW; commit c1945f5735722fe8bd1a1c2b133add1d5ee6cd43; ran concurrently with the round-3 calibrations
+{
+  "name": "REES46-COSMETICS-CW",
+  "builder": "tools/build_stream_datasets.py",
+  "builder_sha256": "03c0162a837ee6ad59be15e755e74694fe5eab401573a9cd9cb66b05c7e8d68e",
+  "raw_file": "ecommerce-events-history-in-cosmetics-shop.zip",
+  "raw_sha256": "9e6412743b279180e025d0d4491033dc693867ae92a7851264ea2dbbf5568922",
+  "roles": "purchase events only; sequence=(user_id, ISO week of event_time), ordered by week then user id; event=one user_session (one order), ordered by its first purchase time; item=product_id; utility=round(price*100), summed per product and order; exact repeated rows kept",
+  "values": "measured",
+  "sequences": 149592,
+  "events": 156984,
+  "item_occurrences": 1278414,
+  "distinct_items": 40772,
+  "total_utility": 635183029,
+  "counts": {
+    "files": 5,
+    "rows": 20692840,
+    "purchase_rows": 1287007,
+    "exact_repeats_kept": 898,
+    "dropped_nonpositive_price": 127,
+    "weeks": 22
+  },
+  "regularity_bound_rule": "2 weeks of sequences, ceil(2 * N / weeks)",
+  "regularity_bound_B": 13600,
+  "seq_sha256": "9a421d2e642a02ec1f6cbf4b56f0ab9ac12bab37fcc09128293a043d5fc5b723",
+  "eui_sha256": "96287991b1c4d76cadb81187f878ed28b656e149e602fd1145842782e8ecca20"
+}
+       19.14 real        18.84 user         0.22 sys
+           824049664  maximum resident set size
+                   0  average shared memory size
+                   0  average unshared data size
+                   0  average unshared stack size
+               51409  page reclaims
+                  66  page faults
+                   0  swaps
+                   0  block input operations
+                   0  block output operations
+                   0  messages sent
+                   0  messages received
+                   0  signals received
+                  26  voluntary context switches
+                6608  involuntary context switches
+        403011913322  instructions retired
+         81359750960  cycles elapsed
+           813958176  peak memory footprint
+exit=0

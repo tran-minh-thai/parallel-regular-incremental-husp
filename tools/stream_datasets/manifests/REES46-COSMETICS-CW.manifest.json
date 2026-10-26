@@ -1,0 +1,26 @@
+{
+  "name": "REES46-COSMETICS-CW",
+  "builder": "tools/build_stream_datasets.py",
+  "builder_sha256": "03c0162a837ee6ad59be15e755e74694fe5eab401573a9cd9cb66b05c7e8d68e",
+  "raw_file": "ecommerce-events-history-in-cosmetics-shop.zip",
+  "raw_sha256": "9e6412743b279180e025d0d4491033dc693867ae92a7851264ea2dbbf5568922",
+  "roles": "purchase events only; sequence=(user_id, ISO week of event_time), ordered by week then user id; event=one user_session (one order), ordered by its first purchase time; item=product_id; utility=round(price*100), summed per product and order; exact repeated rows kept",
+  "values": "measured",
+  "sequences": 149592,
+  "events": 156984,
+  "item_occurrences": 1278414,
+  "distinct_items": 40772,
+  "total_utility": 635183029,
+  "counts": {
+    "files": 5,
+    "rows": 20692840,
+    "purchase_rows": 1287007,
+    "exact_repeats_kept": 898,
+    "dropped_nonpositive_price": 127,
+    "weeks": 22
+  },
+  "regularity_bound_rule": "2 weeks of sequences, ceil(2 * N / weeks)",
+  "regularity_bound_B": 13600,
+  "seq_sha256": "9a421d2e642a02ec1f6cbf4b56f0ab9ac12bab37fcc09128293a043d5fc5b723",
+  "eui_sha256": "96287991b1c4d76cadb81187f878ed28b656e149e602fd1145842782e8ecca20"
+}

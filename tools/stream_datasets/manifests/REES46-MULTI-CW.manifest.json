@@ -1,0 +1,25 @@
+{
+  "name": "REES46-MULTI-CW",
+  "builder": "tools/build_stream_datasets.py",
+  "builder_sha256": "03c0162a837ee6ad59be15e755e74694fe5eab401573a9cd9cb66b05c7e8d68e",
+  "raw_file": "ecommerce-behavior-data-from-multi-category-store.zip",
+  "raw_sha256": "0d23bc5116a31f34ee97e459bcd1ebfff5a4d262391ae82a4ddaab830314eecb",
+  "roles": "purchase events only; sequence=(user_id, ISO week of event_time), ordered by week then user id; event=one user_session (one order), ordered by its first purchase time; item=product_id; utility=round(price*100), summed per product and order; exact repeated rows kept",
+  "values": "measured",
+  "sequences": 979709,
+  "events": 1402846,
+  "item_occurrences": 1548305,
+  "distinct_items": 68076,
+  "total_utility": 50515239277,
+  "counts": {
+    "files": 2,
+    "rows": 109950743,
+    "purchase_rows": 1659788,
+    "exact_repeats_kept": 85,
+    "weeks": 9
+  },
+  "regularity_bound_rule": "2 weeks of sequences, ceil(2 * N / weeks)",
+  "regularity_bound_B": 217714,
+  "seq_sha256": "84c6c95fd7bb66cf91f8afac6d0aa0b0a77436735ef430014794d45bde12a624",
+  "eui_sha256": "d1c573bfdfef9d7ef324e557562e883d16351c371252c101e40205d45550a1eb"
+}
