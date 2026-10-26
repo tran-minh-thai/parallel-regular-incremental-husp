@@ -216,6 +216,26 @@ public class AlgoRHUSPMinerParallel {
 
     // EUCS memory footprint (for contribution analysis: pair counts; I-pairs are stored bidirectionally).
     public long eucsPairsI, eucsPairsS;
+
+    /**
+     * Compact co-occurrence structure. When on: (1) the i-extension adjacency of item a keeps only items
+     * b ordered after a, the only ones an i-extension of a pattern ending in a can append (items within an
+     * event are sorted, and the extension region starts after a's position); (2) pairs whose accumulated
+     * utility is below minUtility are dropped when the lists are built, since every lookup stops at them;
+     * (3) the per-entry utility is no longer stored, because every kept entry passes the test. The look-ahead
+     * stamp is built from the same lists, so the promising set shrinks to the items that can follow the last
+     * item, which keeps the bound sound and makes it no looser than before.
+     */
+    public boolean compactEucs = Boolean.getBoolean("eucs.compact");
+    /** Deliberate defects for the audit only: 1 drops every i-pair, 2 stores i-pairs backward (larger -> smaller). */
+    static final int EUCS_FAULT = Integer.getInteger("eucs.fault", 0);
+    /** Audit counters of the co-occurrence structure (filled by buildEUCSParallel). */
+    public long eucsDistinctI, eucsDistinctS, eucsKeptI, eucsKeptS, eucsThreadMapSlots, eucsMergedSlots;
+    public long eucsAdjBytes;
+    private int[] adjIFull, adjSFull;           // compact mode: full degree before dropping, for the pruning counter
+    private final LongAdder eucsVisitedA = new LongAdder();      // adjacency entries read while stamping and collecting
+    private final LongAdder eucsDeadReverseA = new LongAdder();  // i-entries ordered before the last item that passed minUtility
+    public long eucsVisited, eucsDeadReverse;
     public double getEucsApproxMB() {
         // each pair: 1 int item (4B) + 1 long util (8B); plus offset arrays (numValid+1 ints each).
         long bytes = (eucsPairsI + eucsPairsS) * 12L + (long) (numValid + 1) * 2 * 4L;
@@ -374,6 +394,8 @@ public class AlgoRHUSPMinerParallel {
         prunedBound = prunedBoundA.sum();
         prunedNodeCond = prunedNodeCondA.sum();
         prunedRegularity = prunedRegularityA.sum();
+        eucsVisited = eucsVisitedA.sum();
+        eucsDeadReverse = eucsDeadReverseA.sum();
     }
 
     /**
@@ -418,7 +440,8 @@ public class AlgoRHUSPMinerParallel {
         stopMemorySampler();
         finalPatterns.clear();
         maxMemory = 0;
-        exploredNodesA.reset(); candidateCountA.reset();
+        exploredNodesA.reset(); candidateCountA.reset(); eucsVisitedA.reset(); eucsDeadReverseA.reset();
+        adjIFull = adjSFull = null;
         prunedEucsA.reset(); prunedBoundA.reset(); prunedNodeCondA.reset(); prunedRegularityA.reset();
         exploredNodes = candidateCount = 0;
         prunedEucs = prunedBound = prunedNodeCond = prunedRegularity = 0;
@@ -606,11 +629,20 @@ public class AlgoRHUSPMinerParallel {
         int[] cntS = new int[numValid + 1];
         PairAccMap mergedI = new PairAccMap(1 << 16);
         PairAccMap mergedS = new PairAccMap(1 << 16);
+        long slots = 0;
         for (int t = 0; t < T; t++) {
-            if (mapsI[t] != null) mergeInto(mergedI, mapsI[t]);
-            if (mapsS[t] != null) mergeInto(mergedS, mapsS[t]);
+            if (mapsI[t] != null) { slots += mapsI[t].keys.length; mergeInto(mergedI, mapsI[t]); }
+            if (mapsS[t] != null) { slots += mapsS[t].keys.length; mergeInto(mergedS, mapsS[t]); }
             mapsI[t] = null; mapsS[t] = null;
         }
+        eucsThreadMapSlots = slots;
+        eucsMergedSlots = mergedI.keys.length + mergedS.keys.length;
+        eucsDistinctI = mergedI.size; eucsDistinctS = mergedS.size;
+        long kI = 0, kS = 0;
+        for (int j = 0; j < mergedI.keys.length; j++) if (mergedI.keys[j] != -1L && mergedI.acc[j] >= minUtility) kI++;
+        for (int j = 0; j < mergedS.keys.length; j++) if (mergedS.keys[j] != -1L && mergedS.acc[j] >= minUtility) kS++;
+        eucsKeptI = kI; eucsKeptS = kS;
+        if (compactEucs) { Prof.stop("engine.eucs.merge", e1); buildCompactAdjacency(mergedI, mergedS); return; }
         for (int j = 0; j < mergedI.keys.length; j++)
             if (mergedI.keys[j] != -1L) { cntI[(int) (mergedI.keys[j] >>> 32)]++; cntI[(int) mergedI.keys[j]]++; }
         for (int j = 0; j < mergedS.keys.length; j++)
@@ -635,6 +667,7 @@ public class AlgoRHUSPMinerParallel {
         }
         eucsPairsI = adjIStart[numValid];
         eucsPairsS = adjSStart[numValid];
+        eucsAdjBytes = (eucsPairsI + eucsPairsS) * 12L + (long) (numValid + 1) * 2 * 4L;
 
         // Sort adjacency slices in parallel by descending utility to enable early-break pruning.
         // Partitioned into ~4*T blocks (not one task per item) to avoid flooding the pool
@@ -665,6 +698,67 @@ public class AlgoRHUSPMinerParallel {
             @Override protected void compute() { invokeAll(subs); }
         });
         Prof.stop("engine.eucs.sort", e2);
+        checkMemory();
+    }
+
+    /**
+     * Compact lists: i-pairs forward only (smaller dense id -> larger), only pairs reaching minUtility, items
+     * only. Entries are ordered by item id so exploration order stays deterministic.
+     */
+    private void buildCompactAdjacency(PairAccMap mergedI, PairAccMap mergedS) {
+        long[] e2 = Prof.start();
+        int[] cntI = new int[numValid + 1], cntS = new int[numValid + 1];
+        adjIFull = new int[numValid]; adjSFull = new int[numValid];
+        for (int j = 0; j < mergedI.keys.length; j++) {
+            if (mergedI.keys[j] == -1L) continue;
+            int a = EUCS_FAULT == 2 ? (int) mergedI.keys[j] : (int) (mergedI.keys[j] >>> 32);
+            adjIFull[a]++;
+            if (mergedI.acc[j] >= minUtility && EUCS_FAULT != 1) cntI[a]++;
+        }
+        for (int j = 0; j < mergedS.keys.length; j++) {
+            if (mergedS.keys[j] == -1L) continue;
+            int a = (int) (mergedS.keys[j] >>> 32);
+            adjSFull[a]++;
+            if (mergedS.acc[j] >= minUtility) cntS[a]++;
+        }
+        adjIStart = prefixSum(cntI); adjSStart = prefixSum(cntS);
+        adjIItem = new int[adjIStart[numValid]]; adjSItem = new int[adjSStart[numValid]];
+        adjIUtil = null; adjSUtil = null;
+        int[] curI = Arrays.copyOf(adjIStart, numValid), curS = Arrays.copyOf(adjSStart, numValid);
+        for (int j = 0; j < mergedI.keys.length; j++) {
+            if (mergedI.keys[j] == -1L || mergedI.acc[j] < minUtility) continue;
+            int a = (int) (mergedI.keys[j] >>> 32), b = (int) mergedI.keys[j];
+            if (EUCS_FAULT == 1) continue;
+            if (EUCS_FAULT == 2) { int t = a; a = b; b = t; }
+            adjIItem[curI[a]++] = denseToItem[b];
+        }
+        for (int j = 0; j < mergedS.keys.length; j++) {
+            if (mergedS.keys[j] == -1L || mergedS.acc[j] < minUtility) continue;
+            int a = (int) (mergedS.keys[j] >>> 32), b = (int) mergedS.keys[j];
+            adjSItem[curS[a]++] = denseToItem[b];
+        }
+        Prof.stop("engine.eucs.merge", e2 == null ? null : e2);
+        long[] e3 = Prof.start();
+        final int[] aI = adjIItem, aS = adjSItem, sI = adjIStart, sS = adjSStart;
+        final int blocks = Math.max(1, Math.max(1, numThreads) * 4);
+        final int blockSize = (numValid + blocks - 1) / blocks;
+        List<RecursiveAction> subs = new ArrayList<>();
+        for (int b = 0; b < blocks; b++) {
+            final int lo = b * blockSize, hi = Math.min(numValid, lo + blockSize);
+            if (lo >= hi) break;
+            subs.add(new RecursiveAction() {
+                @Override protected void compute() {
+                    for (int d = lo; d < hi; d++) { Arrays.sort(aI, sI[d], sI[d + 1]); Arrays.sort(aS, sS[d], sS[d + 1]); }
+                }
+            });
+        }
+        if (!subs.isEmpty()) pool.invoke(new RecursiveAction() {
+            @Override protected void compute() { invokeAll(subs); }
+        });
+        Prof.stop("engine.eucs.sort", e3);
+        eucsPairsI = adjIStart[numValid];
+        eucsPairsS = adjSStart[numValid];
+        eucsAdjBytes = (eucsPairsI + eucsPairsS) * 4L + (long) (numValid + 1) * 2 * 4L + numValid * 2L * 4L;
         checkMemory();
     }
 
@@ -991,10 +1085,22 @@ public class AlgoRHUSPMinerParallel {
                 if (d >= 0) {
                     // laStampArr indexed by the active scheme; adjItem stores raw item ids
                     boolean dense = denseBuffers;
-                    for (int k = adjIStart[d]; k < adjIStart[d + 1] && adjIUtil[k] >= minUtility; k++)
-                        ctx.laStampArr[dense ? itemToDense[adjIItem[k]] : adjIItem[k]] = laStamp;
-                    for (int k = adjSStart[d]; k < adjSStart[d + 1] && adjSUtil[k] >= minUtility; k++)
-                        ctx.laStampArr[dense ? itemToDense[adjSItem[k]] : adjSItem[k]] = laStamp;
+                    if (compactEucs) {
+                        for (int k = adjIStart[d]; k < adjIStart[d + 1]; k++)
+                            ctx.laStampArr[dense ? itemToDense[adjIItem[k]] : adjIItem[k]] = laStamp;
+                        for (int k = adjSStart[d]; k < adjSStart[d + 1]; k++)
+                            ctx.laStampArr[dense ? itemToDense[adjSItem[k]] : adjSItem[k]] = laStamp;
+                        if (Prof.ON) eucsVisitedA.add(adjIStart[d + 1] - adjIStart[d] + adjSStart[d + 1] - adjSStart[d]);
+                    } else {
+                        int k = adjIStart[d];
+                        for (; k < adjIStart[d + 1] && adjIUtil[k] >= minUtility; k++)
+                            ctx.laStampArr[dense ? itemToDense[adjIItem[k]] : adjIItem[k]] = laStamp;
+                        int k2 = adjSStart[d];
+                        for (; k2 < adjSStart[d + 1] && adjSUtil[k2] >= minUtility; k2++)
+                            ctx.laStampArr[dense ? itemToDense[adjSItem[k2]] : adjSItem[k2]] = laStamp;
+                        if (Prof.ON) eucsVisitedA.add(Math.min(k + 1, adjIStart[d + 1]) - adjIStart[d]
+                                + Math.min(k2 + 1, adjSStart[d + 1]) - adjSStart[d]);
+                    }
                 }
             } else {
                 laStamp = ROOT_STAMP;
@@ -1171,8 +1277,25 @@ public class AlgoRHUSPMinerParallel {
             int[] adjStart = iExt ? adjIStart : adjSStart;
             int[] adjItem = iExt ? adjIItem : adjSItem;
             long[] adjUtil = iExt ? adjIUtil : adjSUtil;
+            if (compactEucs) {
+                int[] full = iExt ? adjIFull : adjSFull;
+                int kept = adjStart[d + 1] - adjStart[d];
+                candidateCountA.add(full[d]);
+                prunedEucsA.add(full[d] - kept);
+                if (Prof.ON) eucsVisitedA.add(kept);
+                for (int k = adjStart[d]; k < adjStart[d + 1]; k++) {
+                    int it = adjItem[k];
+                    int d2 = itemToDense[it];
+                    int idx = denseBuffers ? d2 : it;
+                    long bound = (d2 >= 0 && mark[idx] != -1) ? acc[idx] : 0;
+                    if (boundMode != BOUND_NONE && bound < minUtility) prunedBoundA.increment();
+                    else out[n++] = it;
+                }
+                return n;
+            }
             for (int k = adjStart[d]; k < adjStart[d + 1]; k++) {
                 candidateCountA.increment();
+                if (Prof.ON) eucsVisitedA.increment();
                 if (adjUtil[k] < minUtility) {
                     // Adjacency list is sorted descending: all remaining entries are also below
                     // minUtility, so break early and count all as pruned by EUCS.
@@ -1182,6 +1305,7 @@ public class AlgoRHUSPMinerParallel {
                     break;
                 }
                 int it = adjItem[k];                 // raw item id
+                if (Prof.ON && iExt && it < lastItem) eucsDeadReverseA.increment();
                 int d2 = itemToDense[it];            // dense id (for bound lookup when denseBuffers)
                 int idx = denseBuffers ? d2 : it;    // buffer index under the active scheme
                 long bound = (d2 >= 0 && mark[idx] != -1) ? acc[idx] : 0;
@@ -1424,6 +1548,7 @@ public class AlgoRHUSPMinerParallel {
     public int getPatternCount() { return finalPatterns.size(); }
     public long getRuntimeMs() { return endTimestamp - startTimestamp; }
     public long getMinUtility() { return minUtility; }
+    public int getNumValid() { return numValid; }
     public int getMaxRegularity() { return maxRegularity; }
     public long getCpuTimeMs() {
         return (cpuStartNanos < 0 || cpuEndNanos < 0) ? -1L : (cpuEndNanos - cpuStartNanos) / 1_000_000L;
