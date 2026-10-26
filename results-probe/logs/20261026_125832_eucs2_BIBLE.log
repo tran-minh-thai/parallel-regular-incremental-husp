@@ -1,0 +1,58 @@
+# java -Xmx16g -Dprof=true -cp out test.EucsAudit datasets/BIBLE_seq.txt datasets/BIBLE_eui.txt 0.005 1091 10
+# commit a45713fe997d1bb6139ceb8832653c2f50d28ba0 tree=0 modified
+# sha256 eda8395f76855570888323f924ddd4bfd56d90e1d33882922a84e3462636a341 c5f665ba9974bfc40d4dab56b8ec3070a0808ab6b5b7345774efd2ad75b507e0 0da1e3e4434c16dce50158847b8ae00f02f1c20f576bbf5d1e23a80245886c1e c3527080116796196ef6c9af1870ca155bb54b24ec4b8d4f3570be3a1ec99b2d 
+# openjdk version "26.0.1" 2026-04-21 host ThaiTMs-MacBook-Pro
+BIBLE N=36369 input=36369 delta=0.005 B=1091 threads=10 mode=full minUtil=177751 builds=hash,dense,partitioned,sketch
+
+[original] built=hash patterns=2141 wall=1389ms numValid=167
+  pairs: i distinct=0 kept=0 | s distinct=27223 kept=4594
+  construction: thread slots=688128 (13.1 MB at 20 B/slot, 8 B/cell dense) merged slots=131072 (2.5 MB)
+  adjacency: entries i=0 s=27223 bytes=328020 (0.31 MB)
+  mining: nodes=18147 candidates=972037 prunedEucs=261376 prunedBound=692514 adjEntriesRead=1432540 deadReverseI=0
+  engine.eucs.merge                  1        15.2        15.2    1.00   0.10
+  engine.eucs.scan                   1        52.8       402.9    7.63   0.76
+  engine.eucs.sort                   1         3.8        27.7    7.34   0.73
+
+[compact-hash] built=hash patterns=2141 wall=1221ms numValid=167
+  pairs: i distinct=0 kept=0 | s distinct=27223 kept=4594
+  construction: thread slots=688128 (13.1 MB at 20 B/slot, 8 B/cell dense) merged slots=131072 (2.5 MB)
+  adjacency: entries i=0 s=4594 bytes=19720 (0.02 MB)
+  mining: nodes=18147 candidates=949196 prunedEucs=243316 prunedBound=687733 adjEntriesRead=1420988 deadReverseI=0
+  engine.eucs.merge                  2         9.4         9.4    1.00   0.10
+  engine.eucs.scan                   1        83.4       654.4    7.85   0.78
+  engine.eucs.sort                   1         0.9         3.3    3.59   0.36
+  compare with original: patterns=2141 missing=0 extra=0 valueMismatch=0 | kept pairs=4594 vs first compact=4594, differing=0
+
+[compact-dense] built=dense patterns=2141 wall=1133ms numValid=167
+  pairs: i distinct=0 kept=0 | s distinct=27223 kept=4594
+  construction: thread slots=417500 (3.2 MB at 20 B/slot, 8 B/cell dense) merged slots=0 (0.0 MB)
+  adjacency: entries i=0 s=4594 bytes=19720 (0.02 MB)
+  mining: nodes=18147 candidates=949196 prunedEucs=243316 prunedBound=687733 adjEntriesRead=1420988 deadReverseI=0
+  engine.eucs.adjacency              1         4.9        15.1    3.10   0.31
+  engine.eucs.merge                  1         9.1        48.3    5.32   0.53
+  engine.eucs.scan                   1        54.0       388.8    7.20   0.72
+  compare with original: patterns=2141 missing=0 extra=0 valueMismatch=0 | kept pairs=4594 vs first compact=4594, differing=0
+
+[compact-partitioned] built=partitioned patterns=2141 wall=1120ms numValid=167
+  pairs: i distinct=0 kept=0 | s distinct=27223 kept=4594
+  construction: thread slots=501760 (9.6 MB at 20 B/slot, 8 B/cell dense) merged slots=262144 (5.0 MB)
+  adjacency: entries i=0 s=4594 bytes=19720 (0.02 MB)
+  mining: nodes=18147 candidates=949196 prunedEucs=243316 prunedBound=687733 adjEntriesRead=1420988 deadReverseI=0
+  engine.eucs.adjacency              1         1.6         2.6    1.61   0.16
+  engine.eucs.merge                  1        12.6        95.5    7.60   0.76
+  engine.eucs.scan                   1        38.4       309.7    8.06   0.81
+  compare with original: patterns=2141 missing=0 extra=0 valueMismatch=0 | kept pairs=4594 vs first compact=4594, differing=0
+
+[compact-sketch] built=sketch patterns=2141 wall=1240ms numValid=167
+  pairs: i distinct=0 kept=0 | s distinct=4611 kept=4594 | sketch cells=131072 dropped pair-occurrences=606907 (distinct counts are survivors)
+  construction: thread slots=92160 (1.8 MB at 20 B/slot, 8 B/cell dense) merged slots=65536 (1.3 MB)
+  adjacency: entries i=0 s=4594 bytes=19720 (0.02 MB)
+  mining: nodes=18147 candidates=949196 prunedEucs=243316 prunedBound=687733 adjEntriesRead=1420988 deadReverseI=0
+  engine.eucs.adjacency              1         0.5         1.3    2.53   0.25
+  engine.eucs.merge                  1         2.1        14.2    6.63   0.66
+  engine.eucs.scan                   1        61.3       483.2    7.89   0.79
+  engine.eucs.sketch                 1       109.6       892.8    8.15   0.81
+  compare with original: patterns=2141 missing=0 extra=0 valueMismatch=0 | kept pairs=4594 vs first compact=4594, differing=0
+
+compared builds=4 failing=0 (reference patterns=2141)
+exit=0

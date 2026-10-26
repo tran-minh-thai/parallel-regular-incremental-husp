@@ -1,0 +1,17 @@
+{
+  "kind": "probe (development machine, feasibility only)",
+  "command": "java -Dthreads=4 -Ddold=0.25 -Dlimit=1800 test.QueryScheduleProbe datasets/BIBLE_seq.txt datasets/BIBLE_eui.txt 0.005 1091 8 every remine-nogc,bud3",
+  "git_commit": "827fe964736c46f06e5ad9e18c3e6567f9381624",
+  "tree": "clean",
+  "sha256_AlgoPRIncHUSP": "c5f665ba9974bfc40d4dab56b8ec3070a0808ab6b5b7345774efd2ad75b507e0",
+  "sha256_AlgoParRemine": "1c2d15b22aa6bef9a6bc5f24022edb6b4b564bba984c6cd07f932e6c335364e4",
+  "sha256_AlgoRHUSPMinerParallel": "d7c38bdecf42aeb1da9f292f104d94d87b68a0329b36723fe00b5a8d5e92350a",
+  "sha256_QueryScheduleProbe": "a9ddaca0773bed2875af7e0873676e5334368e3e0421f4b9c095f196c20ec305",
+  "sha256_seq": "8030ba1631d776e2b94592f5be9d6cac775c2613afb23084c80401443b65a51f",
+  "sha256_eui": "691d9d00bb444cdf63f6033450602493e9ffa089cdd383fbf3160cd7f65f50c1",
+  "java": "26.0.1+8-34 Oracle Corporation",
+  "os": "Mac OS X 27.0.1 aarch64",
+  "threads": "4",
+  "max_heap_mb": "16384",
+  "started": "2026-10-26T13:16:28+07:00"
+}

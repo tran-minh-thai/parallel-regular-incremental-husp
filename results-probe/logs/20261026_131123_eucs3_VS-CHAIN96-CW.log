@@ -1,0 +1,37 @@
+# java -Xmx16g -Dprof=true -cp out test.EucsAudit datasets/VS-CHAIN96-CW_seq.txt datasets/VS-CHAIN96-CW_eui.txt 0.0005 17592 10 0 partitioned,sketch
+# commit 827fe964736c46f06e5ad9e18c3e6567f9381624 tree=0 modified
+# openjdk version "26.0.1" 2026-04-21 host ThaiTMs-MacBook-Pro
+VS-CHAIN96-CW N=650903 input=650903 delta=0.0005 B=17592 threads=10 mode=full minUtil=3660918 builds=partitioned,sketch
+
+[original] built=hash patterns=1518 wall=66334ms numValid=3593
+  pairs: i distinct=4848646 kept=143989 | s distinct=7084658 kept=89664
+  construction: thread slots=92274688 (1760.0 MB at 20 B/slot, 8 B/cell dense) merged slots=25165824 (480.0 MB)
+  adjacency: entries i=9697292 s=7084658 bytes=201412152 (192.08 MB)
+  mining: nodes=119748 candidates=634588439 prunedEucs=519407746 prunedBound=115060945 adjEntriesRead=230717960 deadReverseI=17730219
+  engine.eucs.merge                  1      7058.1      6996.9    0.99   0.10
+  engine.eucs.scan                   1      2317.8     17218.2    7.43   0.74
+  engine.eucs.sort                   1       155.6      1171.3    7.53   0.75
+
+[compact-partitioned] built=partitioned patterns=1518 wall=59052ms numValid=3593
+  pairs: i distinct=4848646 kept=143989 | s distinct=7084658 kept=89664
+  construction: thread slots=83886080 (1600.0 MB at 20 B/slot, 8 B/cell dense) merged slots=33554432 (640.0 MB)
+  adjacency: entries i=143989 s=89664 bytes=963364 (0.92 MB)
+  mining: nodes=118185 candidates=330013590 prunedEucs=241666999 prunedBound=88228406 adjEntriesRead=190303966 deadReverseI=0
+  engine.eucs.adjacency              1        19.1        53.3    2.79   0.28
+  engine.eucs.merge                  1       263.8      1822.7    6.91   0.69
+  engine.eucs.scan                   1      2394.7     18999.7    7.93   0.79
+  compare with original: patterns=1518 missing=0 extra=0 valueMismatch=0 | kept pairs=233653 vs first compact=233653, differing=0
+
+[compact-sketch] built=sketch patterns=1518 wall=65284ms numValid=3593
+  pairs: i distinct=160410 kept=143989 | s distinct=119128 kept=89664 | sketch cells=16777216 dropped pair-occurrences=108814694 (distinct counts are survivors)
+  construction: thread slots=5242880 (100.0 MB at 20 B/slot, 8 B/cell dense) merged slots=524288 (10.0 MB)
+  adjacency: entries i=143989 s=89664 bytes=963364 (0.92 MB)
+  mining: nodes=118185 candidates=330013590 prunedEucs=241666999 prunedBound=88228406 adjEntriesRead=190303966 deadReverseI=0
+  engine.eucs.adjacency              1        12.9        31.4    2.42   0.24
+  engine.eucs.merge                  1         7.0        54.7    7.84   0.78
+  engine.eucs.scan                   1      2174.9     19181.0    8.82   0.88
+  engine.eucs.sketch                 1      1639.9     14091.1    8.59   0.86
+  compare with original: patterns=1518 missing=0 extra=0 valueMismatch=0 | kept pairs=233653 vs first compact=233653, differing=0
+
+compared builds=2 failing=0 (reference patterns=1518)
+exit=0

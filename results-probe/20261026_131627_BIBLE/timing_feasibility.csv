@@ -1,0 +1,15 @@
+dataset,policy,batches,schedule,fault,query,after_batch,ingest_ms,query_ms,discovery_mine_ms,rebuild_ms,seed_ms
+BIBLE,remine-nogc,8,every,0,0,1,0,2403,,,0
+BIBLE,remine-nogc,8,every,0,1,2,0,2388,,,
+BIBLE,remine-nogc,8,every,0,2,3,0,1783,,,
+BIBLE,remine-nogc,8,every,0,3,4,0,1961,,,
+BIBLE,remine-nogc,8,every,0,4,5,0,2213,,,
+BIBLE,remine-nogc,8,every,0,5,6,0,1955,,,
+BIBLE,remine-nogc,8,every,0,6,7,0,2459,,,
+BIBLE,bud3,8,every,0,0,1,297,2023,2022,0,2052
+BIBLE,bud3,8,every,0,1,2,310,4966,2296,0,
+BIBLE,bud3,8,every,0,2,3,48,1528,1528,0,
+BIBLE,bud3,8,every,0,3,4,119,1243,957,284,
+BIBLE,bud3,8,every,0,4,5,96,4051,1907,0,
+BIBLE,bud3,8,every,0,5,6,56,2067,533,1531,
+BIBLE,bud3,8,every,0,6,7,65,2254,769,1482,

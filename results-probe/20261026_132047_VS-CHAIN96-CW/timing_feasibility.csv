@@ -1,0 +1,5 @@
+dataset,policy,batches,schedule,fault,query,after_batch,ingest_ms,query_ms,discovery_mine_ms,rebuild_ms,seed_ms
+VS-CHAIN96-CW,remine-nogc,3,every,0,0,1,0,39829,,,0
+VS-CHAIN96-CW,remine-nogc,3,every,0,1,2,0,63906,,,
+VS-CHAIN96-CW,bud3,3,every,0,0,1,361,36606,36606,0,23040
+VS-CHAIN96-CW,bud3,3,every,0,1,2,167,31189,30245,941,

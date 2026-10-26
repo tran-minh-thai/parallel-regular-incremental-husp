@@ -1,0 +1,43 @@
+# java -Xmx16g -Dprof=true -Dthreads=10 -Ddold=0.5 -Doracle=remine -Dlimit=2400 -cp out test.QueryScheduleProbe datasets/VS-CHAIN96-CW_seq.txt datasets/VS-CHAIN96-CW_eui.txt 0.0005 17592 3 every remine-nogc,bud3
+# commit 827fe964736c46f06e5ad9e18c3e6567f9381624 tree=0 modified
+# openjdk version "26.0.1" 2026-04-21 host ThaiTMs-MacBook-Pro
+VS-CHAIN96-CW N=650903 delta=0.0005 B=17592 k=3 dOld=0.5 schedule=every threads=10 fault=0 reference=parallel engine (NOT independent) -> results-probe/20261026_132047_VS-CHAIN96-CW
+  oracle after batch 1: N=488178 minUtil=2790037 patterns=1526
+  oracle after batch 2: N=650903 minUtil=3660918 patterns=1518
+  remine-nogc q0  after b1  N=488178 oracle=1526   got=1526   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=39829ms
+  remine-nogc q1  after b2  N=650903 oracle=1518   got=1518   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=63906ms
+  profile remine-nogc threads=10
+phase                          calls     wall_ms      cpu_ms   cores    eff
+engine.eucs.adjacency              2        13.9        31.3    2.24   0.22
+engine.eucs.merge                  2       609.8      3169.5    5.20   0.52
+engine.eucs.scan                   2      3301.5     26424.1    8.00   0.80
+engine.load                        2       341.2       340.2    1.00   0.10
+engine.mine                        2     99445.6    833013.7    8.38   0.84
+engine.mine.rootBounds             2       185.7       185.7    1.00   0.10
+engine.poolCreate                  2         0.1         0.1    0.85   0.08
+engine.poolShutdown.wallOnly       2         0.3         n/a     n/a    n/a
+engine.tier0.merge                 2         2.3         2.3    1.00   0.10
+engine.tier0.scan                  2        12.5        95.4    7.61   0.76
+  bud3   q0  after b1  N=488178 oracle=1526   got=1526   miss=0 extra=0 uErr=0 pErr=0  ingest=361ms query=36606ms  {budget=0 attempt=0 load=0 pre=0 enum=0 rebuild=0 abort=}  [REMINE r=81.4 thr=2790037 cand=1526 fresh=0 gapRej=0 mine=36606ms rebuild=0ms tracked=1606]
+  bud3   q1  after b2  N=650903 oracle=1518   got=1518   miss=0 extra=0 uErr=0 pErr=0  ingest=167ms query=31189ms  {budget=48808 attempt=31189 load=114 pre=1391 enum=28741 rebuild=941 abort=}  [DISCOVER r=162.7 thr=1845001 cand=1546 fresh=262 gapRej=4 mine=30245ms rebuild=941ms tracked=1838]
+  profile bud3 threads=10
+phase                          calls     wall_ms      cpu_ms   cores    eff
+disc.engine.wallOnly               1     30245.5         n/a     n/a    n/a
+disc.invertedIndex                 1       746.4       738.6    0.99   0.10
+disc.knownAndParse                 1         0.9         0.9    1.00   0.10
+disc.rebuildMatch                  1       195.4      1728.1    8.85   0.88
+engine.eucs.adjacency              3        15.9        32.4    2.03   0.20
+engine.eucs.merge                  3       582.7      4363.4    7.49   0.75
+engine.eucs.scan                   3      3560.6     28304.4    7.95   0.79
+engine.load                        3       365.8       347.7    0.95   0.10
+engine.mine                        3     85041.7    743451.6    8.74   0.87
+engine.mine.rootBounds             3       167.7       167.7    1.00   0.10
+engine.poolCreate                  3         0.1         0.1    0.82   0.08
+engine.poolShutdown.wallOnly       3         0.5         n/a     n/a    n/a
+engine.tier0.merge                 3         4.6         4.6    1.00   0.10
+engine.tier0.scan                  3        15.9       103.9    6.52   0.65
+maint.buildTrie                    2         2.1         2.1    0.99   0.10
+maint.chunkScan                    2       413.4      3417.3    8.27   0.83
+maint.mergeChunks                  2         3.5        15.6    4.42   0.44
+compared queries=4 failing=0
+exit=0

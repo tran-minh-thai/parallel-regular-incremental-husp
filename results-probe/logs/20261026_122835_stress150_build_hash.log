@@ -1,0 +1,7 @@
+# java -Deucs.build=hash -Dpolicies=keep-sfx,bud3-c0,bud3-c1 -cp out test.QueryScheduleStress 150
+# commit a45713fe997d1bb6139ceb8832653c2f50d28ba0 tree=0 modified
+# sha256 eda8395f76855570888323f924ddd4bfd56d90e1d33882922a84e3462636a341 c5f665ba9974bfc40d4dab56b8ec3070a0808ab6b5b7345774efd2ad75b507e0 0da1e3e4434c16dce50158847b8ae00f02f1c20f576bbf5d1e23a80245886c1e c3527080116796196ef6c9af1870ca155bb54b24ec4b8d4f3570be3a1ec99b2d 
+# openjdk version "26.0.1" 2026-04-21 host ThaiTMs-MacBook-Pro
+forceRebuildAbort=false forceMidCandidateAbort=false aborts-in-mining=233 aborts-in-rebuild=826 half-built=0
+fault=0 trials=150 sequences-with-multi-item-events=5384 compared-queries=2031 with-non-empty-oracle=1998 failing=0 {}
+exit=0
