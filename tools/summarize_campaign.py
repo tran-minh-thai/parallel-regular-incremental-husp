@@ -14,6 +14,10 @@ and the checks of the pre-registered hypotheses:
   P3  costly datasets, schedule S1: BUD3 <= 0.7 * F;
   P4  cheap datasets: BUD3 <= sum F + aborts * max budget (the additive allowance of P2), no ratio.
 
+The role is MEASURED, not taken from the configuration: a dataset is costly when the mean query cost of F
+under S1 (one full re-mine per query, 16 threads on the measurement machine) is at least 10 s, cheap
+otherwise. The configured role is printed beside it as the expectation.
+
 Every comparison prints its denominator. Cells whose ratio lies within the margin of 1 (rule: a ranking
 inside the noise needs repetitions) are listed; --write-repeats stores them as experiment E2R (two more
 repetitions, indices 1 and 2) in experiments/campaign_9950x.json, which tools/campaign.py then runs.
@@ -112,8 +116,14 @@ def main(argv=None):
             problems.append("%s: cannot read %s (%s)" % (r["key"], d.as_posix(), e))
     lines, near, failures = [], [], []
     p1_n = p1_bad = 0
+    measured = {}
+    for (ds, sch), runs in groups.items():
+        if sch == "S1":
+            q = [int(t["query_ms"]) for by in runs for _, t in by.get("remine-nogc", [])]
+            if q:
+                measured[ds] = "costly" if sum(q) / len(q) >= 10000 else "cheap"
     for (ds, sch), runs in sorted(groups.items()):
-        role = cfg["datasets"][ds]["role"]
+        role = measured.get(ds, "unmeasured")
         f_tot, b_tot, acts, p2_ok, p2_det, allow = [], [], [], True, "", 0
         for by in runs:
             f, b = by.get("remine-nogc", []), by.get("bud3", [])
@@ -144,7 +154,7 @@ def main(argv=None):
                 failures.append("P4 %s %s: BUD3 %.0f > F %.0f + %.0f" % (ds, sch, bm, fm, allow))
         if abs(1 - ratio) < args.margin and len(runs) < 3:
             near.append([ds, sch])
-        lines.append([ds, role, sch, len(runs), "%.0f" % fm, "%.0f" % bm, "%.3f" % ratio, " ".join(acts), "; ".join(verdicts)])
+        lines.append([ds, "%s (expected %s)" % (role, cfg["datasets"][ds]["role"]), sch, len(runs), "%.0f" % fm, "%.0f" % bm, "%.3f" % ratio, " ".join(acts), "; ".join(verdicts)])
     head = ["dataset", "role", "schedule", "runs", "F_ms", "BUD3_ms", "BUD3_over_F", "bud3_actions", "checks"]
     out.mkdir(parents=True, exist_ok=True)
     with open(out / "summary_E2.tsv", "w", encoding="utf-8", newline="\n") as f:
