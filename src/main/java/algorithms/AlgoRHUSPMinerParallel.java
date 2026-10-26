@@ -316,7 +316,9 @@ public class AlgoRHUSPMinerParallel {
      */
     public void runAlgorithmInMemory(List<List<int[]>> db, double minRatio, double maxRegRatio) {
         resetState();
+        long[] pl = Prof.start();
         loadFromMemory(db, minRatio, maxRegRatio);
+        Prof.stop("engine.load", pl);
         mineCore();
     }
 
@@ -331,7 +333,9 @@ public class AlgoRHUSPMinerParallel {
                 ? THREAD_MX.getCurrentThreadCpuTime() : -1L;
         checkMemory();
 
+        long[] pp = Prof.start();
         pool = new ForkJoinPool(Math.max(1, numThreads));
+        Prof.stop("engine.poolCreate", pp);
         try {
             // ----- Phase 1: parallel preprocessing -----
             // Tier 0 always runs to build the dense mapping (itemToDense/denseToItem) --
@@ -348,10 +352,15 @@ public class AlgoRHUSPMinerParallel {
             // ----- Phase 2: parallel recursive mining -----
             InstanceList init = new InstanceList(numSeq);
             for (int s = 0; s < numSeq; s++) init.add(s, -1, 0L);
-            if (parallelStrategy == STRAT_STATIC) runStaticRoot(init);
-            else pool.invoke(new RootTask(init)); // STEAL / RDLB: fork at root level
+            long[] pm = Prof.start();
+            try {
+                if (parallelStrategy == STRAT_STATIC) runStaticRoot(init);
+                else pool.invoke(new RootTask(init)); // STEAL / RDLB: fork at root level
+            } finally { Prof.stop("engine.mine", pm); }
         } finally {
+            long[] ps = Prof.start();
             shutdownPool(pool); // clean up workers (even after timeout/OOM) to avoid contaminating the next run
+            Prof.stop("engine.poolShutdown.wallOnly", ps);
             endTimestamp = System.currentTimeMillis();
             cpuEndNanos = THREAD_MX.isCurrentThreadCpuTimeSupported()
                     ? THREAD_MX.getCurrentThreadCpuTime() : -1L;
@@ -433,6 +442,7 @@ public class AlgoRHUSPMinerParallel {
         final int n = maxItemId + 1;
         final int T = Math.max(1, numThreads);
         final int chunk = (numSeq + T - 1) / T;
+        long[] p0 = Prof.start();
 
         // Per-thread local results
         final long[][] twuL = new long[T][];
@@ -468,6 +478,8 @@ public class AlgoRHUSPMinerParallel {
             });
         }
         for (ForkJoinTask<?> tk : tasks) tk.join();
+        Prof.stop("engine.tier0.scan", p0);
+        long[] p1 = Prof.start();
         checkMemory();
 
         // Merge: TWU sums; periods stitched in SID order across slices.
@@ -527,6 +539,7 @@ public class AlgoRHUSPMinerParallel {
         }
         denseToItem = Arrays.copyOf(tmp, cnt);
         numValid = cnt;
+        Prof.stop("engine.tier0.merge", p1);
     }
 
     /**
@@ -540,6 +553,7 @@ public class AlgoRHUSPMinerParallel {
         final int chunk = (numSeq + T - 1) / T;
         final PairAccMap[] mapsI = new PairAccMap[T];
         final PairAccMap[] mapsS = new PairAccMap[T];
+        long[] e0 = Prof.start();
 
         ForkJoinTask<?>[] tasks = new ForkJoinTask<?>[T];
         for (int t = 0; t < T; t++) {
@@ -581,6 +595,8 @@ public class AlgoRHUSPMinerParallel {
             });
         }
         for (ForkJoinTask<?> tk : tasks) tk.join();
+        Prof.stop("engine.eucs.scan", e0);
+        long[] e1 = Prof.start();
         checkMemory();
 
         // Merge per-thread maps into immutable adjacency lists. Sequential, but cheap relative
@@ -623,6 +639,8 @@ public class AlgoRHUSPMinerParallel {
         // Sort adjacency slices in parallel by descending utility to enable early-break pruning.
         // Partitioned into ~4*T blocks (not one task per item) to avoid flooding the pool
         // with thousands of micro-tasks when the item cardinality is large.
+        Prof.stop("engine.eucs.merge", e1);
+        long[] e2 = Prof.start();
         final int[] adjIItemF = adjIItem; final long[] adjIUtilF = adjIUtil;
         final int[] adjSItemF = adjSItem; final long[] adjSUtilF = adjSUtil;
         final int[] adjIStartF = adjIStart; final int[] adjSStartF = adjSStart;
@@ -646,6 +664,7 @@ public class AlgoRHUSPMinerParallel {
         if (!subs.isEmpty()) pool.invoke(new RecursiveAction() {
             @Override protected void compute() { invokeAll(subs); }
         });
+        Prof.stop("engine.eucs.sort", e2);
         checkMemory();
     }
 
@@ -962,6 +981,7 @@ public class AlgoRHUSPMinerParallel {
             if (rt.totalMemory() - rt.freeMemory() > abortHeapBytes) throw new HeapBudgetExceeded();
         }
         if (projected.size == 0) return;
+        long[] pr = (lastItem == -1 && ctx.patLen == 0) ? Prof.start() : null;
 
         int laStamp = 0;
         if (boundMode == BOUND_LA_PEU) {
@@ -990,6 +1010,7 @@ public class AlgoRHUSPMinerParallel {
 
         int[] cI = Arrays.copyOf(ctx.candBufI, nI);
         int[] cS = Arrays.copyOf(ctx.candBufS, nS);
+        Prof.stop("engine.mine.rootBounds", pr);
 
         // Fork decision based on ablation strategy (SC3):
         //   STATIC: no forking (static partition at root, subtree runs inline).

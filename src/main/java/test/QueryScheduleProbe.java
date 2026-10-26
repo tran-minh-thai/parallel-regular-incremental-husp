@@ -137,6 +137,7 @@ public class QueryScheduleProbe {
                     dog.start();
                 }
                 IncrementalHUSPMiner m = build(policy, threads, absB);
+                algorithms.Prof.reset();
                 long t0 = System.nanoTime();
                 m.initialBuild(batches.get(0), delta, 0.0);
                 long seedMs = (System.nanoTime() - t0) / 1_000_000;
@@ -201,6 +202,12 @@ public class QueryScheduleProbe {
                     q++;
                 }
                 ex.flush(); tm.flush();
+                if (algorithms.Prof.ON) {
+                    String rep = algorithms.Prof.report(threads);
+                    System.out.printf("  profile %s threads=%d%n%s", policy, threads, rep);
+                    java.nio.file.Files.writeString(new File(dir, "profile_" + policy + ".txt").toPath(),
+                            "policy=" + policy + " threads=" + threads + "\n" + rep);
+                }
                 m.close();
                 if (dog != null) dog.interrupt();                     // this policy finished: cancel its limit
             }
@@ -213,11 +220,15 @@ public class QueryScheduleProbe {
         IncrementalHUSPMiner m;
         switch (policy) {
             case "remine":
-            case "remine-nogc": {
+            case "remine-nogc":
+            case "remine-nogc-steal":                                  // scheduler ablation: stealing at the root only
+            case "remine-nogc-static": {                               // scheduler ablation: static root partition
                 AlgoParRemine r = ExpConfig.newParRemine(threads);
-                r.parallelStrategy = AlgoRHUSPMinerParallel.STRAT_RDLB;   // same scheduler as the proposal
+                r.parallelStrategy = policy.endsWith("-static") ? AlgoRHUSPMinerParallel.STRAT_STATIC
+                        : policy.endsWith("-steal") ? AlgoRHUSPMinerParallel.STRAT_STEAL
+                        : AlgoRHUSPMinerParallel.STRAT_RDLB;            // same scheduler as the proposal
                 r.mineOnQuery = true;
-                r.measureMemory = !policy.endsWith("-nogc");
+                r.measureMemory = !policy.contains("-nogc");
                 m = r;
                 break;
             }

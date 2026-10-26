@@ -686,7 +686,9 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
      * without materializing the full occurrence list. Result identical to the per-pattern re-match.
      */
     private void maintainTrie(int lo, int hi) {
+        long[] pt = Prof.start();
         if (trieRoot == null || trieForPats != pats.length) buildTrie();
+        Prof.stop("maint.buildTrie", pt);
         final int nSeq = hi - lo;
         if (nSeq <= 0) return;
         final int P = pats.length;
@@ -696,6 +698,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         final int[][] first = new int[T][], last = new int[T][], maxGap = new int[T][];
         final long[][] uSum = new long[T][];
 
+        long[] p1 = Prof.start();
         runParallelIndexed(T, t -> {
             final int cLo = lo + (int) ((long) nSeq * t / T);
             final int cHi = lo + (int) ((long) nSeq * (t + 1) / T);
@@ -715,7 +718,9 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
             }
             occ[t] = oc; first[t] = fs; last[t] = ls; maxGap[t] = mg; uSum[t] = us;
         });
+        Prof.stop("maint.chunkScan", p1);
 
+        long[] p2 = Prof.start();
         runParallelIndexed(P, pi -> {
             Pat p = pats[pi];
             int prevLast = p.lastSeqId, maxP = p.maxInnerPeriod, newLast = p.lastSeqId;
@@ -730,6 +735,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
             }
             if (any) { p.utility += add; p.maxInnerPeriod = maxP; p.lastSeqId = newLast; }
         });
+        Prof.stop("maint.mergeChunks", p2);
     }
 
     /** Fill {@code w.best} = {patIdx -> exact max-measure utility of that pattern in sequence s}. */
@@ -1520,9 +1526,11 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         int[] minedAt = new int[1];
         long tMine = System.nanoTime();
         AlgoRHUSPMinerParallel eng;
+        long[] pe = Prof.start();
         try {
             eng = runEngineWithinBudget(mk, part, seedMaxReg, minedAt);
         } finally {
+            Prof.stop("disc.engine.wallOnly", pe);
             long dt = System.nanoTime() - tMine;
             attemptWorkNanos += dt;
             lastQueryMineMs += dt / 1_000_000;
@@ -1532,6 +1540,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         lastQueryCandidates += eng.finalPatterns.size();
         if (eng.finalPatterns.isEmpty()) return;
 
+        long[] pk = Prof.start();
         java.util.HashSet<String> known = new java.util.HashSet<>(pats.length * 2);
         for (Pat p : pats) known.add(formatPattern(p.ext, p.item));
         final List<Pat> fresh = new ArrayList<>();
@@ -1541,6 +1550,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
             if (path[1].length == 0) continue;
             fresh.add(new Pat(path[0], path[1], 0, -1, 0));   // exact state recomputed below
         }
+        Prof.stop("disc.knownAndParse", pk);
         if (fresh.isEmpty()) return;
         lastQueryFresh += fresh.size();
         final boolean[] done = new boolean[fresh.size()];
@@ -1549,7 +1559,10 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         // Exact full-DB state for each fresh candidate, from scratch over [0, n).
         long tRebuild = System.nanoTime();
         final int n = data.numSequences;
+        long[] pi0 = Prof.start();
         final Map<Integer, int[]> inv = buildInvertedIndex(0, n);
+        Prof.stop("disc.invertedIndex", pi0);
+        long[] pr0 = Prof.start();
         final int incrementSeqs = part.size();
         final int gapBound = finalMaxReg();
         final java.util.concurrent.atomic.AtomicInteger rebuilt = new java.util.concurrent.atomic.AtomicInteger();
@@ -1588,6 +1601,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
             }
             done[i] = true;
         });
+        Prof.stop("disc.rebuildMatch", pr0);
         long dtRebuild = System.nanoTime() - tRebuild;
         attemptWorkNanos += dtRebuild;
         lastQueryRebuildMs += dtRebuild / 1_000_000;
