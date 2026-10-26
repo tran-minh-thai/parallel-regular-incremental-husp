@@ -1,0 +1,117 @@
+# python3 tools/build_stream_datasets.py vs <data-local>/valued-shopper/transactions.csv.gz datasets tools/stream_datasets/manifests 96,101,214,152
+# commit 567f9aa149b9b5aab3fced820f3aeb0c94a1127a builder_sha256 84cfabe22ebaac8e414a9014e4ca18dec19dc534eefa5fff23842f07c0417396 (uncommitted builder change)
+{
+  "name": "VS-CHAIN96-CW",
+  "builder": "tools/build_stream_datasets.py",
+  "builder_sha256": "84cfabe22ebaac8e414a9014e4ca18dec19dc534eefa5fff23842f07c0417396",
+  "raw_file": "transactions.csv.gz",
+  "raw_sha256": "75cc4fa0d0006b9c43454e3dc1dea502b297ed5c75f3d679aae1df1acf633303",
+  "roles": "one chain (96); sequence=(customer, ISO week), ordered by week then customer id; event=one purchase day; item=category|company|brand; utility=round(purchaseamount*100)",
+  "values": "measured",
+  "sequences": 650903,
+  "events": 1234092,
+  "item_occurrences": 13983149,
+  "distinct_items": 18196,
+  "total_utility": 7321835738,
+  "counts": {
+    "rows": 349655789,
+    "rows_in_chain": 15955983,
+    "dropped_nonpositive_quantity_or_amount": 1205103,
+    "weeks": 74
+  },
+  "regularity_bound_rule": "2 weeks of sequences, ceil(2 * N / weeks)",
+  "regularity_bound_B": 17592,
+  "seq_sha256": "8f8287a7c24f8337b8c41a9df64e9e1e9fcf795e24628e2846cf5af49acc6f83",
+  "eui_sha256": "f19cfa96f54476c11f4c98f5cc073bf3cbe6860cd678dba9bcfe3bcb41eea08a"
+}
+{
+  "name": "VS-CHAIN101-CW",
+  "builder": "tools/build_stream_datasets.py",
+  "builder_sha256": "84cfabe22ebaac8e414a9014e4ca18dec19dc534eefa5fff23842f07c0417396",
+  "raw_file": "transactions.csv.gz",
+  "raw_sha256": "75cc4fa0d0006b9c43454e3dc1dea502b297ed5c75f3d679aae1df1acf633303",
+  "roles": "one chain (101); sequence=(customer, ISO week), ordered by week then customer id; event=one purchase day; item=category|company|brand; utility=round(purchaseamount*100)",
+  "values": "measured",
+  "sequences": 513824,
+  "events": 926553,
+  "item_occurrences": 12074827,
+  "distinct_items": 13390,
+  "total_utility": 4882175842,
+  "counts": {
+    "rows": 349655789,
+    "rows_in_chain": 13471355,
+    "dropped_nonpositive_quantity_or_amount": 783692,
+    "weeks": 74
+  },
+  "regularity_bound_rule": "2 weeks of sequences, ceil(2 * N / weeks)",
+  "regularity_bound_B": 13888,
+  "seq_sha256": "9e3bad9418bb57817f419d4d5af5fc7394e4d58a4a498465e853043944625548",
+  "eui_sha256": "ae28f119496494a039d62b7cbe80749c2b30b66bc2685f9904c355bc3c8ffaea"
+}
+{
+  "name": "VS-CHAIN214-CW",
+  "builder": "tools/build_stream_datasets.py",
+  "builder_sha256": "84cfabe22ebaac8e414a9014e4ca18dec19dc534eefa5fff23842f07c0417396",
+  "raw_file": "transactions.csv.gz",
+  "raw_sha256": "75cc4fa0d0006b9c43454e3dc1dea502b297ed5c75f3d679aae1df1acf633303",
+  "roles": "one chain (214); sequence=(customer, ISO week), ordered by week then customer id; event=one purchase day; item=category|company|brand; utility=round(purchaseamount*100)",
+  "values": "measured",
+  "sequences": 392071,
+  "events": 688409,
+  "item_occurrences": 11551241,
+  "distinct_items": 22513,
+  "total_utility": 7167886652,
+  "counts": {
+    "rows": 349655789,
+    "rows_in_chain": 13411382,
+    "dropped_nonpositive_quantity_or_amount": 387149,
+    "weeks": 74
+  },
+  "regularity_bound_rule": "2 weeks of sequences, ceil(2 * N / weeks)",
+  "regularity_bound_B": 10597,
+  "seq_sha256": "cf518dc7d9521ef09dfd866779fc7f91fc9c3f669a9a7748422eadc50a31de92",
+  "eui_sha256": "29a3d87efaf0e2b148ca7a0f205ad3cffce29656c6f4259773efa44447ac980a"
+}
+{
+  "name": "VS-CHAIN152-CW",
+  "builder": "tools/build_stream_datasets.py",
+  "builder_sha256": "84cfabe22ebaac8e414a9014e4ca18dec19dc534eefa5fff23842f07c0417396",
+  "raw_file": "transactions.csv.gz",
+  "raw_sha256": "75cc4fa0d0006b9c43454e3dc1dea502b297ed5c75f3d679aae1df1acf633303",
+  "roles": "one chain (152); sequence=(customer, ISO week), ordered by week then customer id; event=one purchase day; item=category|company|brand; utility=round(purchaseamount*100)",
+  "values": "measured",
+  "sequences": 521237,
+  "events": 924105,
+  "item_occurrences": 11352712,
+  "distinct_items": 14371,
+  "total_utility": 5678465575,
+  "counts": {
+    "rows": 349655789,
+    "rows_in_chain": 12005477,
+    "dropped_nonpositive_quantity_or_amount": 115887,
+    "weeks": 74
+  },
+  "regularity_bound_rule": "2 weeks of sequences, ceil(2 * N / weeks)",
+  "regularity_bound_B": 14088,
+  "seq_sha256": "f8e373bc53c834e93b2f82ee98a40cf655c664216e37425382d92b9619396eef",
+  "eui_sha256": "00bda7056350aa14cf7828fb4a90996e4f8c866d913e1e43c2390f2d768e4720"
+}
+      264.73 real       258.95 user         4.94 sys
+          9452388352  maximum resident set size
+                   0  average shared memory size
+                   0  average unshared data size
+                   0  average unshared stack size
+              914657  page reclaims
+                  42  page faults
+                   0  swaps
+                   0  block input operations
+                   0  block output operations
+                   0  messages sent
+                   0  messages received
+                   0  signals received
+                  69  voluntary context switches
+              100155  involuntary context switches
+       5946631714377  instructions retired
+       1131497067648  cycles elapsed
+          9881738608  peak memory footprint
+exit=0

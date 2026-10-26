@@ -1,0 +1,23 @@
+{
+  "name": "DUNNHUMBY-HW",
+  "builder": "tools/build_stream_datasets.py",
+  "builder_sha256": "84cfabe22ebaac8e414a9014e4ca18dec19dc534eefa5fff23842f07c0417396",
+  "raw_file": "transaction_data.csv",
+  "raw_sha256": "3a685c0729cef664d634486189f774518b84f53cde7cbf701a5963238692b476",
+  "roles": "sequence=(WEEK_NO, household_key), ordered by week then household; event=basket, ordered by (DAY, TRANS_TIME, BASKET_ID); item=PRODUCT_ID; utility=round(SALES_VALUE*100)",
+  "values": "measured",
+  "sequences": 123887,
+  "events": 275539,
+  "item_occurrences": 2576815,
+  "distinct_items": 91905,
+  "total_utility": 805744380,
+  "counts": {
+    "rows": 2595732,
+    "dropped_nonpositive_quantity_or_value": 18917,
+    "weeks": 102
+  },
+  "regularity_bound_rule": "2 weeks of sequences, ceil(2 * N / weeks)",
+  "regularity_bound_B": 2430,
+  "seq_sha256": "72956c1d7d7e62f28ffbcc4cebe1778c3483c81f378a4fd3637597de3867c151",
+  "eui_sha256": "2b6ab0bac87e753a8a9d23855a923f7aebd0bf9d7969c35c7924be7df68aa59d"
+}

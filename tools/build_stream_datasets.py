@@ -31,13 +31,21 @@ Usage:
   python3 tools/build_stream_datasets.py retail     <online_retail_II.xlsx>    <out-dir> <manifest-dir>
   python3 tools/build_stream_datasets.py dunnhumby  <transaction_data.csv>     <out-dir> <manifest-dir>
   python3 tools/build_stream_datasets.py hm         <transactions_train.csv>   <out-dir> <manifest-dir> [max_weeks]
-  python3 tools/build_stream_datasets.py vs         <transactions.csv.gz>      <out-dir> <manifest-dir> <chain>
+  python3 tools/build_stream_datasets.py vs         <transactions.csv.gz>      <out-dir> <manifest-dir> <chain>[,<chain>...]
+  python3 tools/build_stream_datasets.py dunnhumbyhw <transaction_data.csv>    <out-dir> <manifest-dir>
+  python3 tools/build_stream_datasets.py tafeng     <ta_feng_all_months_merged.csv> <out-dir> <manifest-dir>
 
   HM-CW               sequence = (customer, ISO week), ordered by week then customer id; event = one
                       purchase day; item = article_id; utility = round(price * 1e6) per row.
   VS-CHAIN<c>-CW      one chain; same construction; item = category|company|brand;
                       utility = round(purchaseamount * 100).
-  For both, the order of customers inside a week is arbitrary (by id) and B spans two weeks.
+  DUNNHUMBY-HW        sequence = (WEEK_NO, household_key), ordered by week then household; event = one
+                      basket, ordered by (DAY, TRANS_TIME, BASKET_ID); item = PRODUCT_ID;
+                      utility = round(SALES_VALUE * 100).
+  TAFENG-CW           sequence = (ISO week of TRANSACTION_DT, CUSTOMER_ID), ordered by week then customer;
+                      event = one transaction day; item = PRODUCT_ID; utility = SALES_PRICE (the line
+                      total in New Taiwan dollars, already an integer).
+  For all four, the order of customers inside a week is arbitrary (by id) and B spans two weeks.
 
 Standard library only, so it runs unchanged on Windows.
 """
@@ -320,38 +328,99 @@ def build_hm(raw, out_dir, manifest_dir, max_weeks=0):
              "summed per item and day; the price column is scaled by an undisclosed constant")
 
 
-def build_vs(raw, out_dir, manifest_dir, chain):
-    """Valued Shoppers transactions.csv.gz restricted to one chain; item = category|company|brand."""
+def build_vs(raw, out_dir, manifest_dir, chains):
+    """Valued Shoppers transactions.csv.gz restricted to each listed chain (one pass over the file, one
+    database per chain); item = category|company|brand."""
     import gzip
-    counts = defaultdict(int)
-    rows = defaultdict(lambda: defaultdict(OrderedDict))     # (week, customer) -> day -> event
+    chains = chains.split(",")
+    counts = {c: defaultdict(int) for c in chains}
+    rows = {c: defaultdict(lambda: defaultdict(OrderedDict)) for c in chains}   # (week, customer) -> day -> event
+    total = 0
     with gzip.open(raw, "rt", newline="") as f:
         r = csv.reader(f)
         next(r)
         for row in r:
-            counts["rows"] += 1
-            if row[1] != chain:
+            total += 1
+            c = row[1]
+            if c not in counts:
                 continue
-            counts["rows_in_chain"] += 1
+            cnt = counts[c]
+            cnt["rows_in_chain"] += 1
             qty, amount = int(row[9]), float(row[10])
             if qty <= 0 or amount <= 0:
-                counts["dropped_nonpositive_quantity_or_amount"] += 1
+                cnt["dropped_nonpositive_quantity_or_amount"] += 1
                 continue
             u = int(round(amount * 100))
             if u <= 0:
-                counts["dropped_zero_value"] += 1
+                cnt["dropped_zero_value"] += 1
                 continue
             d = row[6]
-            add(rows[(iso_week(d), row[0])][d], row[3] + "|" + row[4] + "|" + row[5], u)
+            add(rows[c][(iso_week(d), row[0])][d], row[3] + "|" + row[4] + "|" + row[5], u)
+    for c in chains:
+        cnt = counts[c]
+        cnt["rows"] = total
+        cnt = defaultdict(int, sorted(cnt.items(), key=lambda kv: kv[0] != "rows"))   # "rows" first, as before
+        keys = sorted(rows[c])
+        seqs = [[rows[c][k][d] for d in sorted(rows[c][k])] for k in keys]
+        weeks = len({k[0] for k in keys})
+        cnt["weeks"] = weeks
+        b = math.ceil(2 * len(seqs) / weeks)
+        write_db("VS-CHAIN%s-CW" % c, seqs, out_dir, manifest_dir, raw, cnt,
+                 "2 weeks of sequences, ceil(2 * N / weeks)", b,
+                 "one chain (%s); sequence=(customer, ISO week), ordered by week then customer id; event=one purchase "
+                 "day; item=category|company|brand; utility=round(purchaseamount*100)" % c)
+        rows[c] = None
+
+
+def build_dunnhumby_hw(raw, out_dir, manifest_dir):
+    counts = defaultdict(int)
+    rows = defaultdict(lambda: defaultdict(OrderedDict))     # (week, household) -> (day, time, basket) -> event
+    with open(raw, newline="") as f:
+        for row in csv.DictReader(f):
+            counts["rows"] += 1
+            qty = int(row["QUANTITY"]); value = float(row["SALES_VALUE"])
+            if qty <= 0 or value <= 0:
+                counts["dropped_nonpositive_quantity_or_value"] += 1
+                continue
+            u = int(round(value * 100))
+            if u <= 0:
+                counts["dropped_zero_value"] += 1
+                continue
+            key = (int(row["WEEK_NO"]), int(row["household_key"]))
+            add(rows[key][(int(row["DAY"]), int(row["TRANS_TIME"]), row["BASKET_ID"])], row["PRODUCT_ID"], u)
+    keys = sorted(rows)
+    seqs = [[rows[k][e] for e in sorted(rows[k])] for k in keys]
+    weeks = len({k[0] for k in keys})
+    counts["weeks"] = weeks
+    b = math.ceil(2 * len(seqs) / weeks)
+    write_db("DUNNHUMBY-HW", seqs, out_dir, manifest_dir, raw, counts,
+             "2 weeks of sequences, ceil(2 * N / weeks)", b,
+             "sequence=(WEEK_NO, household_key), ordered by week then household; event=basket, ordered by "
+             "(DAY, TRANS_TIME, BASKET_ID); item=PRODUCT_ID; utility=round(SALES_VALUE*100)")
+
+
+def build_tafeng(raw, out_dir, manifest_dir):
+    counts = defaultdict(int)
+    rows = defaultdict(lambda: defaultdict(OrderedDict))     # (week, customer) -> day -> event
+    with open(raw, newline="", encoding="utf-8-sig") as f:
+        for row in csv.DictReader(f):
+            counts["rows"] += 1
+            m, d, y = map(int, row["TRANSACTION_DT"].split("/"))
+            day = "%04d-%02d-%02d" % (y, m, d)
+            qty, price = int(row["AMOUNT"]), int(row["SALES_PRICE"])
+            if qty <= 0 or price <= 0:
+                counts["dropped_nonpositive_amount_or_price"] += 1
+                continue
+            add(rows[(iso_week(day), row["CUSTOMER_ID"])][day], row["PRODUCT_ID"], price)
     keys = sorted(rows)
     seqs = [[rows[k][d] for d in sorted(rows[k])] for k in keys]
     weeks = len({k[0] for k in keys})
     counts["weeks"] = weeks
     b = math.ceil(2 * len(seqs) / weeks)
-    write_db("VS-CHAIN%s-CW" % chain, seqs, out_dir, manifest_dir, raw, counts,
+    write_db("TAFENG-CW", seqs, out_dir, manifest_dir, raw, counts,
              "2 weeks of sequences, ceil(2 * N / weeks)", b,
-             "one chain (%s); sequence=(customer, ISO week), ordered by week then customer id; event=one purchase "
-             "day; item=category|company|brand; utility=round(purchaseamount*100)" % chain)
+             "sequence=(ISO week of TRANSACTION_DT, CUSTOMER_ID), ordered by week then customer id; event=one "
+             "transaction day; item=PRODUCT_ID; utility=SALES_PRICE (line total, New Taiwan dollars)")
 
 
 if __name__ == "__main__":
@@ -364,5 +433,5 @@ if __name__ == "__main__":
     elif kind == "vs":
         build_vs(raw, out_dir, manifest_dir, extra[0])
     else:
-        {"yoochoose": build_yoochoose, "retail": build_retail, "dunnhumby": build_dunnhumby}[kind](
-            raw, out_dir, manifest_dir)
+        {"yoochoose": build_yoochoose, "retail": build_retail, "dunnhumby": build_dunnhumby,
+         "dunnhumbyhw": build_dunnhumby_hw, "tafeng": build_tafeng}[kind](raw, out_dir, manifest_dir)

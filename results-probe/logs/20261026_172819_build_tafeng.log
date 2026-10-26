@@ -1,0 +1,25 @@
+# python3 tools/build_stream_datasets.py tafeng <library>/ta-feng/ta_feng_all_months_merged.csv datasets tools/stream_datasets/manifests
+# commit 567f9aa149b9b5aab3fced820f3aeb0c94a1127a builder_sha256 84cfabe22ebaac8e414a9014e4ca18dec19dc534eefa5fff23842f07c0417396 (uncommitted builder change)
+{
+  "name": "TAFENG-CW",
+  "builder": "tools/build_stream_datasets.py",
+  "builder_sha256": "84cfabe22ebaac8e414a9014e4ca18dec19dc534eefa5fff23842f07c0417396",
+  "raw_file": "ta_feng_all_months_merged.csv",
+  "raw_sha256": "1d575e5d0b7207d7706d22ca56c7535886fff8175ca5537a310333a4ab7a7b67",
+  "roles": "sequence=(ISO week of TRANSACTION_DT, CUSTOMER_ID), ordered by week then customer id; event=one transaction day; item=PRODUCT_ID; utility=SALES_PRICE (line total, New Taiwan dollars)",
+  "values": "measured",
+  "sequences": 99739,
+  "events": 119578,
+  "item_occurrences": 817741,
+  "distinct_items": 23812,
+  "total_utility": 107840076,
+  "counts": {
+    "rows": 817741,
+    "weeks": 18
+  },
+  "regularity_bound_rule": "2 weeks of sequences, ceil(2 * N / weeks)",
+  "regularity_bound_B": 11083,
+  "seq_sha256": "93b1197fd7b8e98869e9f3ac9083ff3c932cca19a70ea3aa99fab7d1a8fdc1af",
+  "eui_sha256": "c92b1252c750ce3c84ad405ecd296a492f5e96efae675780586d2e1c29d35ccb"
+}
+        2.04 real         1.98 user         0.05 sys

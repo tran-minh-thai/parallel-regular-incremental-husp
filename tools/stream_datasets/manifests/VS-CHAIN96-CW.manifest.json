@@ -1,7 +1,7 @@
 {
   "name": "VS-CHAIN96-CW",
   "builder": "tools/build_stream_datasets.py",
-  "builder_sha256": "fbb82ef5df27c33277165f36eb5f4fb3aa359e0e9c7e20725a68fe97fdafbaa8",
+  "builder_sha256": "84cfabe22ebaac8e414a9014e4ca18dec19dc534eefa5fff23842f07c0417396",
   "raw_file": "transactions.csv.gz",
   "raw_sha256": "75cc4fa0d0006b9c43454e3dc1dea502b297ed5c75f3d679aae1df1acf633303",
   "roles": "one chain (96); sequence=(customer, ISO week), ordered by week then customer id; event=one purchase day; item=category|company|brand; utility=round(purchaseamount*100)",
