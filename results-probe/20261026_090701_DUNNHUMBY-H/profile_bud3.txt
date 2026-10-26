@@ -1,0 +1,16 @@
+policy=bud3 threads=10
+phase                          calls     wall_ms      cpu_ms   cores    eff
+disc.engine.wallOnly               4       734.4         n/a     n/a    n/a
+engine.eucs.merge                 25       480.6       479.1    1.00   0.10
+engine.eucs.scan                  25       316.8      2024.0    6.39   0.64
+engine.eucs.sort                  25        29.8       191.5    6.43   0.64
+engine.load                       25       425.7       409.4    0.96   0.10
+engine.mine                       23      2414.1     15966.4    6.61   0.66
+engine.mine.rootBounds            23       154.4       154.6    1.00   0.10
+engine.poolCreate                 25         1.1         1.0    0.98   0.10
+engine.poolShutdown.wallOnly      25         4.5         n/a     n/a    n/a
+engine.tier0.merge                25       105.6       105.7    1.00   0.10
+engine.tier0.scan                 25        73.8       430.6    5.83   0.58
+maint.buildTrie                   20         1.0         1.0    0.95   0.09
+maint.chunkScan                   20       118.4       713.2    6.02   0.60
+maint.mergeChunks                 20         4.0        10.9    2.72   0.27

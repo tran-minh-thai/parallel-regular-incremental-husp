@@ -1,0 +1,5 @@
+# java -Deucs.compact=true  -Dpolicies=keep-sfx,bud3-c0,bud3-c1 -cp out-eucs test.QueryScheduleStress 150
+# worktree commit 7c4133a532ff01f7e43bd9e70f66ea4b961be73c
+forceRebuildAbort=false forceMidCandidateAbort=false aborts-in-mining=184 aborts-in-rebuild=1066 half-built=0
+fault=0 trials=150 sequences-with-multi-item-events=5384 compared-queries=2031 with-non-empty-oracle=1998 failing=0 {}
+# exit status not captured (zsh); outcome is the failing= count above

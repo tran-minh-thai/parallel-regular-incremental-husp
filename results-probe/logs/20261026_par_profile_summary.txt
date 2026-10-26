@@ -1,0 +1,534 @@
+== 20261026_084141_LEVIATHAN threads=1
+   policy=bud3 threads=1  profiled_total=17156 ms
+     disc.engine.wallOnly         calls=2     wall=    3245.7 ms  share= 18.9%  cores=n/a
+     engine.eucs.merge            calls=10    wall=       6.3 ms  share=  0.0%  cores=0.99
+     engine.eucs.scan             calls=10    wall=      72.9 ms  share=  0.4%  cores=1.00
+     engine.eucs.sort             calls=10    wall=       7.2 ms  share=  0.0%  cores=0.77
+     engine.load                  calls=10    wall=      18.5 ms  share=  0.1%  cores=0.97
+     engine.mine                  calls=10    wall=   15910.7 ms  share= 92.7%  cores=0.98
+     engine.mine.rootBounds       calls=10    wall=      13.2 ms  share=  0.1%  cores=1.00
+     engine.poolCreate            calls=10    wall=       0.5 ms  share=  0.0%  cores=0.92
+     engine.poolShutdown.wallOnly calls=10    wall=       1.4 ms  share=  0.0%  cores=n/a
+     engine.tier0.merge           calls=10    wall=       1.4 ms  share=  0.0%  cores=1.02
+     engine.tier0.scan            calls=10    wall=       9.8 ms  share=  0.1%  cores=1.03
+     maint.buildTrie              calls=7     wall=      16.4 ms  share=  0.1%  cores=0.76
+     maint.chunkScan              calls=7     wall=    1107.4 ms  share=  6.5%  cores=0.98
+     maint.mergeChunks            calls=7     wall=       3.9 ms  share=  0.0%  cores=1.00
+   policy=remine-nogc threads=1  profiled_total=12568 ms
+     engine.eucs.merge            calls=7     wall=      11.9 ms  share=  0.1%  cores=0.99
+     engine.eucs.scan             calls=7     wall=      59.8 ms  share=  0.5%  cores=0.94
+     engine.eucs.sort             calls=7     wall=       4.5 ms  share=  0.0%  cores=0.95
+     engine.load                  calls=7     wall=      29.2 ms  share=  0.2%  cores=0.90
+     engine.mine                  calls=7     wall=   12432.0 ms  share= 98.9%  cores=0.98
+     engine.mine.rootBounds       calls=7     wall=      16.0 ms  share=  0.1%  cores=0.99
+     engine.poolCreate            calls=7     wall=       0.4 ms  share=  0.0%  cores=0.96
+     engine.poolShutdown.wallOnly calls=7     wall=       1.8 ms  share=  0.0%  cores=n/a
+     engine.tier0.merge           calls=7     wall=       5.7 ms  share=  0.0%  cores=0.84
+     engine.tier0.scan            calls=7     wall=      22.5 ms  share=  0.2%  cores=0.60
+== 20261026_084351_BIBLE threads=1
+   policy=bud3 threads=1  profiled_total=84090 ms
+     disc.engine.wallOnly         calls=5     wall=   19597.7 ms  share= 23.3%  cores=n/a
+     disc.invertedIndex           calls=5     wall=     336.6 ms  share=  0.4%  cores=0.97
+     disc.knownAndParse           calls=5     wall=      35.0 ms  share=  0.0%  cores=0.95
+     disc.rebuildMatch            calls=3     wall=   17141.9 ms  share= 20.4%  cores=0.95
+     engine.eucs.merge            calls=10    wall=      36.6 ms  share=  0.0%  cores=0.99
+     engine.eucs.scan             calls=10    wall=     242.3 ms  share=  0.3%  cores=0.90
+     engine.eucs.sort             calls=10    wall=      29.5 ms  share=  0.0%  cores=0.94
+     engine.load                  calls=10    wall=      53.9 ms  share=  0.1%  cores=0.90
+     engine.mine                  calls=10    wall=   61667.4 ms  share= 73.3%  cores=-10.40
+     engine.mine.rootBounds       calls=10    wall=      32.8 ms  share=  0.0%  cores=0.99
+     engine.poolCreate            calls=10    wall=       0.4 ms  share=  0.0%  cores=0.85
+     engine.poolShutdown.wallOnly calls=10    wall=       3.6 ms  share=  0.0%  cores=n/a
+     engine.tier0.merge           calls=10    wall=       1.9 ms  share=  0.0%  cores=0.99
+     engine.tier0.scan            calls=10    wall=      19.4 ms  share=  0.0%  cores=1.00
+     maint.buildTrie              calls=7     wall=      11.9 ms  share=  0.0%  cores=0.97
+     maint.chunkScan              calls=7     wall=    4504.9 ms  share=  5.4%  cores=0.94
+     maint.mergeChunks            calls=7     wall=       5.2 ms  share=  0.0%  cores=0.92
+   policy=remine-nogc threads=1  profiled_total=57736 ms
+     engine.eucs.merge            calls=7     wall=      23.4 ms  share=  0.0%  cores=1.00
+     engine.eucs.scan             calls=7     wall=     235.3 ms  share=  0.4%  cores=1.00
+     engine.eucs.sort             calls=7     wall=      15.3 ms  share=  0.0%  cores=1.00
+     engine.load                  calls=7     wall=     103.0 ms  share=  0.2%  cores=0.98
+     engine.mine                  calls=7     wall=   57323.6 ms  share= 99.3%  cores=0.98
+     engine.mine.rootBounds       calls=7     wall=      49.2 ms  share=  0.1%  cores=1.00
+     engine.poolCreate            calls=7     wall=       0.5 ms  share=  0.0%  cores=0.97
+     engine.poolShutdown.wallOnly calls=7     wall=       0.7 ms  share=  0.0%  cores=n/a
+     engine.tier0.merge           calls=7     wall=       5.3 ms  share=  0.0%  cores=1.01
+     engine.tier0.scan            calls=7     wall=      28.5 ms  share=  0.0%  cores=1.01
+== 20261026_085016_DUNNHUMBY-H threads=1
+   policy=bud3 threads=1  profiled_total=22288 ms
+     disc.engine.wallOnly         calls=4     wall=    3131.5 ms  share= 14.1%  cores=n/a
+     engine.eucs.merge            calls=25    wall=     325.9 ms  share=  1.5%  cores=1.00
+     engine.eucs.scan             calls=25    wall=    1627.6 ms  share=  7.3%  cores=0.97
+     engine.eucs.sort             calls=25    wall=     216.2 ms  share=  1.0%  cores=0.99
+     engine.load                  calls=25    wall=     504.5 ms  share=  2.3%  cores=0.87
+     engine.mine                  calls=25    wall=   19080.4 ms  share= 85.6%  cores=0.92
+     engine.mine.rootBounds       calls=25    wall=     180.6 ms  share=  0.8%  cores=0.94
+     engine.poolCreate            calls=25    wall=       1.1 ms  share=  0.0%  cores=0.95
+     engine.poolShutdown.wallOnly calls=25    wall=       5.0 ms  share=  0.0%  cores=n/a
+     engine.tier0.merge           calls=25    wall=      30.2 ms  share=  0.1%  cores=0.99
+     engine.tier0.scan            calls=25    wall=     310.7 ms  share=  1.4%  cores=0.83
+     maint.buildTrie              calls=20    wall=       1.1 ms  share=  0.0%  cores=0.80
+     maint.chunkScan              calls=20    wall=     182.8 ms  share=  0.8%  cores=0.96
+     maint.mergeChunks            calls=20    wall=       2.2 ms  share=  0.0%  cores=0.97
+   policy=remine-nogc threads=1  profiled_total=18141 ms
+     engine.eucs.merge            calls=20    wall=      20.6 ms  share=  0.1%  cores=0.96
+     engine.eucs.scan             calls=20    wall=    1121.3 ms  share=  6.2%  cores=0.96
+     engine.eucs.sort             calls=20    wall=      30.0 ms  share=  0.2%  cores=0.97
+     engine.load                  calls=20    wall=     530.2 ms  share=  2.9%  cores=0.81
+     engine.mine                  calls=20    wall=   16149.7 ms  share= 89.0%  cores=0.94
+     engine.mine.rootBounds       calls=20    wall=     166.6 ms  share=  0.9%  cores=0.99
+     engine.poolCreate            calls=20    wall=       0.8 ms  share=  0.0%  cores=0.96
+     engine.poolShutdown.wallOnly calls=20    wall=       3.1 ms  share=  0.0%  cores=n/a
+     engine.tier0.merge           calls=20    wall=      18.8 ms  share=  0.1%  cores=0.99
+     engine.tier0.scan            calls=20    wall=     266.1 ms  share=  1.5%  cores=0.91
+== 20261026_085119_LEVIATHAN threads=4
+   policy=bud3 threads=4  profiled_total=5992 ms
+     disc.engine.wallOnly         calls=2     wall=    1123.6 ms  share= 18.8%  cores=n/a
+     engine.eucs.merge            calls=10    wall=      10.9 ms  share=  0.2%  cores=0.95
+     engine.eucs.scan             calls=10    wall=      51.5 ms  share=  0.9%  cores=2.57
+     engine.eucs.sort             calls=10    wall=       7.1 ms  share=  0.1%  cores=0.87
+     engine.load                  calls=10    wall=      21.0 ms  share=  0.4%  cores=0.97
+     engine.mine                  calls=10    wall=    5370.8 ms  share= 89.6%  cores=3.18
+     engine.mine.rootBounds       calls=10    wall=      13.7 ms  share=  0.2%  cores=1.00
+     engine.poolCreate            calls=10    wall=       0.5 ms  share=  0.0%  cores=0.91
+     engine.poolShutdown.wallOnly calls=10    wall=       8.7 ms  share=  0.1%  cores=n/a
+     engine.tier0.merge           calls=10    wall=       2.8 ms  share=  0.0%  cores=1.00
+     engine.tier0.scan            calls=10    wall=      25.4 ms  share=  0.4%  cores=0.60
+     maint.buildTrie              calls=7     wall=      16.3 ms  share=  0.3%  cores=0.85
+     maint.chunkScan              calls=7     wall=     467.7 ms  share=  7.8%  cores=2.65
+     maint.mergeChunks            calls=7     wall=       9.5 ms  share=  0.2%  cores=1.40
+   policy=remine-nogc-static threads=4  profiled_total=10785 ms
+     engine.eucs.merge            calls=7     wall=       5.3 ms  share=  0.0%  cores=1.00
+     engine.eucs.scan             calls=7     wall=      17.0 ms  share=  0.2%  cores=3.03
+     engine.eucs.sort             calls=7     wall=       2.6 ms  share=  0.0%  cores=1.40
+     engine.load                  calls=7     wall=      16.8 ms  share=  0.2%  cores=0.98
+     engine.mine                  calls=7     wall=   10735.1 ms  share= 99.5%  cores=1.15
+     engine.poolCreate            calls=7     wall=       0.4 ms  share=  0.0%  cores=0.91
+     engine.poolShutdown.wallOnly calls=7     wall=       0.8 ms  share=  0.0%  cores=n/a
+     engine.tier0.merge           calls=7     wall=       1.6 ms  share=  0.0%  cores=0.99
+     engine.tier0.scan            calls=7     wall=       5.5 ms  share=  0.1%  cores=2.05
+   policy=remine-nogc-steal threads=4  profiled_total=4557 ms
+     engine.eucs.merge            calls=7     wall=       5.6 ms  share=  0.1%  cores=0.98
+     engine.eucs.scan             calls=7     wall=      26.9 ms  share=  0.6%  cores=2.11
+     engine.eucs.sort             calls=7     wall=       3.8 ms  share=  0.1%  cores=0.99
+     engine.load                  calls=7     wall=      21.0 ms  share=  0.5%  cores=0.90
+     engine.mine                  calls=7     wall=    4473.2 ms  share= 98.2%  cores=2.96
+     engine.mine.rootBounds       calls=7     wall=      11.7 ms  share=  0.3%  cores=0.98
+     engine.poolCreate            calls=7     wall=       0.3 ms  share=  0.0%  cores=1.00
+     engine.poolShutdown.wallOnly calls=7     wall=       2.2 ms  share=  0.0%  cores=n/a
+     engine.tier0.merge           calls=7     wall=       1.6 ms  share=  0.0%  cores=1.01
+     engine.tier0.scan            calls=7     wall=      22.1 ms  share=  0.5%  cores=0.52
+   policy=remine-nogc threads=4  profiled_total=3960 ms
+     engine.eucs.merge            calls=7     wall=      16.6 ms  share=  0.4%  cores=0.99
+     engine.eucs.scan             calls=7     wall=      64.0 ms  share=  1.6%  cores=3.14
+     engine.eucs.sort             calls=7     wall=      11.0 ms  share=  0.3%  cores=0.65
+     engine.load                  calls=7     wall=      32.5 ms  share=  0.8%  cores=0.93
+     engine.mine                  calls=7     wall=    3811.8 ms  share= 96.3%  cores=3.44
+     engine.mine.rootBounds       calls=7     wall=      19.9 ms  share=  0.5%  cores=0.96
+     engine.poolCreate            calls=7     wall=       0.4 ms  share=  0.0%  cores=0.94
+     engine.poolShutdown.wallOnly calls=7     wall=       1.1 ms  share=  0.0%  cores=n/a
+     engine.tier0.merge           calls=7     wall=       6.7 ms  share=  0.2%  cores=0.96
+     engine.tier0.scan            calls=7     wall=      15.9 ms  share=  0.4%  cores=2.98
+== 20261026_085343_BIBLE threads=4
+   policy=bud3 threads=4  profiled_total=24466 ms
+     disc.engine.wallOnly         calls=5     wall=    5863.9 ms  share= 24.0%  cores=n/a
+     disc.invertedIndex           calls=5     wall=     323.8 ms  share=  1.3%  cores=0.97
+     disc.knownAndParse           calls=5     wall=      41.9 ms  share=  0.2%  cores=0.80
+     disc.rebuildMatch            calls=3     wall=    3677.9 ms  share= 15.0%  cores=3.68
+     engine.eucs.merge            calls=10    wall=      59.3 ms  share=  0.2%  cores=0.91
+     engine.eucs.scan             calls=10    wall=      99.2 ms  share=  0.4%  cores=2.74
+     engine.eucs.sort             calls=10    wall=      29.9 ms  share=  0.1%  cores=1.00
+     engine.load                  calls=10    wall=      68.9 ms  share=  0.3%  cores=0.87
+     engine.mine                  calls=10    wall=   18677.4 ms  share= 76.3%  cores=3.46
+     engine.mine.rootBounds       calls=10    wall=      35.2 ms  share=  0.1%  cores=0.98
+     engine.poolCreate            calls=10    wall=       0.4 ms  share=  0.0%  cores=0.92
+     engine.poolShutdown.wallOnly calls=10    wall=       1.0 ms  share=  0.0%  cores=n/a
+     engine.tier0.merge           calls=10    wall=       3.8 ms  share=  0.0%  cores=1.01
+     engine.tier0.scan            calls=10    wall=      48.6 ms  share=  0.2%  cores=0.56
+     maint.buildTrie              calls=7     wall=      15.8 ms  share=  0.1%  cores=0.68
+     maint.chunkScan              calls=7     wall=    1409.3 ms  share=  5.8%  cores=2.51
+     maint.mergeChunks            calls=7     wall=       8.6 ms  share=  0.0%  cores=2.25
+   policy=remine-nogc-static threads=4  profiled_total=33862 ms
+     engine.eucs.merge            calls=7     wall=      25.6 ms  share=  0.1%  cores=1.00
+     engine.eucs.scan             calls=7     wall=      87.3 ms  share=  0.3%  cores=3.01
+     engine.eucs.sort             calls=7     wall=       4.4 ms  share=  0.0%  cores=3.13
+     engine.load                  calls=7     wall=      78.5 ms  share=  0.2%  cores=0.87
+     engine.mine                  calls=7     wall=   33638.9 ms  share= 99.3%  cores=-18.44
+     engine.poolCreate            calls=7     wall=       0.2 ms  share=  0.0%  cores=1.03
+     engine.poolShutdown.wallOnly calls=7     wall=       3.0 ms  share=  0.0%  cores=n/a
+     engine.tier0.merge           calls=7     wall=       2.4 ms  share=  0.0%  cores=1.00
+     engine.tier0.scan            calls=7     wall=      21.2 ms  share=  0.1%  cores=1.41
+   policy=remine-nogc-steal threads=4  profiled_total=36787 ms
+     engine.eucs.merge            calls=7     wall=      24.1 ms  share=  0.1%  cores=1.00
+     engine.eucs.scan             calls=7     wall=      72.9 ms  share=  0.2%  cores=3.27
+     engine.eucs.sort             calls=7     wall=      17.5 ms  share=  0.0%  cores=0.73
+     engine.load                  calls=7     wall=      63.7 ms  share=  0.2%  cores=0.91
+     engine.mine                  calls=7     wall=   36582.8 ms  share= 99.4%  cores=1.60
+     engine.mine.rootBounds       calls=7     wall=      39.8 ms  share=  0.1%  cores=0.99
+     engine.poolCreate            calls=7     wall=       0.3 ms  share=  0.0%  cores=0.97
+     engine.poolShutdown.wallOnly calls=7     wall=       0.8 ms  share=  0.0%  cores=n/a
+     engine.tier0.merge           calls=7     wall=       2.4 ms  share=  0.0%  cores=1.00
+     engine.tier0.scan            calls=7     wall=      22.7 ms  share=  0.1%  cores=1.20
+   policy=remine-nogc threads=4  profiled_total=17937 ms
+     engine.eucs.merge            calls=7     wall=      34.8 ms  share=  0.2%  cores=1.00
+     engine.eucs.scan             calls=7     wall=     133.4 ms  share=  0.7%  cores=3.33
+     engine.eucs.sort             calls=7     wall=       9.3 ms  share=  0.1%  cores=3.23
+     engine.load                  calls=7     wall=      92.9 ms  share=  0.5%  cores=0.97
+     engine.mine                  calls=7     wall=   17635.4 ms  share= 98.3%  cores=3.54
+     engine.mine.rootBounds       calls=7     wall=      49.0 ms  share=  0.3%  cores=1.00
+     engine.poolCreate            calls=7     wall=       0.4 ms  share=  0.0%  cores=0.93
+     engine.poolShutdown.wallOnly calls=7     wall=       1.0 ms  share=  0.0%  cores=n/a
+     engine.tier0.merge           calls=7     wall=       7.5 ms  share=  0.0%  cores=1.01
+     engine.tier0.scan            calls=7     wall=      22.6 ms  share=  0.1%  cores=3.39
+== 20261026_085946_DUNNHUMBY-H threads=4
+   policy=bud3 threads=4  profiled_total=6514 ms
+     disc.engine.wallOnly         calls=4     wall=     923.7 ms  share= 14.2%  cores=n/a
+     engine.eucs.merge            calls=25    wall=     346.5 ms  share=  5.3%  cores=0.99
+     engine.eucs.scan             calls=25    wall=     532.4 ms  share=  8.2%  cores=3.38
+     engine.eucs.sort             calls=25    wall=      58.0 ms  share=  0.9%  cores=3.39
+     engine.load                  calls=25    wall=     473.4 ms  share=  7.3%  cores=0.96
+     engine.mine                  calls=24    wall=    4781.8 ms  share= 73.4%  cores=3.45
+     engine.mine.rootBounds       calls=24    wall=     175.5 ms  share=  2.7%  cores=1.00
+     engine.poolCreate            calls=25    wall=       1.1 ms  share=  0.0%  cores=0.95
+     engine.poolShutdown.wallOnly calls=25    wall=       6.9 ms  share=  0.1%  cores=n/a
+     engine.tier0.merge           calls=25    wall=      67.3 ms  share=  1.0%  cores=1.00
+     engine.tier0.scan            calls=25    wall=     106.2 ms  share=  1.6%  cores=3.19
+     maint.buildTrie              calls=20    wall=       1.0 ms  share=  0.0%  cores=0.94
+     maint.chunkScan              calls=20    wall=     134.8 ms  share=  2.1%  cores=3.28
+     maint.mergeChunks            calls=20    wall=       4.5 ms  share=  0.1%  cores=1.34
+   policy=remine-nogc-static threads=4  profiled_total=9452 ms
+     engine.eucs.merge            calls=20    wall=      34.5 ms  share=  0.4%  cores=0.99
+     engine.eucs.scan             calls=20    wall=     341.0 ms  share=  3.6%  cores=3.22
+     engine.eucs.sort             calls=20    wall=      10.0 ms  share=  0.1%  cores=2.63
+     engine.load                  calls=20    wall=     414.9 ms  share=  4.4%  cores=0.96
+     engine.mine                  calls=20    wall=    8469.8 ms  share= 89.6%  cores=1.76
+     engine.poolCreate            calls=20    wall=       0.7 ms  share=  0.0%  cores=0.96
+     engine.poolShutdown.wallOnly calls=20    wall=      13.2 ms  share=  0.1%  cores=n/a
+     engine.tier0.merge           calls=20    wall=      47.7 ms  share=  0.5%  cores=0.96
+     engine.tier0.scan            calls=20    wall=     120.1 ms  share=  1.3%  cores=2.57
+   policy=remine-nogc-steal threads=4  profiled_total=5319 ms
+     engine.eucs.merge            calls=20    wall=      34.8 ms  share=  0.7%  cores=0.99
+     engine.eucs.scan             calls=20    wall=     335.9 ms  share=  6.3%  cores=3.24
+     engine.eucs.sort             calls=20    wall=      14.3 ms  share=  0.3%  cores=1.99
+     engine.load                  calls=20    wall=     390.8 ms  share=  7.3%  cores=0.98
+     engine.mine                  calls=20    wall=    4392.1 ms  share= 82.6%  cores=3.20
+     engine.mine.rootBounds       calls=20    wall=     147.4 ms  share=  2.8%  cores=0.99
+     engine.poolCreate            calls=20    wall=       0.6 ms  share=  0.0%  cores=0.99
+     engine.poolShutdown.wallOnly calls=20    wall=       2.2 ms  share=  0.0%  cores=n/a
+     engine.tier0.merge           calls=20    wall=      47.9 ms  share=  0.9%  cores=1.00
+     engine.tier0.scan            calls=20    wall=     100.7 ms  share=  1.9%  cores=2.91
+   policy=remine-nogc threads=4  profiled_total=5417 ms
+     engine.eucs.merge            calls=20    wall=      36.1 ms  share=  0.7%  cores=1.00
+     engine.eucs.scan             calls=20    wall=     349.3 ms  share=  6.4%  cores=3.19
+     engine.eucs.sort             calls=20    wall=      10.0 ms  share=  0.2%  cores=2.84
+     engine.load                  calls=20    wall=     429.0 ms  share=  7.9%  cores=0.96
+     engine.mine                  calls=20    wall=    4438.5 ms  share= 81.9%  cores=3.37
+     engine.mine.rootBounds       calls=20    wall=     156.3 ms  share=  2.9%  cores=0.96
+     engine.poolCreate            calls=20    wall=       0.7 ms  share=  0.0%  cores=0.93
+     engine.poolShutdown.wallOnly calls=20    wall=       8.0 ms  share=  0.1%  cores=n/a
+     engine.tier0.merge           calls=20    wall=      49.4 ms  share=  0.9%  cores=1.00
+     engine.tier0.scan            calls=20    wall=      96.1 ms  share=  1.8%  cores=3.26
+== 20261026_090023_LEVIATHAN threads=10
+   policy=bud3 threads=10  profiled_total=2588 ms
+     disc.engine.wallOnly         calls=2     wall=     417.9 ms  share= 16.1%  cores=n/a
+     engine.eucs.merge            calls=10    wall=      14.2 ms  share=  0.5%  cores=1.00
+     engine.eucs.scan             calls=10    wall=      14.0 ms  share=  0.5%  cores=5.92
+     engine.eucs.sort             calls=10    wall=       2.0 ms  share=  0.1%  cores=3.59
+     engine.load                  calls=10    wall=      17.1 ms  share=  0.7%  cores=1.00
+     engine.mine                  calls=10    wall=    2183.5 ms  share= 84.4%  cores=8.33
+     engine.mine.rootBounds       calls=10    wall=      12.8 ms  share=  0.5%  cores=1.00
+     engine.poolCreate            calls=10    wall=       0.4 ms  share=  0.0%  cores=0.96
+     engine.poolShutdown.wallOnly calls=10    wall=       1.6 ms  share=  0.1%  cores=n/a
+     engine.tier0.merge           calls=10    wall=       3.9 ms  share=  0.2%  cores=1.00
+     engine.tier0.scan            calls=10    wall=       6.7 ms  share=  0.3%  cores=3.08
+     maint.buildTrie              calls=7     wall=      11.4 ms  share=  0.4%  cores=1.00
+     maint.chunkScan              calls=7     wall=     326.0 ms  share= 12.6%  cores=6.56
+     maint.mergeChunks            calls=7     wall=       6.9 ms  share=  0.3%  cores=5.47
+   policy=remine-nogc-static threads=10  profiled_total=8557 ms
+     engine.eucs.merge            calls=7     wall=       8.7 ms  share=  0.1%  cores=1.00
+     engine.eucs.scan             calls=7     wall=      21.7 ms  share=  0.3%  cores=2.81
+     engine.eucs.sort             calls=7     wall=       1.9 ms  share=  0.0%  cores=1.80
+     engine.load                  calls=7     wall=      14.1 ms  share=  0.2%  cores=1.00
+     engine.mine                  calls=7     wall=    8495.4 ms  share= 99.3%  cores=1.43
+     engine.poolCreate            calls=7     wall=       0.3 ms  share=  0.0%  cores=1.00
+     engine.poolShutdown.wallOnly calls=7     wall=       2.6 ms  share=  0.0%  cores=n/a
+     engine.tier0.merge           calls=7     wall=       2.6 ms  share=  0.0%  cores=1.00
+     engine.tier0.scan            calls=7     wall=       9.9 ms  share=  0.1%  cores=1.45
+   policy=remine-nogc-steal threads=10  profiled_total=3416 ms
+     engine.eucs.merge            calls=7     wall=       8.7 ms  share=  0.3%  cores=1.00
+     engine.eucs.scan             calls=7     wall=      11.9 ms  share=  0.3%  cores=5.06
+     engine.eucs.sort             calls=7     wall=       1.2 ms  share=  0.0%  cores=3.42
+     engine.load                  calls=7     wall=      14.0 ms  share=  0.4%  cores=1.00
+     engine.mine                  calls=7     wall=    3371.2 ms  share= 98.7%  cores=3.52
+     engine.mine.rootBounds       calls=7     wall=      10.4 ms  share=  0.3%  cores=1.00
+     engine.poolCreate            calls=7     wall=       0.2 ms  share=  0.0%  cores=1.00
+     engine.poolShutdown.wallOnly calls=7     wall=       1.3 ms  share=  0.0%  cores=n/a
+     engine.tier0.merge           calls=7     wall=       2.5 ms  share=  0.1%  cores=1.01
+     engine.tier0.scan            calls=7     wall=       4.7 ms  share=  0.1%  cores=3.17
+   policy=remine-nogc threads=10  profiled_total=2043 ms
+     engine.eucs.merge            calls=7     wall=      18.7 ms  share=  0.9%  cores=1.00
+     engine.eucs.scan             calls=7     wall=      47.6 ms  share=  2.3%  cores=6.01
+     engine.eucs.sort             calls=7     wall=       3.1 ms  share=  0.2%  cores=3.72
+     engine.load                  calls=7     wall=      28.2 ms  share=  1.4%  cores=0.93
+     engine.mine                  calls=7     wall=    1916.7 ms  share= 93.8%  cores=8.15
+     engine.mine.rootBounds       calls=7     wall=      15.7 ms  share=  0.8%  cores=1.00
+     engine.poolCreate            calls=7     wall=       0.3 ms  share=  0.0%  cores=0.95
+     engine.poolShutdown.wallOnly calls=7     wall=       1.1 ms  share=  0.1%  cores=n/a
+     engine.tier0.merge           calls=7     wall=       7.6 ms  share=  0.4%  cores=1.01
+     engine.tier0.scan            calls=7     wall=      19.8 ms  share=  1.0%  cores=5.25
+== 20261026_090227_BIBLE threads=10
+   policy=bud3 threads=10  profiled_total=12165 ms
+     disc.engine.wallOnly         calls=4     wall=    2718.3 ms  share= 22.3%  cores=n/a
+     disc.invertedIndex           calls=4     wall=     221.2 ms  share=  1.8%  cores=0.99
+     disc.knownAndParse           calls=4     wall=      32.5 ms  share=  0.3%  cores=0.97
+     disc.rebuildMatch            calls=1     wall=     172.6 ms  share=  1.4%  cores=8.43
+     engine.eucs.merge            calls=11    wall=      70.3 ms  share=  0.6%  cores=1.00
+     engine.eucs.scan             calls=11    wall=      67.9 ms  share=  0.6%  cores=5.23
+     engine.eucs.sort             calls=11    wall=       5.0 ms  share=  0.0%  cores=5.56
+     engine.load                  calls=11    wall=      57.1 ms  share=  0.5%  cores=1.00
+     engine.mine                  calls=11    wall=   10641.3 ms  share= 87.5%  cores=7.75
+     engine.mine.rootBounds       calls=11    wall=      44.6 ms  share=  0.4%  cores=1.00
+     engine.poolCreate            calls=11    wall=       0.3 ms  share=  0.0%  cores=0.94
+     engine.poolShutdown.wallOnly calls=11    wall=       2.0 ms  share=  0.0%  cores=n/a
+     engine.tier0.merge           calls=11    wall=       6.4 ms  share=  0.1%  cores=1.00
+     engine.tier0.scan            calls=11    wall=      11.0 ms  share=  0.1%  cores=3.65
+     maint.buildTrie              calls=7     wall=      10.9 ms  share=  0.1%  cores=1.00
+     maint.chunkScan              calls=7     wall=     854.0 ms  share=  7.0%  cores=4.90
+     maint.mergeChunks            calls=7     wall=      12.8 ms  share=  0.1%  cores=6.20
+   policy=remine-nogc-static threads=10  profiled_total=24284 ms
+     engine.eucs.merge            calls=7     wall=      37.0 ms  share=  0.2%  cores=1.00
+     engine.eucs.scan             calls=7     wall=      47.4 ms  share=  0.2%  cores=5.92
+     engine.eucs.sort             calls=7     wall=       2.6 ms  share=  0.0%  cores=4.97
+     engine.load                  calls=7     wall=      50.8 ms  share=  0.2%  cores=1.00
+     engine.mine                  calls=7     wall=   24133.8 ms  share= 99.4%  cores=2.20
+     engine.poolCreate            calls=7     wall=       0.1 ms  share=  0.0%  cores=0.99
+     engine.poolShutdown.wallOnly calls=7     wall=       1.0 ms  share=  0.0%  cores=n/a
+     engine.tier0.merge           calls=7     wall=       4.1 ms  share=  0.0%  cores=1.00
+     engine.tier0.scan            calls=7     wall=       7.1 ms  share=  0.0%  cores=4.56
+   policy=remine-nogc-steal threads=10  profiled_total=26869 ms
+     engine.eucs.merge            calls=7     wall=      38.2 ms  share=  0.1%  cores=1.00
+     engine.eucs.scan             calls=7     wall=      51.0 ms  share=  0.2%  cores=5.61
+     engine.eucs.sort             calls=7     wall=       2.6 ms  share=  0.0%  cores=4.95
+     engine.load                  calls=7     wall=      54.3 ms  share=  0.2%  cores=1.00
+     engine.mine                  calls=7     wall=   26709.9 ms  share= 99.4%  cores=-23.41
+     engine.mine.rootBounds       calls=7     wall=      40.5 ms  share=  0.2%  cores=1.00
+     engine.poolCreate            calls=7     wall=       0.2 ms  share=  0.0%  cores=1.01
+     engine.poolShutdown.wallOnly calls=7     wall=       1.0 ms  share=  0.0%  cores=n/a
+     engine.tier0.merge           calls=7     wall=       4.2 ms  share=  0.0%  cores=1.01
+     engine.tier0.scan            calls=7     wall=       7.5 ms  share=  0.0%  cores=4.36
+   policy=remine-nogc threads=10  profiled_total=8637 ms
+     engine.eucs.merge            calls=7     wall=      47.9 ms  share=  0.6%  cores=1.00
+     engine.eucs.scan             calls=7     wall=     104.1 ms  share=  1.2%  cores=6.21
+     engine.eucs.sort             calls=7     wall=       7.9 ms  share=  0.1%  cores=6.49
+     engine.load                  calls=7     wall=      93.7 ms  share=  1.1%  cores=0.98
+     engine.mine                  calls=7     wall=    8347.9 ms  share= 96.6%  cores=7.99
+     engine.mine.rootBounds       calls=7     wall=      46.8 ms  share=  0.5%  cores=1.00
+     engine.poolCreate            calls=7     wall=       0.4 ms  share=  0.0%  cores=0.94
+     engine.poolShutdown.wallOnly calls=7     wall=       1.6 ms  share=  0.0%  cores=n/a
+     engine.tier0.merge           calls=7     wall=       9.1 ms  share=  0.1%  cores=1.01
+     engine.tier0.scan            calls=7     wall=      24.7 ms  share=  0.3%  cores=4.35
+== 20261026_090701_DUNNHUMBY-H threads=10
+   policy=bud3 threads=10  profiled_total=3975 ms
+     disc.engine.wallOnly         calls=4     wall=     734.4 ms  share= 18.5%  cores=n/a
+     engine.eucs.merge            calls=25    wall=     480.6 ms  share= 12.1%  cores=1.00
+     engine.eucs.scan             calls=25    wall=     316.8 ms  share=  8.0%  cores=6.39
+     engine.eucs.sort             calls=25    wall=      29.8 ms  share=  0.7%  cores=6.43
+     engine.load                  calls=25    wall=     425.7 ms  share= 10.7%  cores=0.96
+     engine.mine                  calls=23    wall=    2414.1 ms  share= 60.7%  cores=6.61
+     engine.mine.rootBounds       calls=23    wall=     154.4 ms  share=  3.9%  cores=1.00
+     engine.poolCreate            calls=25    wall=       1.1 ms  share=  0.0%  cores=0.98
+     engine.poolShutdown.wallOnly calls=25    wall=       4.5 ms  share=  0.1%  cores=n/a
+     engine.tier0.merge           calls=25    wall=     105.6 ms  share=  2.7%  cores=1.00
+     engine.tier0.scan            calls=25    wall=      73.8 ms  share=  1.9%  cores=5.83
+     maint.buildTrie              calls=20    wall=       1.0 ms  share=  0.0%  cores=0.95
+     maint.chunkScan              calls=20    wall=     118.4 ms  share=  3.0%  cores=6.02
+     maint.mergeChunks            calls=20    wall=       4.0 ms  share=  0.1%  cores=2.72
+   policy=remine-nogc-static threads=10  profiled_total=5548 ms
+     engine.eucs.merge            calls=20    wall=      61.3 ms  share=  1.1%  cores=1.00
+     engine.eucs.scan             calls=20    wall=     167.9 ms  share=  3.0%  cores=6.65
+     engine.eucs.sort             calls=20    wall=       5.9 ms  share=  0.1%  cores=5.00
+     engine.load                  calls=20    wall=     360.1 ms  share=  6.5%  cores=1.00
+     engine.mine                  calls=20    wall=    4800.9 ms  share= 86.5%  cores=2.80
+     engine.poolCreate            calls=20    wall=       0.4 ms  share=  0.0%  cores=0.99
+     engine.poolShutdown.wallOnly calls=20    wall=       2.6 ms  share=  0.0%  cores=n/a
+     engine.tier0.merge           calls=20    wall=      80.7 ms  share=  1.5%  cores=1.00
+     engine.tier0.scan            calls=20    wall=      68.6 ms  share=  1.2%  cores=5.43
+   policy=remine-nogc-steal threads=10  profiled_total=4502 ms
+     engine.eucs.merge            calls=20    wall=      61.2 ms  share=  1.4%  cores=1.00
+     engine.eucs.scan             calls=20    wall=     166.1 ms  share=  3.7%  cores=6.75
+     engine.eucs.sort             calls=20    wall=       5.9 ms  share=  0.1%  cores=4.97
+     engine.load                  calls=20    wall=     369.5 ms  share=  8.2%  cores=0.99
+     engine.mine                  calls=20    wall=    3746.8 ms  share= 83.2%  cores=3.67
+     engine.mine.rootBounds       calls=20    wall=     140.4 ms  share=  3.1%  cores=1.00
+     engine.poolCreate            calls=20    wall=       0.5 ms  share=  0.0%  cores=0.98
+     engine.poolShutdown.wallOnly calls=20    wall=       2.8 ms  share=  0.1%  cores=n/a
+     engine.tier0.merge           calls=20    wall=      81.1 ms  share=  1.8%  cores=1.00
+     engine.tier0.scan            calls=20    wall=      68.1 ms  share=  1.5%  cores=5.50
+   policy=remine-nogc threads=10  profiled_total=3149 ms
+     engine.eucs.merge            calls=20    wall=      62.5 ms  share=  2.0%  cores=1.00
+     engine.eucs.scan             calls=20    wall=     174.9 ms  share=  5.6%  cores=6.70
+     engine.eucs.sort             calls=20    wall=       5.8 ms  share=  0.2%  cores=5.07
+     engine.load                  calls=20    wall=     413.7 ms  share= 13.1%  cores=0.99
+     engine.mine                  calls=20    wall=    2332.0 ms  share= 74.0%  cores=6.20
+     engine.mine.rootBounds       calls=20    wall=     140.8 ms  share=  4.5%  cores=1.00
+     engine.poolCreate            calls=20    wall=       0.5 ms  share=  0.0%  cores=0.97
+     engine.poolShutdown.wallOnly calls=20    wall=       2.9 ms  share=  0.1%  cores=n/a
+     engine.tier0.merge           calls=20    wall=      84.3 ms  share=  2.7%  cores=0.99
+     engine.tier0.scan            calls=20    wall=      72.8 ms  share=  2.3%  cores=5.60
+== 20261026_090726_FIFA threads=4
+   policy=bud3 threads=4  profiled_total=161165 ms
+     disc.engine.wallOnly         calls=1     wall=    4922.6 ms  share=  3.1%  cores=n/a
+     disc.knownAndParse           calls=1     wall=       0.1 ms  share=  0.0%  cores=1.02
+     engine.eucs.merge            calls=3     wall=      15.8 ms  share=  0.0%  cores=1.00
+     engine.eucs.scan             calls=3     wall=      57.7 ms  share=  0.0%  cores=3.81
+     engine.eucs.sort             calls=3     wall=       2.3 ms  share=  0.0%  cores=3.41
+     engine.load                  calls=3     wall=      20.7 ms  share=  0.0%  cores=0.99
+     engine.mine                  calls=3     wall=  161027.2 ms  share= 99.9%  cores=4.26
+     engine.mine.rootBounds       calls=3     wall=       8.8 ms  share=  0.0%  cores=1.00
+     engine.poolCreate            calls=3     wall=       0.1 ms  share=  0.0%  cores=0.86
+     engine.poolShutdown.wallOnly calls=3     wall=       0.3 ms  share=  0.0%  cores=n/a
+     engine.tier0.merge           calls=3     wall=       0.8 ms  share=  0.0%  cores=1.00
+     engine.tier0.scan            calls=3     wall=       2.0 ms  share=  0.0%  cores=2.98
+     maint.buildTrie              calls=2     wall=       0.5 ms  share=  0.0%  cores=0.96
+     maint.chunkScan              calls=2     wall=      35.7 ms  share=  0.0%  cores=3.60
+     maint.mergeChunks            calls=2     wall=       1.7 ms  share=  0.0%  cores=1.29
+   policy=remine-nogc-static threads=4  profiled_total=569563 ms
+     engine.eucs.merge            calls=2     wall=      11.8 ms  share=  0.0%  cores=1.00
+     engine.eucs.scan             calls=2     wall=      57.5 ms  share=  0.0%  cores=3.78
+     engine.eucs.sort             calls=2     wall=       1.7 ms  share=  0.0%  cores=3.37
+     engine.load                  calls=2     wall=      17.8 ms  share=  0.0%  cores=1.00
+     engine.mine                  calls=2     wall=  569471.5 ms  share=100.0%  cores=1.18
+     engine.poolCreate            calls=2     wall=       0.1 ms  share=  0.0%  cores=0.96
+     engine.poolShutdown.wallOnly calls=2     wall=       0.2 ms  share=  0.0%  cores=n/a
+     engine.tier0.merge           calls=2     wall=       0.5 ms  share=  0.0%  cores=1.00
+     engine.tier0.scan            calls=2     wall=       1.8 ms  share=  0.0%  cores=3.05
+   policy=remine-nogc threads=4  profiled_total=172244 ms
+     engine.eucs.merge            calls=2     wall=      13.1 ms  share=  0.0%  cores=1.00
+     engine.eucs.scan             calls=2     wall=      81.0 ms  share=  0.0%  cores=3.90
+     engine.eucs.sort             calls=2     wall=       1.7 ms  share=  0.0%  cores=3.20
+     engine.load                  calls=2     wall=      24.3 ms  share=  0.0%  cores=1.00
+     engine.mine                  calls=2     wall=  172119.6 ms  share= 99.9%  cores=3.96
+     engine.mine.rootBounds       calls=2     wall=       8.7 ms  share=  0.0%  cores=1.00
+     engine.poolCreate            calls=2     wall=       0.1 ms  share=  0.0%  cores=0.93
+     engine.poolShutdown.wallOnly calls=2     wall=       0.2 ms  share=  0.0%  cores=n/a
+     engine.tier0.merge           calls=2     wall=       2.1 ms  share=  0.0%  cores=1.00
+     engine.tier0.scan            calls=2     wall=       1.8 ms  share=  0.0%  cores=3.22
+== 20261026_092530_VS-CHAIN96-CW threads=4
+   policy=bud3 threads=4  profiled_total=167618 ms
+     disc.engine.wallOnly         calls=1     wall=   54915.3 ms  share= 32.8%  cores=n/a
+     disc.invertedIndex           calls=1     wall=    2103.8 ms  share=  1.3%  cores=1.00
+     disc.knownAndParse           calls=1     wall=       0.9 ms  share=  0.0%  cores=1.01
+     disc.rebuildMatch            calls=1     wall=     385.1 ms  share=  0.2%  cores=3.85
+     engine.eucs.merge            calls=3     wall=    3481.1 ms  share=  2.1%  cores=0.99
+     engine.eucs.scan             calls=3     wall=    5053.1 ms  share=  3.0%  cores=3.82
+     engine.eucs.sort             calls=3     wall=     883.6 ms  share=  0.5%  cores=3.41
+     engine.load                  calls=3     wall=     371.6 ms  share=  0.2%  cores=0.99
+     engine.mine                  calls=3     wall=  154744.3 ms  share= 92.3%  cores=3.95
+     engine.mine.rootBounds       calls=3     wall=     171.5 ms  share=  0.1%  cores=0.99
+     engine.poolCreate            calls=3     wall=       0.2 ms  share=  0.0%  cores=0.73
+     engine.poolShutdown.wallOnly calls=3     wall=       0.3 ms  share=  0.0%  cores=n/a
+     engine.tier0.merge           calls=3     wall=       3.1 ms  share=  0.0%  cores=0.98
+     engine.tier0.scan            calls=3     wall=      24.5 ms  share=  0.0%  cores=3.49
+     maint.buildTrie              calls=2     wall=       2.2 ms  share=  0.0%  cores=0.83
+     maint.chunkScan              calls=2     wall=     561.8 ms  share=  0.3%  cores=3.40
+     maint.mergeChunks            calls=2     wall=       2.7 ms  share=  0.0%  cores=1.70
+   policy=remine-nogc-static threads=4  profiled_total=446200 ms
+     engine.eucs.merge            calls=2     wall=    2490.5 ms  share=  0.6%  cores=0.99
+     engine.eucs.scan             calls=2     wall=    4640.8 ms  share=  1.0%  cores=3.70
+     engine.eucs.sort             calls=2     wall=     619.2 ms  share=  0.1%  cores=3.47
+     engine.load                  calls=2     wall=     392.2 ms  share=  0.1%  cores=0.90
+     engine.mine                  calls=2     wall=  438032.5 ms  share= 98.2%  cores=1.23
+     engine.poolCreate            calls=2     wall=       0.1 ms  share=  0.0%  cores=0.92
+     engine.poolShutdown.wallOnly calls=2     wall=       0.1 ms  share=  0.0%  cores=n/a
+     engine.tier0.merge           calls=2     wall=       1.1 ms  share=  0.0%  cores=1.00
+     engine.tier0.scan            calls=2     wall=      23.7 ms  share=  0.0%  cores=3.59
+   policy=remine-nogc threads=4  profiled_total=159254 ms
+     engine.eucs.merge            calls=2     wall=    2473.8 ms  share=  1.6%  cores=0.99
+     engine.eucs.scan             calls=2     wall=    4876.8 ms  share=  3.1%  cores=3.63
+     engine.eucs.sort             calls=2     wall=     614.4 ms  share=  0.4%  cores=3.47
+     engine.load                  calls=2     wall=     369.9 ms  share=  0.2%  cores=0.92
+     engine.mine                  calls=2     wall=  150892.1 ms  share= 94.7%  cores=3.97
+     engine.mine.rootBounds       calls=2     wall=     171.2 ms  share=  0.1%  cores=1.00
+     engine.poolCreate            calls=2     wall=       0.1 ms  share=  0.0%  cores=0.90
+     engine.poolShutdown.wallOnly calls=2     wall=       0.3 ms  share=  0.0%  cores=n/a
+     engine.tier0.merge           calls=2     wall=       1.9 ms  share=  0.0%  cores=1.01
+     engine.tier0.scan            calls=2     wall=      24.6 ms  share=  0.0%  cores=3.45
+== 20261026_094114_FIFA threads=10
+   policy=bud3 threads=10  profiled_total=58495 ms
+     disc.engine.wallOnly         calls=1     wall=    1718.1 ms  share=  2.9%  cores=n/a
+     disc.knownAndParse           calls=1     wall=       0.1 ms  share=  0.0%  cores=1.01
+     engine.eucs.merge            calls=3     wall=      16.5 ms  share=  0.0%  cores=1.00
+     engine.eucs.scan             calls=3     wall=      34.8 ms  share=  0.1%  cores=6.37
+     engine.eucs.sort             calls=3     wall=       1.2 ms  share=  0.0%  cores=4.91
+     engine.load                  calls=3     wall=      10.4 ms  share=  0.0%  cores=1.00
+     engine.mine                  calls=3     wall=   58395.5 ms  share= 99.8%  cores=8.91
+     engine.mine.rootBounds       calls=3     wall=       5.0 ms  share=  0.0%  cores=1.00
+     engine.poolCreate            calls=3     wall=       0.1 ms  share=  0.0%  cores=0.78
+     engine.poolShutdown.wallOnly calls=3     wall=       0.3 ms  share=  0.0%  cores=n/a
+     engine.tier0.merge           calls=3     wall=       0.6 ms  share=  0.0%  cores=1.00
+     engine.tier0.scan            calls=3     wall=       1.8 ms  share=  0.0%  cores=3.62
+     maint.buildTrie              calls=2     wall=       2.3 ms  share=  0.0%  cores=0.16
+     maint.chunkScan              calls=2     wall=      29.9 ms  share=  0.1%  cores=6.85
+     maint.mergeChunks            calls=2     wall=       1.5 ms  share=  0.0%  cores=1.69
+   policy=remine-nogc-static threads=10  profiled_total=307201 ms
+     engine.eucs.merge            calls=2     wall=      23.4 ms  share=  0.0%  cores=1.00
+     engine.eucs.scan             calls=2     wall=      66.7 ms  share=  0.0%  cores=4.41
+     engine.eucs.sort             calls=2     wall=       1.1 ms  share=  0.0%  cores=5.55
+     engine.load                  calls=2     wall=      37.7 ms  share=  0.0%  cores=0.59
+     engine.mine                  calls=2     wall=  307068.2 ms  share=100.0%  cores=2.24
+     engine.poolCreate            calls=2     wall=       0.1 ms  share=  0.0%  cores=0.95
+     engine.poolShutdown.wallOnly calls=2     wall=       0.3 ms  share=  0.0%  cores=n/a
+     engine.tier0.merge           calls=2     wall=       0.7 ms  share=  0.0%  cores=1.01
+     engine.tier0.scan            calls=2     wall=       2.7 ms  share=  0.0%  cores=2.73
+   policy=remine-nogc threads=10  profiled_total=108594 ms
+     engine.eucs.merge            calls=2     wall=      23.7 ms  share=  0.0%  cores=1.00
+     engine.eucs.scan             calls=2     wall=      53.0 ms  share=  0.0%  cores=5.96
+     engine.eucs.sort             calls=2     wall=       1.2 ms  share=  0.0%  cores=5.13
+     engine.load                  calls=2     wall=      27.0 ms  share=  0.0%  cores=0.94
+     engine.mine                  calls=2     wall=  108485.3 ms  share= 99.9%  cores=7.97
+     engine.mine.rootBounds       calls=2     wall=       8.7 ms  share=  0.0%  cores=1.00
+     engine.poolCreate            calls=2     wall=       0.1 ms  share=  0.0%  cores=0.88
+     engine.poolShutdown.wallOnly calls=2     wall=       0.5 ms  share=  0.0%  cores=n/a
+     engine.tier0.merge           calls=2     wall=       1.1 ms  share=  0.0%  cores=1.00
+     engine.tier0.scan            calls=2     wall=       2.5 ms  share=  0.0%  cores=3.35
+== 20261026_095053_VS-CHAIN96-CW threads=10
+   policy=bud3 threads=10  profiled_total=68431 ms
+     disc.engine.wallOnly         calls=1     wall=   21709.2 ms  share= 31.7%  cores=n/a
+     disc.invertedIndex           calls=1     wall=     999.0 ms  share=  1.5%  cores=0.99
+     disc.knownAndParse           calls=1     wall=       0.7 ms  share=  0.0%  cores=1.01
+     disc.rebuildMatch            calls=1     wall=     140.8 ms  share=  0.2%  cores=8.65
+     engine.eucs.merge            calls=3     wall=    2352.9 ms  share=  3.4%  cores=0.99
+     engine.eucs.scan             calls=3     wall=    2435.9 ms  share=  3.6%  cores=8.56
+     engine.eucs.sort             calls=3     wall=     236.2 ms  share=  0.3%  cores=8.39
+     engine.load                  calls=3     wall=     282.4 ms  share=  0.4%  cores=1.00
+     engine.mine                  calls=3     wall=   61628.1 ms  share= 90.1%  cores=8.48
+     engine.mine.rootBounds       calls=3     wall=     103.5 ms  share=  0.2%  cores=1.00
+     engine.poolCreate            calls=3     wall=       0.1 ms  share=  0.0%  cores=0.73
+     engine.poolShutdown.wallOnly calls=3     wall=       0.3 ms  share=  0.0%  cores=n/a
+     engine.tier0.merge           calls=3     wall=       2.7 ms  share=  0.0%  cores=1.00
+     engine.tier0.scan            calls=3     wall=      11.1 ms  share=  0.0%  cores=6.37
+     maint.buildTrie              calls=2     wall=       3.7 ms  share=  0.0%  cores=0.33
+     maint.chunkScan              calls=2     wall=     335.8 ms  share=  0.5%  cores=7.65
+     maint.mergeChunks            calls=2     wall=       1.7 ms  share=  0.0%  cores=3.42
+   policy=remine-nogc-static threads=10  profiled_total=208351 ms
+     engine.eucs.merge            calls=2     wall=    4612.3 ms  share=  2.2%  cores=0.99
+     engine.eucs.scan             calls=2     wall=    2563.9 ms  share=  1.2%  cores=7.06
+     engine.eucs.sort             calls=2     wall=     192.1 ms  share=  0.1%  cores=7.46
+     engine.load                  calls=2     wall=     212.8 ms  share=  0.1%  cores=1.00
+     engine.mine                  calls=2     wall=  200759.0 ms  share= 96.4%  cores=1.59
+     engine.poolCreate            calls=2     wall=       0.0 ms  share=  0.0%  cores=0.92
+     engine.poolShutdown.wallOnly calls=2     wall=       0.3 ms  share=  0.0%  cores=n/a
+     engine.tier0.merge           calls=2     wall=       1.2 ms  share=  0.0%  cores=1.00
+     engine.tier0.scan            calls=2     wall=       9.2 ms  share=  0.0%  cores=6.70
+   policy=remine-nogc threads=10  profiled_total=71944 ms
+     engine.eucs.merge            calls=2     wall=    4483.9 ms  share=  6.2%  cores=0.99
+     engine.eucs.scan             calls=2     wall=    2208.2 ms  share=  3.1%  cores=8.61
+     engine.eucs.sort             calls=2     wall=     171.3 ms  share=  0.2%  cores=8.26
+     engine.load                  calls=2     wall=     220.8 ms  share=  0.3%  cores=0.91
+     engine.mine                  calls=2     wall=   64845.2 ms  share= 90.1%  cores=8.67
+     engine.mine.rootBounds       calls=2     wall=      88.7 ms  share=  0.1%  cores=1.00
+     engine.poolCreate            calls=2     wall=       0.1 ms  share=  0.0%  cores=0.83
+     engine.poolShutdown.wallOnly calls=2     wall=       0.3 ms  share=  0.0%  cores=n/a
+     engine.tier0.merge           calls=2     wall=       1.2 ms  share=  0.0%  cores=1.00
+     engine.tier0.scan            calls=2     wall=      12.5 ms  share=  0.0%  cores=5.92

@@ -1,0 +1,12 @@
+policy=remine-nogc threads=10
+phase                          calls     wall_ms      cpu_ms   cores    eff
+engine.eucs.merge                  2      4483.9      4437.2    0.99   0.10
+engine.eucs.scan                   2      2208.2     19023.3    8.61   0.86
+engine.eucs.sort                   2       171.3      1414.1    8.26   0.83
+engine.load                        2       220.8       200.3    0.91   0.09
+engine.mine                        2     64845.2    562302.7    8.67   0.87
+engine.mine.rootBounds             2        88.7        88.7    1.00   0.10
+engine.poolCreate                  2         0.1         0.1    0.83   0.08
+engine.poolShutdown.wallOnly       2         0.3         n/a     n/a    n/a
+engine.tier0.merge                 2         1.2         1.3    1.00   0.10
+engine.tier0.scan                  2        12.5        73.7    5.92   0.59

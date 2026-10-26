@@ -1,0 +1,15 @@
+dataset,policy,batches,schedule,fault,query,after_batch,n_seqs,oracle_size,returned,missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,gap_rejected,tracked_after,action,r,kept_on_abort,budget_ms,attempt_ms,attempt_load_ms,attempt_preprocess_ms,attempt_enum_ms,attempt_rebuild_ms,abort_phase
+BIBLE,remine-nogc,8,every,0,0,1,12989,10037,10037,0,0,0,0,,,,,,,,,,,,,,,,
+BIBLE,remine-nogc,8,every,0,1,2,16886,7142,7142,0,0,0,0,,,,,,,,,,,,,,,,
+BIBLE,remine-nogc,8,every,0,2,3,20783,2633,2633,0,0,0,0,,,,,,,,,,,,,,,,
+BIBLE,remine-nogc,8,every,0,3,4,24680,2718,2718,0,0,0,0,,,,,,,,,,,,,,,,
+BIBLE,remine-nogc,8,every,0,4,5,28577,2723,2723,0,0,0,0,,,,,,,,,,,,,,,,
+BIBLE,remine-nogc,8,every,0,5,6,32474,2192,2192,0,0,0,0,,,,,,,,,,,,,,,,
+BIBLE,remine-nogc,8,every,0,6,7,36369,2141,2141,0,0,0,0,,,,,,,,,,,,,,,,
+BIBLE,bud3,8,every,0,0,1,12989,10037,10037,0,0,0,0,3897,67549,10037,0,0,10363,remine,19.49,0,0,0,0,0,0,0,
+BIBLE,bud3,8,every,0,1,2,16886,7142,7142,0,0,0,0,7794,87966,7142,3874,0,7613,aborted,38.97,951,10770,10771,6,23,4780,0,rebuild
+BIBLE,bud3,8,every,0,2,3,20783,2633,2633,0,0,0,0,11691,101395,2633,0,0,2959,skipped,58.46,0,0,0,0,0,0,0,
+BIBLE,bud3,8,every,0,3,4,24680,2718,2718,0,0,0,0,15588,73089,2733,249,7,2718,discover,77.94,0,8484,5867,4,28,4531,1301,
+BIBLE,bud3,8,every,0,4,5,28577,2723,2723,0,0,0,0,3897,140808,2723,8101,0,3135,aborted,19.49,417,9824,9825,2,23,4230,0,rebuild
+BIBLE,bud3,8,every,0,5,6,32474,2192,2192,0,0,0,0,7794,36885,2727,1019,121,2432,discover,38.97,0,11190,11050,2,26,2674,8344,
+BIBLE,bud3,8,every,0,6,7,36369,2141,2141,0,0,0,0,11689,56678,2523,756,89,2482,discover,58.45,0,12532,10970,4,27,3237,7700,

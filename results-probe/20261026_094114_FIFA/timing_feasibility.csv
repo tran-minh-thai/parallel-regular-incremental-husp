@@ -1,0 +1,7 @@
+dataset,policy,batches,schedule,fault,query,after_batch,ingest_ms,query_ms,discovery_mine_ms,rebuild_ms,seed_ms
+FIFA,remine-nogc,3,every,0,0,1,0,53608,,,0
+FIFA,remine-nogc,3,every,0,1,2,0,54989,,,
+FIFA,remine-nogc-static,3,every,0,0,1,0,161278,,,0
+FIFA,remine-nogc-static,3,every,0,1,2,0,145924,,,
+FIFA,bud3,3,every,0,0,1,33,28676,28676,0,28228
+FIFA,bud3,3,every,0,1,2,3,1718,1718,0,

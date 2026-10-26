@@ -1,0 +1,53 @@
+# java -Xmx16g -Dprof=true -Dthreads=1 -Ddold=0.25 -Dlimit=1800 -cp out test.QueryScheduleProbe datasets/LEVIATHAN_seq.txt datasets/LEVIATHAN_eui.txt 0.005 175 8 every remine-nogc,bud3
+LEVIATHAN N=5834 delta=0.005 B=175 k=8 dOld=0.25 schedule=every threads=1 fault=0 reference=independent oracle -> results-probe/20261026_084141_LEVIATHAN
+  oracle after batch 1: N=2084 minUtil=25675 patterns=8937
+  oracle after batch 2: N=2709 minUtil=33450 patterns=7873
+  oracle after batch 3: N=3334 minUtil=41604 patterns=7185
+  oracle after batch 4: N=3959 minUtil=49058 patterns=6319
+  oracle after batch 5: N=4584 minUtil=56304 patterns=5948
+  oracle after batch 6: N=5209 minUtil=63176 patterns=5322
+  oracle after batch 7: N=5834 minUtil=70782 patterns=5148
+  remine-nogc q0  after b1  N=2084   oracle=8937   got=8937   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=1235ms
+  remine-nogc q1  after b2  N=2709   oracle=7873   got=7873   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=1607ms
+  remine-nogc q2  after b3  N=3334   oracle=7185   got=7185   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=1791ms
+  remine-nogc q3  after b4  N=3959   oracle=6319   got=6319   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=1714ms
+  remine-nogc q4  after b5  N=4584   oracle=5948   got=5948   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=1918ms
+  remine-nogc q5  after b6  N=5209   oracle=5322   got=5322   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=2069ms
+  remine-nogc q6  after b7  N=5834   oracle=5148   got=5148   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=2276ms
+  profile remine-nogc threads=1
+phase                          calls     wall_ms      cpu_ms   cores    eff
+engine.eucs.merge                  7        11.9        11.8    0.99   0.99
+engine.eucs.scan                   7        59.8        56.5    0.94   0.94
+engine.eucs.sort                   7         4.5         4.3    0.95   0.95
+engine.load                        7        29.2        26.4    0.90   0.90
+engine.mine                        7     12432.0     12121.6    0.98   0.98
+engine.mine.rootBounds             7        16.0        15.9    0.99   0.99
+engine.poolCreate                  7         0.4         0.4    0.96   0.96
+engine.poolShutdown.wallOnly       7         1.8         n/a     n/a    n/a
+engine.tier0.merge                 7         5.7         4.8    0.84   0.84
+engine.tier0.scan                  7        22.5        13.6    0.60   0.60
+  bud3   q0  after b1  N=2084   oracle=8937   got=8937   miss=0 extra=0 uErr=0 pErr=0  ingest=243ms query=1041ms  {budget=0 attempt=0 load=0 pre=0 enum=0 rebuild=0 abort=}  [REMINE r=3.1 thr=25675 cand=8937 fresh=0 gapRej=0 mine=1039ms rebuild=0ms tracked=8648]
+  bud3   q1  after b2  N=2709   oracle=7873   got=7873   miss=0 extra=0 uErr=0 pErr=0  ingest=168ms query=2683ms  {budget=1351 attempt=1353 load=2 pre=8 enum=1343 rebuild=0 abort=mining}  [ABORTED+REMINE r=6.3 thr=33450 cand=7873 fresh=0 gapRej=0 mine=1283ms rebuild=0ms tracked=7554]
+  bud3   q2  after b3  N=3334   oracle=7185   got=7185   miss=0 extra=0 uErr=0 pErr=0  ingest=165ms query=1594ms  {budget=0 attempt=0 load=0 pre=0 enum=0 rebuild=0 abort=}  [SKIP+REMINE r=9.4 thr=41604 cand=7185 fresh=0 gapRej=0 mine=1594ms rebuild=0ms tracked=6867]
+  bud3   q3  after b4  N=3959   oracle=6319   got=6319   miss=0 extra=0 uErr=0 pErr=0  ingest=171ms query=3786ms  {budget=1893 attempt=1893 load=1 pre=8 enum=1885 rebuild=0 abort=mining}  [ABORTED+REMINE r=12.5 thr=49058 cand=6319 fresh=0 gapRej=0 mine=1833ms rebuild=0ms tracked=6000]
+  bud3   q4  after b5  N=4584   oracle=5948   got=5948   miss=0 extra=0 uErr=0 pErr=0  ingest=130ms query=1924ms  {budget=0 attempt=0 load=0 pre=0 enum=0 rebuild=0 abort=}  [SKIP+REMINE r=15.6 thr=56304 cand=5948 fresh=0 gapRej=0 mine=1924ms rebuild=0ms tracked=5625]
+  bud3   q5  after b6  N=5209   oracle=5322   got=5322   miss=0 extra=0 uErr=0 pErr=0  ingest=137ms query=2053ms  {budget=0 attempt=0 load=0 pre=0 enum=0 rebuild=0 abort=}  [SKIP+REMINE r=18.8 thr=63176 cand=5322 fresh=0 gapRej=0 mine=2053ms rebuild=0ms tracked=4987]
+  bud3   q6  after b7  N=5834   oracle=5148   got=5148   miss=0 extra=0 uErr=0 pErr=0  ingest=131ms query=2261ms  {budget=0 attempt=0 load=0 pre=0 enum=0 rebuild=0 abort=}  [SKIP+REMINE r=21.9 thr=70782 cand=5148 fresh=0 gapRej=0 mine=2261ms rebuild=0ms tracked=4814]
+  profile bud3 threads=1
+phase                          calls     wall_ms      cpu_ms   cores    eff
+disc.engine.wallOnly               2      3245.7         n/a     n/a    n/a
+engine.eucs.merge                 10         6.3         6.3    0.99   0.99
+engine.eucs.scan                  10        72.9        72.8    1.00   1.00
+engine.eucs.sort                  10         7.2         5.6    0.77   0.77
+engine.load                       10        18.5        18.0    0.97   0.97
+engine.mine                       10     15910.7     15558.1    0.98   0.98
+engine.mine.rootBounds            10        13.2        13.1    1.00   1.00
+engine.poolCreate                 10         0.5         0.4    0.92   0.92
+engine.poolShutdown.wallOnly      10         1.4         n/a     n/a    n/a
+engine.tier0.merge                10         1.4         1.4    1.02   1.02
+engine.tier0.scan                 10         9.8        10.1    1.03   1.03
+maint.buildTrie                    7        16.4        12.6    0.76   0.76
+maint.chunkScan                    7      1107.4      1083.0    0.98   0.98
+maint.mergeChunks                  7         3.9         3.9    1.00   1.00
+compared queries=14 failing=0
+exit=0

@@ -1,0 +1,42 @@
+# java -Xmx16g -Dprof=true -cp out-eucs test.EucsAudit <repo>/datasets/VS-CHAIN96-CW_seq.txt <repo>/datasets/VS-CHAIN96-CW_eui.txt 0.0005 17592 10
+# worktree commit 7c4133a532ff01f7e43bd9e70f66ea4b961be73c branch eucs-audit tree=0 modified
+# sha256 7860ee90f51fca88010206de3061cbd0a84737d402e1af0f709b346cf4bfd370 c87c9e22ad11e2795f4480d9336c94adae3e9de9a0a0d861fb4471e92ded095a 
+# java openjdk version "26.0.1" 2026-04-21  host ThaiTMs-MacBook-Pro
+VS-CHAIN96-CW N=650903 input=650903 delta=0.0005 B=17592 threads=10 mode=full minUtil=3660918
+
+[original] patterns=1518 wall=49286ms numValid=3593
+  pairs: i distinct=4848646 kept=143989 | s distinct=7084658 kept=89664
+  construction: thread-map slots=92274688 (1760.0 MB) merged slots=25165824 (480.0 MB)
+  adjacency: entries i=9697292 s=7084658 bytes=201412152 (192.08 MB)
+  mining: nodes=119748 candidates=634588439 prunedEucs=519407746 prunedBound=115060945 adjEntriesRead=230717960 deadReverseI=17730219
+phase                          calls     wall_ms      cpu_ms   cores    eff
+engine.eucs.merge                  1      3644.6      3625.5    0.99   0.10
+engine.eucs.scan                   1      1439.2     11062.0    7.69   0.77
+engine.eucs.sort                   1        98.8       816.0    8.26   0.83
+engine.load                        1       137.6       136.1    0.99   0.10
+engine.mine                        1     43923.7    356490.2    8.12   0.81
+engine.mine.rootBounds             1        78.6        76.5    0.97   0.10
+engine.poolCreate                  1         0.3         0.3    1.00   0.10
+engine.poolShutdown.wallOnly       1         0.2         n/a     n/a    n/a
+engine.tier0.merge                 1         3.6         3.5    0.99   0.10
+engine.tier0.scan                  1        28.5       226.8    7.97   0.80
+
+[compact] patterns=1518 wall=45150ms numValid=3593
+  pairs: i distinct=4848646 kept=143989 | s distinct=7084658 kept=89664
+  construction: thread-map slots=92274688 (1760.0 MB) merged slots=25165824 (480.0 MB)
+  adjacency: entries i=143989 s=89664 bytes=992108 (0.95 MB)
+  mining: nodes=118185 candidates=588017545 prunedEucs=492861969 prunedBound=95037391 adjEntriesRead=190303966 deadReverseI=0
+phase                          calls     wall_ms      cpu_ms   cores    eff
+engine.eucs.merge                  2      3827.9      3777.7    0.99   0.10
+engine.eucs.scan                   1      1437.1     11173.1    7.77   0.78
+engine.eucs.sort                   1         6.0        27.1    4.51   0.45
+engine.load                        1       140.8       140.6    1.00   0.10
+engine.mine                        1     39713.9    345177.8    8.69   0.87
+engine.mine.rootBounds             1        55.1        55.1    1.00   0.10
+engine.poolCreate                  1         0.0         0.0    0.98   0.10
+engine.poolShutdown.wallOnly       1         0.1         n/a     n/a    n/a
+engine.tier0.merge                 1         1.4         1.4    1.00   0.10
+engine.tier0.scan                  1        21.7       172.7    7.95   0.79
+
+compared patterns=1518 missing=0 extra=0 valueMismatch=0
+exit=0

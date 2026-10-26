@@ -1,0 +1,52 @@
+# java -Xmx16g -Dprof=true -Dthreads=10 -Ddold=0.9 -Doracle=remine -Dlimit=1800 -cp out test.QueryScheduleProbe datasets/FIFA_seq.txt datasets/FIFA_eui.txt 0.04 6135 3 every remine-nogc,remine-nogc-static,bud3
+FIFA N=20450 delta=0.04 B=6135 k=3 dOld=0.9 schedule=every threads=10 fault=0 reference=parallel engine (NOT independent) -> results-probe/20261026_094114_FIFA
+  oracle after batch 1: N=19427 minUtil=1363775 patterns=132
+  oracle after batch 2: N=20450 minUtil=1428880 patterns=123
+  remine-nogc q0  after b1  N=19427  oracle=132    got=132    miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=53608ms
+  remine-nogc q1  after b2  N=20450  oracle=123    got=123    miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=54989ms
+  profile remine-nogc threads=10
+phase                          calls     wall_ms      cpu_ms   cores    eff
+engine.eucs.merge                  2        23.7        23.7    1.00   0.10
+engine.eucs.scan                   2        53.0       315.9    5.96   0.60
+engine.eucs.sort                   2         1.2         5.9    5.13   0.51
+engine.load                        2        27.0        25.4    0.94   0.09
+engine.mine                        2    108485.3    864158.0    7.97   0.80
+engine.mine.rootBounds             2         8.7         8.7    1.00   0.10
+engine.poolCreate                  2         0.1         0.1    0.88   0.09
+engine.poolShutdown.wallOnly       2         0.5         n/a     n/a    n/a
+engine.tier0.merge                 2         1.1         1.1    1.00   0.10
+engine.tier0.scan                  2         2.5         8.3    3.35   0.34
+  remine-nogc-static q0  after b1  N=19427  oracle=132    got=132    miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=161278ms
+  remine-nogc-static q1  after b2  N=20450  oracle=123    got=123    miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=145924ms
+  profile remine-nogc-static threads=10
+phase                          calls     wall_ms      cpu_ms   cores    eff
+engine.eucs.merge                  2        23.4        23.3    1.00   0.10
+engine.eucs.scan                   2        66.7       294.4    4.41   0.44
+engine.eucs.sort                   2         1.1         5.9    5.55   0.56
+engine.load                        2        37.7        22.1    0.59   0.06
+engine.mine                        2    307068.2    688101.0    2.24   0.22
+engine.poolCreate                  2         0.1         0.1    0.95   0.09
+engine.poolShutdown.wallOnly       2         0.3         n/a     n/a    n/a
+engine.tier0.merge                 2         0.7         0.7    1.01   0.10
+engine.tier0.scan                  2         2.7         7.4    2.73   0.27
+  bud3   q0  after b1  N=19427  oracle=132    got=132    miss=0 extra=0 uErr=0 pErr=0  ingest=33ms query=28676ms  {budget=0 attempt=0 load=0 pre=0 enum=0 rebuild=0 abort=}  [REMINE r=40.9 thr=1363775 cand=132 fresh=0 gapRej=0 mine=28676ms rebuild=0ms tracked=141]
+  bud3   q1  after b2  N=20450  oracle=123    got=123    miss=0 extra=0 uErr=0 pErr=0  ingest=3ms query=1718ms  {budget=30186 attempt=1718 load=1 pre=7 enum=1710 rebuild=0 abort=}  [DISCOVER r=81.8 thr=134024 cand=69 fresh=0 gapRej=0 mine=1718ms rebuild=0ms tracked=141]
+  profile bud3 threads=10
+phase                          calls     wall_ms      cpu_ms   cores    eff
+disc.engine.wallOnly               1      1718.1         n/a     n/a    n/a
+disc.knownAndParse                 1         0.1         0.1    1.01   0.10
+engine.eucs.merge                  3        16.5        16.6    1.00   0.10
+engine.eucs.scan                   3        34.8       221.6    6.37   0.64
+engine.eucs.sort                   3         1.2         6.1    4.91   0.49
+engine.load                        3        10.4        10.4    1.00   0.10
+engine.mine                        3     58395.5    520178.1    8.91   0.89
+engine.mine.rootBounds             3         5.0         5.0    1.00   0.10
+engine.poolCreate                  3         0.1         0.1    0.78   0.08
+engine.poolShutdown.wallOnly       3         0.3         n/a     n/a    n/a
+engine.tier0.merge                 3         0.6         0.6    1.00   0.10
+engine.tier0.scan                  3         1.8         6.6    3.62   0.36
+maint.buildTrie                    2         2.3         0.4    0.16   0.02
+maint.chunkScan                    2        29.9       204.8    6.85   0.69
+maint.mergeChunks                  2         1.5         2.6    1.69   0.17
+compared queries=6 failing=0
+exit=0

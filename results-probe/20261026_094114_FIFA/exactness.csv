@@ -1,0 +1,7 @@
+dataset,policy,batches,schedule,fault,query,after_batch,n_seqs,oracle_size,returned,missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,gap_rejected,tracked_after,action,r,kept_on_abort,budget_ms,attempt_ms,attempt_load_ms,attempt_preprocess_ms,attempt_enum_ms,attempt_rebuild_ms,abort_phase
+FIFA,remine-nogc,3,every,0,0,1,19427,132,132,0,0,0,0,,,,,,,,,,,,,,,,
+FIFA,remine-nogc,3,every,0,1,2,20450,123,123,0,0,0,0,,,,,,,,,,,,,,,,
+FIFA,remine-nogc-static,3,every,0,0,1,19427,132,132,0,0,0,0,,,,,,,,,,,,,,,,
+FIFA,remine-nogc-static,3,every,0,1,2,20450,123,123,0,0,0,0,,,,,,,,,,,,,,,,
+FIFA,bud3,3,every,0,0,1,19427,132,132,0,0,0,0,1022,1363775,132,0,0,141,remine,40.88,0,0,0,0,0,0,0,
+FIFA,bud3,3,every,0,1,2,20450,123,123,0,0,0,0,2045,134024,69,0,0,141,discover,81.80,0,30186,1718,1,7,1710,0,

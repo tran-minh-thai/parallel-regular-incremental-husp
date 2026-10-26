@@ -1,0 +1,42 @@
+# java -Xmx16g -Dprof=true -cp out-eucs test.EucsAudit <repo>/datasets/FIFA_seq.txt <repo>/datasets/FIFA_eui.txt 0.04 6135 10
+# worktree commit 7c4133a532ff01f7e43bd9e70f66ea4b961be73c branch eucs-audit tree=0 modified
+# sha256 7860ee90f51fca88010206de3061cbd0a84737d402e1af0f709b346cf4bfd370 c87c9e22ad11e2795f4480d9336c94adae3e9de9a0a0d861fb4471e92ded095a 
+# java openjdk version "26.0.1" 2026-04-21  host ThaiTMs-MacBook-Pro
+FIFA N=20450 input=20450 delta=0.04 B=6135 threads=10 mode=full minUtil=1428880
+
+[original] patterns=123 wall=34419ms numValid=231
+  pairs: i distinct=0 kept=0 | s distinct=51783 kept=8880
+  construction: thread-map slots=1474560 (28.1 MB) merged slots=196608 (3.8 MB)
+  adjacency: entries i=0 s=51783 bytes=623252 (0.59 MB)
+  mining: nodes=533540 candidates=123197513 prunedEucs=52113501 prunedBound=70550472 adjEntriesRead=143234642 deadReverseI=0
+phase                          calls     wall_ms      cpu_ms   cores    eff
+engine.eucs.merge                  1        16.6        13.8    0.83   0.08
+engine.eucs.scan                   1        47.2       343.9    7.28   0.73
+engine.eucs.sort                   1         4.0        31.9    7.94   0.79
+engine.load                        1        27.2        25.9    0.95   0.10
+engine.mine                        1     34303.8    279062.7    8.14   0.81
+engine.mine.rootBounds             1         7.7         7.7    0.99   0.10
+engine.poolCreate                  1         0.3         0.3    1.00   0.10
+engine.poolShutdown.wallOnly       1         0.1         n/a     n/a    n/a
+engine.tier0.merge                 1         1.0         1.0    1.00   0.10
+engine.tier0.scan                  1        14.2       100.9    7.10   0.71
+
+[compact] patterns=123 wall=33778ms numValid=231
+  pairs: i distinct=0 kept=0 | s distinct=51783 kept=8880
+  construction: thread-map slots=1474560 (28.1 MB) merged slots=196608 (3.8 MB)
+  adjacency: entries i=0 s=8880 bytes=39224 (0.04 MB)
+  mining: nodes=533540 candidates=123197513 prunedEucs=52113501 prunedBound=70550472 adjEntriesRead=142167562 deadReverseI=0
+phase                          calls     wall_ms      cpu_ms   cores    eff
+engine.eucs.merge                  2        10.8        10.8    1.00   0.10
+engine.eucs.scan                   1        45.8       329.3    7.19   0.72
+engine.eucs.sort                   1         0.8         2.9    3.53   0.35
+engine.load                        1         6.0         6.0    1.00   0.10
+engine.mine                        1     33711.4    279893.9    8.30   0.83
+engine.mine.rootBounds             1         2.5         2.5    1.00   0.10
+engine.poolCreate                  1         0.0         0.0    0.91   0.09
+engine.poolShutdown.wallOnly       1         0.2         n/a     n/a    n/a
+engine.tier0.merge                 1         1.1         1.1    1.00   0.10
+engine.tier0.scan                  1         1.3         7.3    5.62   0.56
+
+compared patterns=123 missing=0 extra=0 valueMismatch=0
+exit=0

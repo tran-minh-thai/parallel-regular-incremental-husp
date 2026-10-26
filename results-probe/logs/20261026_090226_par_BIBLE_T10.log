@@ -1,0 +1,93 @@
+# java -Xmx16g -Dprof=true -Dthreads=10 -Ddold=0.25 -Dlimit=1800 -cp out test.QueryScheduleProbe datasets/BIBLE_seq.txt datasets/BIBLE_eui.txt 0.005 1091 8 every remine-nogc,remine-nogc-steal,remine-nogc-static,bud3
+BIBLE N=36369 delta=0.005 B=1091 k=8 dOld=0.25 schedule=every threads=10 fault=0 reference=independent oracle -> results-probe/20261026_090227_BIBLE
+  oracle after batch 1: N=12989 minUtil=67549 patterns=10037
+  oracle after batch 2: N=16886 minUtil=87966 patterns=7142
+  oracle after batch 3: N=20783 minUtil=101395 patterns=2633
+  oracle after batch 4: N=24680 minUtil=121074 patterns=2718
+  oracle after batch 5: N=28577 minUtil=140808 patterns=2723
+  oracle after batch 6: N=32474 minUtil=157958 patterns=2192
+  oracle after batch 7: N=36369 minUtil=177751 patterns=2141
+  remine-nogc q0  after b1  N=12989  oracle=10037  got=10037  miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=1779ms
+  remine-nogc q1  after b2  N=16886  oracle=7142   got=7142   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=1347ms
+  remine-nogc q2  after b3  N=20783  oracle=2633   got=2633   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=925ms
+  remine-nogc q3  after b4  N=24680  oracle=2718   got=2718   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=1072ms
+  remine-nogc q4  after b5  N=28577  oracle=2723   got=2723   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=1190ms
+  remine-nogc q5  after b6  N=32474  oracle=2192   got=2192   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=1141ms
+  remine-nogc q6  after b7  N=36369  oracle=2141   got=2141   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=1211ms
+  profile remine-nogc threads=10
+phase                          calls     wall_ms      cpu_ms   cores    eff
+engine.eucs.merge                  7        47.9        48.0    1.00   0.10
+engine.eucs.scan                   7       104.1       646.2    6.21   0.62
+engine.eucs.sort                   7         7.9        51.0    6.49   0.65
+engine.load                        7        93.7        91.4    0.98   0.10
+engine.mine                        7      8347.9     66702.5    7.99   0.80
+engine.mine.rootBounds             7        46.8        46.9    1.00   0.10
+engine.poolCreate                  7         0.4         0.3    0.94   0.09
+engine.poolShutdown.wallOnly       7         1.6         n/a     n/a    n/a
+engine.tier0.merge                 7         9.1         9.1    1.01   0.10
+engine.tier0.scan                  7        24.7       107.3    4.35   0.44
+  remine-nogc-steal q0  after b1  N=12989  oracle=10037  got=10037  miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=4077ms
+  remine-nogc-steal q1  after b2  N=16886  oracle=7142   got=7142   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=5155ms
+  remine-nogc-steal q2  after b3  N=20783  oracle=2633   got=2633   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=2843ms
+  remine-nogc-steal q3  after b4  N=24680  oracle=2718   got=2718   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=3537ms
+  remine-nogc-steal q4  after b5  N=28577  oracle=2723   got=2723   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=3908ms
+  remine-nogc-steal q5  after b6  N=32474  oracle=2192   got=2192   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=3536ms
+  remine-nogc-steal q6  after b7  N=36369  oracle=2141   got=2141   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=3831ms
+  profile remine-nogc-steal threads=10
+phase                          calls     wall_ms      cpu_ms   cores    eff
+engine.eucs.merge                  7        38.2        38.2    1.00   0.10
+engine.eucs.scan                   7        51.0       286.1    5.61   0.56
+engine.eucs.sort                   7         2.6        13.1    4.95   0.50
+engine.load                        7        54.3        54.3    1.00   0.10
+engine.mine                        7     26709.9   -625317.1  -23.41  -2.34
+engine.mine.rootBounds             7        40.5        40.5    1.00   0.10
+engine.poolCreate                  7         0.2         0.2    1.01   0.10
+engine.poolShutdown.wallOnly       7         1.0         n/a     n/a    n/a
+engine.tier0.merge                 7         4.2         4.2    1.01   0.10
+engine.tier0.scan                  7         7.5        32.5    4.36   0.44
+  remine-nogc-static q0  after b1  N=12989  oracle=10037  got=10037  miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=3616ms
+  remine-nogc-static q1  after b2  N=16886  oracle=7142   got=7142   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=3937ms
+  remine-nogc-static q2  after b3  N=20783  oracle=2633   got=2633   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=2696ms
+  remine-nogc-static q3  after b4  N=24680  oracle=2718   got=2718   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=3208ms
+  remine-nogc-static q4  after b5  N=28577  oracle=2723   got=2723   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=3629ms
+  remine-nogc-static q5  after b6  N=32474  oracle=2192   got=2192   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=3491ms
+  remine-nogc-static q6  after b7  N=36369  oracle=2141   got=2141   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=3714ms
+  profile remine-nogc-static threads=10
+phase                          calls     wall_ms      cpu_ms   cores    eff
+engine.eucs.merge                  7        37.0        37.0    1.00   0.10
+engine.eucs.scan                   7        47.4       280.7    5.92   0.59
+engine.eucs.sort                   7         2.6        12.8    4.97   0.50
+engine.load                        7        50.8        50.8    1.00   0.10
+engine.mine                        7     24133.8     53186.5    2.20   0.22
+engine.poolCreate                  7         0.1         0.1    0.99   0.10
+engine.poolShutdown.wallOnly       7         1.0         n/a     n/a    n/a
+engine.tier0.merge                 7         4.1         4.1    1.00   0.10
+engine.tier0.scan                  7         7.1        32.2    4.56   0.46
+  bud3   q0  after b1  N=12989  oracle=10037  got=10037  miss=0 extra=0 uErr=0 pErr=0  ingest=254ms query=1210ms  {budget=0 attempt=0 load=0 pre=0 enum=0 rebuild=0 abort=}  [REMINE r=19.5 thr=67549 cand=10037 fresh=0 gapRej=0 mine=1209ms rebuild=0ms tracked=10363]
+  bud3   q1  after b2  N=16886  oracle=7142   got=7142   miss=0 extra=0 uErr=0 pErr=0  ingest=343ms query=2941ms  {budget=1572 attempt=1573 load=3 pre=13 enum=1149 rebuild=0 abort=rebuild}  [ABORTED+REMINE r=39.0 thr=87966 cand=7142 fresh=3874 gapRej=0 mine=1310ms rebuild=0ms tracked=6904]
+  bud3   q2  after b3  N=20783  oracle=2633   got=2633   miss=0 extra=0 uErr=0 pErr=0  ingest=44ms query=1010ms  {budget=0 attempt=0 load=0 pre=0 enum=0 rebuild=0 abort=}  [SKIP+REMINE r=58.5 thr=101395 cand=2633 fresh=0 gapRej=0 mine=1010ms rebuild=0ms tracked=2857]
+  bud3   q3  after b4  N=24680  oracle=2718   got=2718   miss=0 extra=0 uErr=0 pErr=0  ingest=109ms query=816ms  {budget=1200 attempt=815 load=4 pre=15 enum=568 rebuild=225 abort=}  [DISCOVER r=77.9 thr=73089 cand=2733 fresh=303 gapRej=7 mine=588ms rebuild=225ms tracked=2718]
+  bud3   q4  after b5  N=28577  oracle=2723   got=2723   miss=0 extra=0 uErr=0 pErr=0  ingest=62ms query=2639ms  {budget=1389 attempt=1390 load=1 pre=14 enum=602 rebuild=0 abort=rebuild}  [ABORTED+REMINE r=19.5 thr=140808 cand=2723 fresh=8101 gapRej=0 mine=1209ms rebuild=0ms tracked=3195]
+  bud3   q5  after b6  N=32474  oracle=2192   got=2192   miss=0 extra=0 uErr=0 pErr=0  ingest=40ms query=2514ms  {budget=1374 attempt=1376 load=2 pre=14 enum=332 rebuild=0 abort=rebuild}  [ABORTED+REMINE r=39.0 thr=157958 cand=2192 fresh=1020 gapRej=0 mine=1101ms rebuild=0ms tracked=3148]
+  bud3   q6  after b7  N=36369  oracle=2141   got=2141   miss=0 extra=0 uErr=0 pErr=0  ingest=52ms query=1200ms  {budget=0 attempt=0 load=0 pre=0 enum=0 rebuild=0 abort=}  [SKIP+REMINE r=58.4 thr=177751 cand=2141 fresh=0 gapRej=0 mine=1200ms rebuild=0ms tracked=2414]
+  profile bud3 threads=10
+phase                          calls     wall_ms      cpu_ms   cores    eff
+disc.engine.wallOnly               4      2718.3         n/a     n/a    n/a
+disc.invertedIndex                 4       221.2       219.9    0.99   0.10
+disc.knownAndParse                 4        32.5        31.6    0.97   0.10
+disc.rebuildMatch                  1       172.6      1454.6    8.43   0.84
+engine.eucs.merge                 11        70.3        70.3    1.00   0.10
+engine.eucs.scan                  11        67.9       355.0    5.23   0.52
+engine.eucs.sort                  11         5.0        28.1    5.56   0.56
+engine.load                       11        57.1        57.1    1.00   0.10
+engine.mine                       11     10641.3     82449.3    7.75   0.77
+engine.mine.rootBounds            11        44.6        44.7    1.00   0.10
+engine.poolCreate                 11         0.3         0.3    0.94   0.09
+engine.poolShutdown.wallOnly      11         2.0         n/a     n/a    n/a
+engine.tier0.merge                11         6.4         6.4    1.00   0.10
+engine.tier0.scan                 11        11.0        40.1    3.65   0.36
+maint.buildTrie                    7        10.9        10.9    1.00   0.10
+maint.chunkScan                    7       854.0      4182.1    4.90   0.49
+maint.mergeChunks                  7        12.8        79.4    6.20   0.62
+compared queries=28 failing=0
+exit=0

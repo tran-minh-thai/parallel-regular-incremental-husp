@@ -1,0 +1,7 @@
+# java -Xmx16g -Dprof=true -cp out-eucs test.EucsAudit <repo>/datasets/VS-CHAIN96-CW_seq.txt <repo>/datasets/VS-CHAIN96-CW_eui.txt 0.0005 17592 10 0.1
+# worktree commit 7c4133a532ff01f7e43bd9e70f66ea4b961be73c branch eucs-audit tree=0 modified
+# sha256 7860ee90f51fca88010206de3061cbd0a84737d402e1af0f709b346cf4bfd370 c87c9e22ad11e2795f4480d9336c94adae3e9de9a0a0d861fb4471e92ded095a 
+# java openjdk version "26.0.1" 2026-04-21  host ThaiTMs-MacBook-Pro
+VS-CHAIN96-CW N=650903 input=65091 delta=0.0005 B=17592 threads=10 mode=window 0.1 minUtil=337890
+exit=143
+# stopped by hand after 73 min of mining (window explosion); no result
