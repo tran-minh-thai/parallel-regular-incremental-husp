@@ -1,0 +1,24 @@
+{
+  "name": "VS-CHAIN360-CW",
+  "builder": "tools/build_stream_datasets.py",
+  "builder_sha256": "8a8ecd564ff999b202596ea1666a38e99d13d09b4d28e5ac8119211a91e9946c",
+  "raw_file": "transactions.csv.gz",
+  "raw_sha256": "75cc4fa0d0006b9c43454e3dc1dea502b297ed5c75f3d679aae1df1acf633303",
+  "roles": "one chain (360); sequence=(customer, ISO week), ordered by week then customer id; event=one purchase day; item=category|company|brand; utility=round(purchaseamount*100)",
+  "values": "measured",
+  "sequences": 402539,
+  "events": 737151,
+  "item_occurrences": 8262594,
+  "distinct_items": 12882,
+  "total_utility": 4286572625,
+  "counts": {
+    "rows": 349655789,
+    "rows_in_chain": 8974685,
+    "dropped_nonpositive_quantity_or_amount": 271342,
+    "weeks": 74
+  },
+  "regularity_bound_rule": "2 weeks of sequences, ceil(2 * N / weeks)",
+  "regularity_bound_B": 10880,
+  "seq_sha256": "e8460084bfde8a2685cc2d75dc6f2eca255c3066812cb314554ab32d1c2495ae",
+  "eui_sha256": "0fc4b5e0a47d5a8475e0861f787306226c5fd776d19e61dd0cc5576a2f12e291"
+}

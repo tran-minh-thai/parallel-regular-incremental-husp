@@ -1,0 +1,92 @@
+# python3 tools/build_stream_datasets.py vs <data-local>/valued-shopper/transactions.csv.gz datasets tools/stream_datasets/manifests 46,153,360; commit 54e69ff73b748879db45d7bc6b374b6a8483cdee
+{
+  "name": "VS-CHAIN46-CW",
+  "builder": "tools/build_stream_datasets.py",
+  "builder_sha256": "8a8ecd564ff999b202596ea1666a38e99d13d09b4d28e5ac8119211a91e9946c",
+  "raw_file": "transactions.csv.gz",
+  "raw_sha256": "75cc4fa0d0006b9c43454e3dc1dea502b297ed5c75f3d679aae1df1acf633303",
+  "roles": "one chain (46); sequence=(customer, ISO week), ordered by week then customer id; event=one purchase day; item=category|company|brand; utility=round(purchaseamount*100)",
+  "values": "measured",
+  "sequences": 449552,
+  "events": 698058,
+  "item_occurrences": 10611749,
+  "distinct_items": 18631,
+  "total_utility": 4681326273,
+  "counts": {
+    "rows": 349655789,
+    "rows_in_chain": 11602122,
+    "dropped_nonpositive_quantity_or_amount": 394493,
+    "weeks": 74
+  },
+  "regularity_bound_rule": "2 weeks of sequences, ceil(2 * N / weeks)",
+  "regularity_bound_B": 12151,
+  "seq_sha256": "ff47a0890a20ec7899e9958d5701c01e72ceddbf916508431d56e4df3b7e5b5b",
+  "eui_sha256": "19b8e6a6ab6641bbf5a8ff34ec6e635e21e6dc91302fcdfac34986b621669366"
+}
+{
+  "name": "VS-CHAIN153-CW",
+  "builder": "tools/build_stream_datasets.py",
+  "builder_sha256": "8a8ecd564ff999b202596ea1666a38e99d13d09b4d28e5ac8119211a91e9946c",
+  "raw_file": "transactions.csv.gz",
+  "raw_sha256": "75cc4fa0d0006b9c43454e3dc1dea502b297ed5c75f3d679aae1df1acf633303",
+  "roles": "one chain (153); sequence=(customer, ISO week), ordered by week then customer id; event=one purchase day; item=category|company|brand; utility=round(purchaseamount*100)",
+  "values": "measured",
+  "sequences": 416938,
+  "events": 796769,
+  "item_occurrences": 10011215,
+  "distinct_items": 13039,
+  "total_utility": 4730932146,
+  "counts": {
+    "rows": 349655789,
+    "rows_in_chain": 10637704,
+    "dropped_nonpositive_quantity_or_amount": 121070,
+    "weeks": 74
+  },
+  "regularity_bound_rule": "2 weeks of sequences, ceil(2 * N / weeks)",
+  "regularity_bound_B": 11269,
+  "seq_sha256": "e60a04d83728a2cef979d5354a031ee9e44397b2eab37440c800ef47eb3e4d95",
+  "eui_sha256": "a9e376bd53bda6012e0b0d8a65b99dbc0c5c076e6bb22cfc5a90023c7453afd4"
+}
+{
+  "name": "VS-CHAIN360-CW",
+  "builder": "tools/build_stream_datasets.py",
+  "builder_sha256": "8a8ecd564ff999b202596ea1666a38e99d13d09b4d28e5ac8119211a91e9946c",
+  "raw_file": "transactions.csv.gz",
+  "raw_sha256": "75cc4fa0d0006b9c43454e3dc1dea502b297ed5c75f3d679aae1df1acf633303",
+  "roles": "one chain (360); sequence=(customer, ISO week), ordered by week then customer id; event=one purchase day; item=category|company|brand; utility=round(purchaseamount*100)",
+  "values": "measured",
+  "sequences": 402539,
+  "events": 737151,
+  "item_occurrences": 8262594,
+  "distinct_items": 12882,
+  "total_utility": 4286572625,
+  "counts": {
+    "rows": 349655789,
+    "rows_in_chain": 8974685,
+    "dropped_nonpositive_quantity_or_amount": 271342,
+    "weeks": 74
+  },
+  "regularity_bound_rule": "2 weeks of sequences, ceil(2 * N / weeks)",
+  "regularity_bound_B": 10880,
+  "seq_sha256": "e8460084bfde8a2685cc2d75dc6f2eca255c3066812cb314554ab32d1c2495ae",
+  "eui_sha256": "0fc4b5e0a47d5a8475e0861f787306226c5fd776d19e61dd0cc5576a2f12e291"
+}
+      231.59 real       228.07 user         2.83 sys
+          5901434880  maximum resident set size
+                   0  average shared memory size
+                   0  average unshared data size
+                   0  average unshared stack size
+              361231  page reclaims
+                  42  page faults
+                   0  swaps
+                   0  block input operations
+                   0  block output operations
+                   0  messages sent
+                   0  messages received
+                   0  signals received
+                  41  voluntary context switches
+               93210  involuntary context switches
+       5311838073243  instructions retired
+        988684709607  cycles elapsed
+          5893821000  peak memory footprint
+exit=0

@@ -1,0 +1,43 @@
+# python3 tools/build_stream_datasets.py hmtype <data-local>/hm-fashion/transactions_train.csv datasets tools/stream_datasets/manifests <library>/hm-fashion/articles.csv 12; commit 54e69ff73b748879db45d7bc6b374b6a8483cdee
+{
+  "name": "HM-CW-TYPE-12W",
+  "builder": "tools/build_stream_datasets.py",
+  "builder_sha256": "8a8ecd564ff999b202596ea1666a38e99d13d09b4d28e5ac8119211a91e9946c",
+  "raw_file": "transactions_train.csv",
+  "raw_sha256": "fff5e3b35c1b26016aa0bf2231be9525bc766eed32c94f1653420b465aef84fa",
+  "roles": "sequence=(customer, ISO week), ordered by week then customer id; event=one purchase day of that customer in the week; item=product_type_no of the article; utility=round(price*1e6) per row (one row = one unit), summed per item and day; the price column is scaled by an undisclosed constant",
+  "values": "measured",
+  "sequences": 958298,
+  "events": 1070665,
+  "item_occurrences": 2272181,
+  "distinct_items": 103,
+  "total_utility": 107449753180,
+  "counts": {
+    "rows": 3560440,
+    "stopped_after_weeks": 12,
+    "weeks": 12
+  },
+  "regularity_bound_rule": "2 weeks of sequences, ceil(2 * N / weeks)",
+  "regularity_bound_B": 159717,
+  "seq_sha256": "d98d51865aac17b75d718421a3f38b641bd12dc632656d6a73adc84d2b885c46",
+  "eui_sha256": "1421128f542e96e1fd377589d15c93212484876a49e38916678b2bda44e54dcd"
+}
+        7.80 real         7.50 user         0.28 sys
+           158646272  maximum resident set size
+                   0  average shared memory size
+                   0  average unshared data size
+                   0  average unshared stack size
+               39550  page reclaims
+                 229  page faults
+                   0  swaps
+                   0  block input operations
+                   0  block output operations
+                   0  messages sent
+                   0  messages received
+                   0  signals received
+                  24  voluntary context switches
+                 838  involuntary context switches
+        162145438217  instructions retired
+         33159131138  cycles elapsed
+           148226624  peak memory footprint
+exit=0

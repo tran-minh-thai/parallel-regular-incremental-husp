@@ -1,0 +1,20 @@
+# python3 tools/survey_vs_chains.py <data-local>/valued-shopper/transactions.csv.gz tools/stream_datasets/vs_chain_survey.tsv; commit 54e69ff73b748879db45d7bc6b374b6a8483cdee
+      225.03 real       222.84 user         1.85 sys
+            54296576  maximum resident set size
+                   0  average shared memory size
+                   0  average unshared data size
+                   0  average unshared stack size
+                3991  page reclaims
+                  51  page faults
+                   0  swaps
+                   0  block input operations
+                   0  block output operations
+                   0  messages sent
+                   0  messages received
+                   0  signals received
+                   5  voluntary context switches
+               55347  involuntary context switches
+       5722044618861  instructions retired
+        964971224531  cycles elapsed
+            46137872  peak memory footprint
+exit=0
