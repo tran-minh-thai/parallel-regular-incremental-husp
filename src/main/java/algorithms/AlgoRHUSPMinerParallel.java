@@ -226,13 +226,26 @@ public class AlgoRHUSPMinerParallel {
      * stamp is built from the same lists, so the promising set shrinks to the items that can follow the last
      * item, which keeps the bound sound and makes it no looser than before.
      */
-    public boolean compactEucs = Boolean.getBoolean("eucs.compact");
-    /** Deliberate defects for the audit only: 1 drops every i-pair, 2 stores i-pairs backward (larger -> smaller). */
+    public boolean compactEucs = !"false".equals(System.getProperty("eucs.compact"));
+    /**
+     * Deliberate defects for the audit only: 1 drops every i-pair, 2 stores i-pairs backward (hash
+     * construction); 3 stores s-pairs backward (dense); 4 loses one key partition (partitioned); 5 lets the
+     * sketch estimate fall below the true value (sketch).
+     */
     static final int EUCS_FAULT = Integer.getInteger("eucs.fault", 0);
+
+    /** Construction of the co-occurrence structure; all return the same kept pair set. */
+    public static final int EUCS_AUTO = 0, EUCS_HASH = 1, EUCS_PARTITIONED = 2, EUCS_DENSE = 3, EUCS_SKETCH = 4;
+    public static final String[] EUCS_BUILD_NAMES = {"auto", "hash", "partitioned", "dense", "sketch"};
+    public int eucsBuild = Math.max(0, Arrays.asList(EUCS_BUILD_NAMES).indexOf(System.getProperty("eucs.build", "auto")));
+    public int eucsBuildUsed = -1;
+    /** Memory limit for all per-thread dense matrices together (bytes). */
+    public static final long EUCS_DENSE_BUDGET = 256L << 20;
+    public long eucsSketchCells, eucsSketchDropped;
+    public boolean eucsSketchRefused;
     /** Audit counters of the co-occurrence structure (filled by buildEUCSParallel). */
     public long eucsDistinctI, eucsDistinctS, eucsKeptI, eucsKeptS, eucsThreadMapSlots, eucsMergedSlots;
     public long eucsAdjBytes;
-    private int[] adjIFull, adjSFull;           // compact mode: full degree before dropping, for the pruning counter
     private final LongAdder eucsVisitedA = new LongAdder();      // adjacency entries read while stamping and collecting
     private final LongAdder eucsDeadReverseA = new LongAdder();  // i-entries ordered before the last item that passed minUtility
     public long eucsVisited, eucsDeadReverse;
@@ -441,7 +454,7 @@ public class AlgoRHUSPMinerParallel {
         finalPatterns.clear();
         maxMemory = 0;
         exploredNodesA.reset(); candidateCountA.reset(); eucsVisitedA.reset(); eucsDeadReverseA.reset();
-        adjIFull = adjSFull = null;
+        eucsBuildUsed = -1; eucsSketchCells = eucsSketchDropped = 0; eucsSketchRefused = false;
         prunedEucsA.reset(); prunedBoundA.reset(); prunedNodeCondA.reset(); prunedRegularityA.reset();
         exploredNodes = candidateCount = 0;
         prunedEucs = prunedBound = prunedNodeCond = prunedRegularity = 0;
@@ -566,12 +579,38 @@ public class AlgoRHUSPMinerParallel {
     }
 
     /**
-     * Parallel EUCS construction: each thread counts co-occurrences over its sequence slice
-     * into a local open-addressing hash map (no contention), then the per-thread maps are
-     * merged into an immutable adjacency list sorted descending by utility (enabling early-
-     * break pruning during lookup). (paper §4.2, Phase 1)
+     * Build the co-occurrence structure with the selected construction (see {@link #eucsBuild}). Every
+     * construction yields the same kept pair set; they differ only in memory and in how much of the work
+     * runs in parallel.
      */
     private void buildEUCSParallel() {
+        int mode = chooseEucsBuild();
+        eucsBuildUsed = mode;
+        if (!compactEucs || mode == EUCS_HASH) { buildEucsHash(); return; }
+        if (mode == EUCS_DENSE) buildEucsDense();
+        else buildEucsPartitioned(mode == EUCS_SKETCH);
+    }
+
+    /**
+     * Automatic choice: a dense matrix per thread when all thread copies fit {@link #EUCS_DENSE_BUDGET},
+     * otherwise key-partitioned hash tables. The two-pass sketch filter is used only when asked for.
+     */
+    private int chooseEucsBuild() {
+        if (eucsBuild != EUCS_AUTO) return eucsBuild;
+        return denseBytesTotal() <= EUCS_DENSE_BUDGET ? EUCS_DENSE : EUCS_PARTITIONED;
+    }
+
+    /** Memory of the per-thread dense matrices: full square for s-pairs, strict upper triangle for i-pairs. */
+    private long denseBytesTotal() {
+        long n = numValid;
+        return (n * n + n * (n - 1) / 2) * 8L * Math.max(1, numThreads);
+    }
+
+    /**
+     * Original construction: one hash map per thread over its slice, merged into one map on the calling
+     * thread. Kept for comparison; the merge is serial and every thread map holds most distinct pairs.
+     */
+    private void buildEucsHash() {
         final int T = Math.max(1, numThreads);
         final int chunk = (numSeq + T - 1) / T;
         final PairAccMap[] mapsI = new PairAccMap[T];
@@ -708,17 +747,14 @@ public class AlgoRHUSPMinerParallel {
     private void buildCompactAdjacency(PairAccMap mergedI, PairAccMap mergedS) {
         long[] e2 = Prof.start();
         int[] cntI = new int[numValid + 1], cntS = new int[numValid + 1];
-        adjIFull = new int[numValid]; adjSFull = new int[numValid];
         for (int j = 0; j < mergedI.keys.length; j++) {
             if (mergedI.keys[j] == -1L) continue;
             int a = EUCS_FAULT == 2 ? (int) mergedI.keys[j] : (int) (mergedI.keys[j] >>> 32);
-            adjIFull[a]++;
             if (mergedI.acc[j] >= minUtility && EUCS_FAULT != 1) cntI[a]++;
         }
         for (int j = 0; j < mergedS.keys.length; j++) {
             if (mergedS.keys[j] == -1L) continue;
             int a = (int) (mergedS.keys[j] >>> 32);
-            adjSFull[a]++;
             if (mergedS.acc[j] >= minUtility) cntS[a]++;
         }
         adjIStart = prefixSum(cntI); adjSStart = prefixSum(cntS);
@@ -758,8 +794,377 @@ public class AlgoRHUSPMinerParallel {
         Prof.stop("engine.eucs.sort", e3);
         eucsPairsI = adjIStart[numValid];
         eucsPairsS = adjSStart[numValid];
-        eucsAdjBytes = (eucsPairsI + eucsPairsS) * 4L + (long) (numValid + 1) * 2 * 4L + numValid * 2L * 4L;
+        eucsAdjBytes = (eucsPairsI + eucsPairsS) * 4L + (long) (numValid + 1) * 2 * 4L;
         checkMemory();
+    }
+
+    // ============================ CO-OCCURRENCE: SHARED PAIR GENERATOR ============================
+
+    /** Flag marking an s-pair key; i-pair keys have it clear. Dense ids are below 2^31, so keys never equal -1. */
+    private static final long S_FLAG = 1L << 63;
+    private static final long PAIR_MASK = ~S_FLAG;
+
+    /** Per-thread scratch for {@link #collectPairs}. */
+    private final class PairWs {
+        final int[] evtBuf = new int[maxItemId + 1];
+        final int[] seenBefore = new int[Math.max(numValid, 1)];
+        final int[] seenStamp = new int[Math.max(numValid, 1)];
+        final PairSet set = new PairSet(1 << 10);
+        PairWs() { Arrays.fill(seenStamp, -1); }
+    }
+
+    /**
+     * Distinct pairs of sequence {@code s}, each once: i-pairs (a,b), a &lt; b, sharing an event, and s-pairs
+     * (a,b) with a in an event before one holding b. Every construction except the original consumes this,
+     * so all of them add su(s) to a pair exactly once per sequence by construction. Returns the count; the
+     * keys are {@code w.set.list[0..count)}.
+     */
+    private int collectPairs(int s, PairWs w) {
+        PairSet set = w.set;
+        set.reset();
+        int nb = 0;
+        int[] evtBuf = w.evtBuf, seenBefore = w.seenBefore, seenStamp = w.seenStamp;
+        for (int e = seqEvtStart[s]; e < seqEvtStart[s + 1]; e++) {
+            int m = 0;
+            for (int p = evtPosStart[e]; p < evtPosStart[e + 1]; p++) {
+                int d = itemToDense[items[p]];
+                if (d >= 0) evtBuf[m++] = d;
+            }
+            for (int x = 0; x < m; x++)
+                for (int y = x + 1; y < m; y++) {
+                    int a = evtBuf[x], b = evtBuf[y];
+                    if (a == b) continue;
+                    set.add(a < b ? pack(a, b) : pack(b, a));
+                }
+            for (int y = 0; y < m; y++) {
+                int v = evtBuf[y];
+                for (int k = 0; k < nb; k++) set.add(pack(seenBefore[k], v) | S_FLAG);
+            }
+            for (int y = 0; y < m; y++) {
+                int v = evtBuf[y];
+                if (seenStamp[v] != s) { seenStamp[v] = s; seenBefore[nb++] = v; }
+            }
+        }
+        return set.n;
+    }
+
+    /** Insertion-ordered set of pair keys, cleared in O(1) by bumping a stamp. */
+    private static final class PairSet {
+        long[] keys, list; int[] stamp; int n, cur;
+        PairSet(int cap) { keys = new long[cap]; list = new long[cap]; stamp = new int[cap]; }
+        void reset() {
+            n = 0;
+            if (++cur == Integer.MAX_VALUE) { Arrays.fill(stamp, 0); cur = 1; }
+        }
+        void add(long key) {
+            int mask = keys.length - 1;
+            int i = PairAccMap.hash(key) & mask;
+            while (true) {
+                if (stamp[i] != cur) {
+                    stamp[i] = cur; keys[i] = key; list[n++] = key;
+                    if (n * 5L > keys.length * 3L) grow();
+                    return;
+                }
+                if (keys[i] == key) return;
+                i = (i + 1) & mask;
+            }
+        }
+        private void grow() {
+            int c = keys.length << 1, mask = c - 1;
+            keys = new long[c]; stamp = new int[c]; list = Arrays.copyOf(list, c);
+            for (int j = 0; j < n; j++) {
+                int i = PairAccMap.hash(list[j]) & mask;
+                while (stamp[i] == cur) i = (i + 1) & mask;
+                stamp[i] = cur; keys[i] = list[j];
+            }
+        }
+    }
+
+    /** Run {@code body(t, lo, hi)} over T equal sequence slices on the pool and wait. */
+    private interface SliceBody { void run(int t, int lo, int hi); }
+    private void forSlices(int T, SliceBody body) {
+        final int chunk = (numSeq + T - 1) / T;
+        ForkJoinTask<?>[] tasks = new ForkJoinTask<?>[T];
+        for (int t = 0; t < T; t++) {
+            final int tid = t, lo = Math.min(numSeq, tid * chunk), hi = Math.min(numSeq, lo + chunk);
+            tasks[t] = pool.submit(() -> body.run(tid, lo, hi));
+        }
+        for (ForkJoinTask<?> tk : tasks) tk.join();
+    }
+
+    /** Run {@code body(i)} for i in [0,n) on the pool in about 4T blocks and wait. */
+    private void forBlocks(int n, IntConsumerLike body) {
+        final int blocks = Math.max(1, Math.max(1, numThreads) * 4), size = (n + blocks - 1) / blocks;
+        List<RecursiveAction> subs = new ArrayList<>();
+        for (int b = 0; b < blocks; b++) {
+            final int lo = b * size, hi = Math.min(n, lo + size);
+            if (lo >= hi) break;
+            subs.add(new RecursiveAction() {
+                @Override protected void compute() { for (int i = lo; i < hi; i++) body.accept(i); }
+            });
+        }
+        if (!subs.isEmpty()) pool.invoke(new RecursiveAction() {
+            @Override protected void compute() { invokeAll(subs); }
+        });
+    }
+    private interface IntConsumerLike { void accept(int i); }
+
+    // ============================ CO-OCCURRENCE: DENSE MATRICES ============================
+
+    /** Index of i-pair (a,b), a &lt; b, in the strict upper triangle of an n x n matrix. */
+    private static int triIndex(int a, int b, int n) {
+        return (int) ((long) a * (2L * n - a - 1) / 2 + (b - a - 1));
+    }
+
+    /**
+     * Dense construction: each thread adds into its own matrices (s-pairs n x n, i-pairs upper triangle),
+     * the copies are summed in parallel by index blocks, and each row becomes an adjacency slice in
+     * ascending dense id, which is ascending item id, so no sort is needed.
+     */
+    private void buildEucsDense() {
+        final int n = numValid, T = Math.max(1, numThreads);
+        final int sq = n * n, tri = (int) ((long) n * (n - 1) / 2);
+        final long[][] accS = new long[T][], accI = new long[T][];
+        long[] e0 = Prof.start();
+        forSlices(T, (t, lo, hi) -> {
+            long[] aS = new long[sq], aI = new long[tri];
+            PairWs w = new PairWs();
+            for (int s = lo; s < hi; s++) {
+                long su = seqUtility[s];
+                int c = collectPairs(s, w);
+                long[] keys = w.set.list;
+                for (int j = 0; j < c; j++) {
+                    long k = keys[j];
+                    int a = (int) ((k & PAIR_MASK) >>> 32), b = (int) k;
+                    if (k < 0) {
+                        if (EUCS_FAULT == 3) aS[b * n + a] += su;     // deliberate defect: s-pair stored backward
+                        else aS[a * n + b] += su;
+                    } else aI[triIndex(a, b, n)] += su;
+                }
+            }
+            accS[t] = aS; accI[t] = aI;
+        });
+        Prof.stop("engine.eucs.scan", e0);
+        checkMemory();
+
+        long[] e1 = Prof.start();
+        final long[] S = accS[0], I = accI[0];
+        if (T > 1) {
+            forBlocks(sq, i -> { long v = 0; for (int t = 1; t < T; t++) v += accS[t][i]; S[i] += v; });
+            forBlocks(tri, i -> { long v = 0; for (int t = 1; t < T; t++) v += accI[t][i]; I[i] += v; });
+        }
+        for (int t = 1; t < T; t++) { accS[t] = null; accI[t] = null; }
+        Prof.stop("engine.eucs.merge", e1);
+
+        long[] e2 = Prof.start();
+        final int[] cntI = new int[n + 1], cntS = new int[n + 1], dI = new int[n], dS = new int[n];
+        final long mu = minUtility;
+        forBlocks(n, a -> {
+            int ci = 0, cs = 0, di = 0, ds = 0;
+            for (int b = 0; b < n; b++) { long v = S[a * n + b]; if (v > 0) ds++; if (v >= mu) cs++; }
+            for (int b = a + 1; b < n; b++) { long v = I[triIndex(a, b, n)]; if (v > 0) di++; if (v >= mu) ci++; }
+            cntI[a] = ci; cntS[a] = cs; dI[a] = di; dS[a] = ds;
+        });
+        adjIStart = prefixSum(cntI); adjSStart = prefixSum(cntS);
+        final int[] aIt = new int[adjIStart[n]], aSt = new int[adjSStart[n]];
+        final int[] sI = adjIStart, sS = adjSStart;
+        forBlocks(n, a -> {
+            int pi = sI[a], ps = sS[a];
+            for (int b = 0; b < n; b++) if (S[a * n + b] >= mu) aSt[ps++] = denseToItem[b];
+            for (int b = a + 1; b < n; b++) if (I[triIndex(a, b, n)] >= mu) aIt[pi++] = denseToItem[b];
+        });
+        adjIItem = aIt; adjSItem = aSt; adjIUtil = null; adjSUtil = null;
+        Prof.stop("engine.eucs.adjacency", e2);
+        long di = 0, ds = 0;
+        for (int a = 0; a < n; a++) { di += dI[a]; ds += dS[a]; }
+        eucsDistinctI = di; eucsDistinctS = ds;
+        eucsKeptI = adjIStart[n]; eucsKeptS = adjSStart[n];
+        eucsThreadMapSlots = (long) T * (sq + tri); eucsMergedSlots = 0;
+        finishCompactStats();
+        checkMemory();
+    }
+
+    // ============================ CO-OCCURRENCE: PARTITIONED HASH TABLES (+ SKETCH FILTER) ============================
+
+    private static final java.lang.invoke.VarHandle LONGS = java.lang.invoke.MethodHandles.arrayElementVarHandle(long[].class);
+    private static final int SKETCH_ROWS = 2;
+    private static final long[] SKETCH_SEED = {0x243F6A8885A308D3L, 0x13198A2E03707344L};
+    private static final long[] SKETCH_MUL = {0x9E3779B97F4A7C15L, 0xC2B2AE3D27D4EB4FL};
+
+    private static int sketchSlot(long key, int r, int logW) {
+        return (int) (((key ^ SKETCH_SEED[r]) * SKETCH_MUL[r]) >>> (64 - logW));
+    }
+
+    /** Sketch width (log2): from {@code -Deucs.sketchLog}, else about 2 n^2 counters per row, clamped to [16, 23]. */
+    private int sketchLogWidth() {
+        Integer forced = Integer.getInteger("eucs.sketchLog");
+        if (forced != null) return Math.max(1, Math.min(28, forced));
+        long n2 = Math.max(1L, (long) numValid * numValid);
+        int bits = 64 - Long.numberOfLeadingZeros(n2 - 1) + 1;
+        return Math.max(16, Math.min(23, bits));
+    }
+
+    /**
+     * Key-partitioned construction. Each thread keeps P small hash tables, one per key range; partition p
+     * of every thread is merged by one task, so the merge runs in parallel and no table ever holds the
+     * pairs of another partition. With {@code sketch}, a first pass adds su(s) of every distinct pair to a
+     * shared count-min table, and the second pass counts exactly only the pairs whose estimate (minimum
+     * over rows) reaches minUtility. The estimate never falls below the true value because every counter
+     * is a sum of non-negative pair values that includes the pair itself, so no pair reaching minUtility
+     * is dropped and the kept set is the same as without the filter.
+     */
+    private void buildEucsPartitioned(boolean sketch) {
+        final int T = Math.max(1, numThreads);
+        final int P = Integer.highestOneBit(Math.max(1, 2 * T - 1)) * 2;
+        final int logP = Integer.numberOfTrailingZeros(P);
+        final long mu = minUtility;
+
+        if (sketch) {
+            // The filter is sound only for non-negative sequence utilities; otherwise count every pair exactly.
+            for (int q = 0; q < numSeq; q++) if (seqUtility[q] < 0) { sketch = false; eucsSketchRefused = true; break; }
+        }
+        final long[] sk;
+        final int logW;
+        if (sketch) {
+            long[] e = Prof.start();
+            logW = sketchLogWidth();
+            final int W = 1 << logW;
+            sk = new long[SKETCH_ROWS * W];
+            forSlices(T, (t, lo, hi) -> {
+                PairWs w = new PairWs();
+                for (int s = lo; s < hi; s++) {
+                    long su = seqUtility[s];
+                    if (su == 0) continue;
+                    int c = collectPairs(s, w);
+                    long[] keys = w.set.list;
+                    for (int j = 0; j < c; j++)
+                        for (int r = 0; r < SKETCH_ROWS; r++)
+                            LONGS.getAndAdd(sk, r * W + sketchSlot(keys[j], r, logW), su);
+                }
+            });
+            eucsSketchCells = (long) SKETCH_ROWS * W;
+            Prof.stop("engine.eucs.sketch", e);
+            checkMemory();
+        } else { sk = null; logW = 0; }
+
+        final PairAccMap[][] parts = new PairAccMap[T][P];
+        final long[] dropped = new long[T];
+        long[] e0 = Prof.start();
+        forSlices(T, (t, lo, hi) -> {
+            PairAccMap[] mine = parts[t];
+            for (int q = 0; q < P; q++) mine[q] = new PairAccMap(16);
+            PairWs w = new PairWs();
+            long drop = 0;
+            final int W = 1 << logW;
+            for (int s = lo; s < hi; s++) {
+                long su = seqUtility[s];
+                int c = collectPairs(s, w);
+                long[] keys = w.set.list;
+                for (int j = 0; j < c; j++) {
+                    long k = keys[j];
+                    if (sk != null) {
+                        long est = Long.MAX_VALUE;
+                        for (int r = 0; r < SKETCH_ROWS; r++) est = Math.min(est, sk[r * W + sketchSlot(k, r, logW)]);
+                        if (EUCS_FAULT == 5) est -= su;              // deliberate defect: an estimate that can fall short
+                        if (est < mu) { drop++; continue; }
+                    }
+                    mine[partitionOf(k, logP)].addAcc(k, su);
+                }
+            }
+            dropped[t] = drop;
+        });
+        long slots = 0, dsum = 0;
+        for (int t = 0; t < T; t++) { dsum += dropped[t]; for (int q = 0; q < P; q++) slots += parts[t][q].keys.length; }
+        eucsThreadMapSlots = slots; eucsSketchDropped = dsum;
+        Prof.stop("engine.eucs.scan", e0);
+        checkMemory();
+
+        long[] e1 = Prof.start();
+        final long[][] keptP = new long[P][];
+        final long[] distinctI = new long[P], distinctS = new long[P], mergedSlots = new long[P];
+        forBlocksExact(P, q -> {
+            if (EUCS_FAULT == 4 && q == 0) { keptP[q] = new long[0]; return; }   // deliberate defect: a partition lost
+            int total = 0;
+            for (int t = 0; t < T; t++) total += parts[t][q].size;
+            PairAccMap m = new PairAccMap(total);
+            for (int t = 0; t < T; t++) { mergeInto(m, parts[t][q]); parts[t][q] = null; }
+            long[] kept = new long[16];
+            int nk = 0; long di = 0, ds = 0;
+            for (int j = 0; j < m.keys.length; j++) {
+                long k = m.keys[j];
+                if (k == -1L) continue;
+                if (k < 0) ds++; else di++;
+                if (m.acc[j] >= mu) { if (nk == kept.length) kept = Arrays.copyOf(kept, nk * 2); kept[nk++] = k; }
+            }
+            keptP[q] = Arrays.copyOf(kept, nk);
+            distinctI[q] = di; distinctS[q] = ds; mergedSlots[q] = m.keys.length;
+        });
+        Prof.stop("engine.eucs.merge", e1);
+
+        long[] e2 = Prof.start();
+        final int n = numValid;
+        int[] cntI = new int[n + 1], cntS = new int[n + 1];
+        long di = 0, ds = 0, ms = 0;
+        for (int q = 0; q < P; q++) {
+            di += distinctI[q]; ds += distinctS[q]; ms += mergedSlots[q];
+            for (long k : keptP[q]) {
+                int a = (int) ((k & PAIR_MASK) >>> 32);
+                if (k < 0) cntS[a]++; else cntI[a]++;
+            }
+        }
+        adjIStart = prefixSum(cntI); adjSStart = prefixSum(cntS);
+        adjIItem = new int[adjIStart[n]]; adjSItem = new int[adjSStart[n]]; adjIUtil = null; adjSUtil = null;
+        int[] curI = Arrays.copyOf(adjIStart, n), curS = Arrays.copyOf(adjSStart, n);
+        for (int q = 0; q < P; q++)
+            for (long k : keptP[q]) {
+                int a = (int) ((k & PAIR_MASK) >>> 32), b = (int) k;
+                if (k < 0) adjSItem[curS[a]++] = denseToItem[b]; else adjIItem[curI[a]++] = denseToItem[b];
+            }
+        final int[] aI = adjIItem, aS = adjSItem, sI = adjIStart, sS = adjSStart;
+        forBlocks(n, a -> { Arrays.sort(aI, sI[a], sI[a + 1]); Arrays.sort(aS, sS[a], sS[a + 1]); });
+        Prof.stop("engine.eucs.adjacency", e2);
+        eucsDistinctI = di; eucsDistinctS = ds; eucsMergedSlots = ms;
+        eucsKeptI = adjIStart[n]; eucsKeptS = adjSStart[n];
+        finishCompactStats();
+        checkMemory();
+    }
+
+    /** Partition of a key: top bits of the multiplicative hash (independent of the in-table slot bits). */
+    private static int partitionOf(long key, int logP) {
+        return logP == 0 ? 0 : (int) ((key * 0x9E3779B97F4A7C15L) >>> (64 - logP));
+    }
+
+    /** One task per index (used for the P partitions, which are few and heavy). */
+    private void forBlocksExact(int n, IntConsumerLike body) {
+        List<RecursiveAction> subs = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            final int q = i;
+            subs.add(new RecursiveAction() { @Override protected void compute() { body.accept(q); } });
+        }
+        if (!subs.isEmpty()) pool.invoke(new RecursiveAction() {
+            @Override protected void compute() { invokeAll(subs); }
+        });
+    }
+
+    private void finishCompactStats() {
+        eucsPairsI = adjIStart[numValid];
+        eucsPairsS = adjSStart[numValid];
+        eucsAdjBytes = (eucsPairsI + eucsPairsS) * 4L + (long) (numValid + 1) * 2 * 4L;
+    }
+
+    /**
+     * The kept pair set as sorted keys (s-pairs carry the top bit), read back from the adjacency lists, for
+     * comparing constructions pair by pair. Compact mode only.
+     */
+    public long[] keptPairKeys() {
+        long[] out = new long[adjIStart[numValid] + adjSStart[numValid]];
+        int k = 0;
+        for (int a = 0; a < numValid; a++) {
+            for (int j = adjIStart[a]; j < adjIStart[a + 1]; j++) out[k++] = pack(a, itemToDense[adjIItem[j]]);
+            for (int j = adjSStart[a]; j < adjSStart[a + 1]; j++) out[k++] = pack(a, itemToDense[adjSItem[j]]) | S_FLAG;
+        }
+        Arrays.sort(out);
+        return out;
     }
 
     private static void mergeInto(PairAccMap dst, PairAccMap src) {
@@ -804,7 +1209,7 @@ public class AlgoRHUSPMinerParallel {
                 i = (i + 1) & mask;
             }
         }
-        private static int hash(long key) {
+        static int hash(long key) {
             long h = key * 0x9E3779B97F4A7C15L;
             return (int) (h ^ (h >>> 32));
         }
@@ -1278,19 +1683,22 @@ public class AlgoRHUSPMinerParallel {
             int[] adjItem = iExt ? adjIItem : adjSItem;
             long[] adjUtil = iExt ? adjIUtil : adjSUtil;
             if (compactEucs) {
-                int[] full = iExt ? adjIFull : adjSFull;
-                int kept = adjStart[d + 1] - adjStart[d];
-                candidateCountA.add(full[d]);
-                prunedEucsA.add(full[d] - kept);
-                if (Prof.ON) eucsVisitedA.add(kept);
+                // Counters over the extension items that OCCUR in the projection (they carry a bound): those
+                // absent from the adjacency slice are pruned by co-occurrence, the rest by the bound or kept.
+                // This reading does not depend on how the structure was built.
+                int occurring = iExt ? ctx.gNumI : ctx.gNumS, found = 0;
+                if (Prof.ON) eucsVisitedA.add(adjStart[d + 1] - adjStart[d]);
                 for (int k = adjStart[d]; k < adjStart[d + 1]; k++) {
                     int it = adjItem[k];
                     int d2 = itemToDense[it];
                     int idx = denseBuffers ? d2 : it;
-                    long bound = (d2 >= 0 && mark[idx] != -1) ? acc[idx] : 0;
-                    if (boundMode != BOUND_NONE && bound < minUtility) prunedBoundA.increment();
+                    if (d2 < 0 || mark[idx] == -1) continue;      // does not occur after the prefix here
+                    found++;
+                    if (boundMode != BOUND_NONE && acc[idx] < minUtility) prunedBoundA.increment();
                     else out[n++] = it;
                 }
+                candidateCountA.add(occurring);
+                prunedEucsA.add(occurring - found);
                 return n;
             }
             for (int k = adjStart[d]; k < adjStart[d + 1]; k++) {

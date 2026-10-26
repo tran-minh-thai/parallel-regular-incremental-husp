@@ -630,7 +630,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         // occurrence), instead of every new sequence. Exact: a sequence missing any pattern item cannot
         // contain the pattern, so it would have returned MIN_VALUE and left utility/regularity unchanged.
         // Ascending seqId order preserves the consecutive-occurrence gap computation in matchAndUpdate.
-        final Map<Integer, int[]> inv = buildInvertedIndex(lo, hi);
+        final Map<Integer, Posting> inv = buildInvertedIndex(lo, hi);
         runParallelIndexed(arr.length, idx -> {
             Pat p = arr[idx];
             int[] cand = candidateSeqs(p, inv);
@@ -692,7 +692,10 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         final int nSeq = hi - lo;
         if (nSeq <= 0) return;
         final int P = pats.length;
-        final int T = Math.max(1, Math.min(numThreads, nSeq));
+        // Up to 4 chunks per thread so the pool can balance sequences of uneven length, but never more than
+        // the per-pattern accumulators allow (21 bytes per pattern per chunk, at most 64 MB in all).
+        final int maxByMemory = (int) Math.max(1, (64L << 20) / (21L * Math.max(1, P)));
+        final int T = Math.max(1, Math.min(nSeq, Math.min(4 * Math.max(1, numThreads), Math.max(numThreads, maxByMemory))));
 
         final boolean[][] occ = new boolean[T][];
         final int[][] first = new int[T][], last = new int[T][], maxGap = new int[T][];
@@ -785,7 +788,35 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
      * the item. Two passes (count, then fill) so each posting list is exactly sized and in ascending
      * seqId order. Keyed by item -> at most |alphabet| entries, independent of batch size.
      */
-    private Map<Integer, int[]> buildInvertedIndex(int lo, int hi) {
+    /** Posting list: ascending seqIds in {@code a[0..n)}; capacity may exceed n when it grows by appends. */
+    static final class Posting {
+        int[] a; int n;
+        Posting(int[] a, int n) { this.a = a; this.n = n; }
+        void add(int s) { if (n == a.length) a = java.util.Arrays.copyOf(a, Math.max(4, n * 2)); a[n++] = s; }
+    }
+
+    /** Inverted index of the WHOLE database, extended with the sequences appended since its last use. */
+    private final Map<Integer, Posting> invAll = new java.util.HashMap<>();
+    private int invAllUpTo = 0;
+
+    /**
+     * The database is append-only and posting lists hold ascending seqIds, so the index of [0, n) is the
+     * index of [0, invAllUpTo) with the new sequences appended at the tail of each list; nothing is rebuilt.
+     */
+    private Map<Integer, Posting> wholeDatabaseIndex() {
+        final int n = data.numSequences;
+        final int[] items = data.items, eventItemStart = data.eventItemStart, seqEventStart = data.seqEventStart;
+        IntHashSet seen = new IntHashSet(64);
+        for (int s = invAllUpTo; s < n; s++) {
+            if (FAULT == 8 && s == n - 1) continue;          // FAULT 8: the last appended sequence never enters the index
+            distinctItems(s, items, eventItemStart, seqEventStart, seen);
+            for (int z : seen.toArray()) invAll.computeIfAbsent(z, k -> new Posting(new int[4], 0)).add(s);
+        }
+        invAllUpTo = n;
+        return invAll;
+    }
+
+    private Map<Integer, Posting> buildInvertedIndex(int lo, int hi) {
         final int[] items = data.items, eventItemStart = data.eventItemStart, seqEventStart = data.seqEventStart;
         Map<Integer, Integer> count = new java.util.HashMap<>();
         IntHashSet seen = new IntHashSet(64);
@@ -793,14 +824,14 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
             distinctItems(s, items, eventItemStart, seqEventStart, seen);
             for (int z : seen.toArray()) count.merge(z, 1, Integer::sum);
         }
-        Map<Integer, int[]> post = new java.util.HashMap<>(count.size() * 2);
+        Map<Integer, Posting> post = new java.util.HashMap<>(count.size() * 2);
         Map<Integer, Integer> fill = new java.util.HashMap<>(count.size() * 2);
-        for (Map.Entry<Integer, Integer> e : count.entrySet()) post.put(e.getKey(), new int[e.getValue()]);
+        for (Map.Entry<Integer, Integer> e : count.entrySet()) post.put(e.getKey(), new Posting(new int[e.getValue()], e.getValue()));
         for (int s = lo; s < hi; s++) {                    // ascending s -> ascending posting lists
             distinctItems(s, items, eventItemStart, seqEventStart, seen);
             for (int z : seen.toArray()) {
                 int f = fill.getOrDefault(z, 0);
-                post.get(z)[f] = s;
+                post.get(z).a[f] = s;
                 fill.put(z, f + 1);
             }
         }
@@ -822,31 +853,32 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
      * Returns null if any item is absent from the batch. Iterates the shortest list and keeps entries
      * present in all others (binary search); the result stays in ascending seqId order.
      */
-    private int[] candidateSeqs(Pat p, Map<Integer, int[]> inv) {
-        int[][] lists = new int[p.item.length][];
+    private int[] candidateSeqs(Pat p, Map<Integer, Posting> inv) {
+        Posting[] lists = new Posting[p.item.length];
         int m = 0;
         outer:
         for (int k = 0; k < p.item.length; k++) {
-            int[] lst = inv.get(p.item[k]);
+            Posting lst = inv.get(p.item[k]);
             if (lst == null) return null;                  // required item absent from the whole batch
             for (int j = 0; j < m; j++) if (lists[j] == lst) continue outer;   // duplicate item -> same list
             lists[m++] = lst;
         }
         int shortest = 0;
-        for (int j = 1; j < m; j++) if (lists[j].length < lists[shortest].length) shortest = j;
-        int[] base = lists[shortest];
-        if (m == 1) return base;
-        int[] out = new int[base.length];
+        for (int j = 1; j < m; j++) if (lists[j].n < lists[shortest].n) shortest = j;
+        Posting base = lists[shortest];
+        if (m == 1) return base.a.length == base.n ? base.a : java.util.Arrays.copyOf(base.a, base.n);
+        int[] out = new int[base.n];
         int n = 0;
-        for (int s : base) {
+        for (int i = 0; i < base.n; i++) {
+            int s = base.a[i];
             boolean all = true;
             for (int j = 0; j < m; j++) {
                 if (j == shortest) continue;
-                if (java.util.Arrays.binarySearch(lists[j], s) < 0) { all = false; break; }
+                if (java.util.Arrays.binarySearch(lists[j].a, 0, lists[j].n, s) < 0) { all = false; break; }
             }
             if (all) out[n++] = s;
         }
-        return (n == base.length) ? base : java.util.Arrays.copyOf(out, n);
+        return java.util.Arrays.copyOf(out, n);
     }
 
     /**
@@ -1185,7 +1217,8 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
      * cost-capped discovery leaves its half-built candidates in the tracked set (measured harmless: each
      * candidate is either fully rebuilt or untouched, and untouched ones carry no last occurrence and
      * are evicted at the next classification); 5: an aborted discovery skips the fallback re-mine; 6: an aborted discovery
-     * also keeps candidates whose rebuild was still in progress; 7: a query skipped by the window backoff
+     * also keeps candidates whose rebuild was still in progress; 8: the whole-database inverted index misses
+     * the last sequence of each extension; 7: a query skipped by the window backoff
      * answers from the stale maintained set instead of re-mining.
      */
     public static int FAULT = 0;
@@ -1560,7 +1593,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         long tRebuild = System.nanoTime();
         final int n = data.numSequences;
         long[] pi0 = Prof.start();
-        final Map<Integer, int[]> inv = buildInvertedIndex(0, n);
+        final Map<Integer, Posting> inv = wholeDatabaseIndex();
         Prof.stop("disc.invertedIndex", pi0);
         long[] pr0 = Prof.start();
         final int incrementSeqs = part.size();
