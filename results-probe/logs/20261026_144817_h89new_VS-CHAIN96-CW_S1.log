@@ -1,0 +1,46 @@
+# java -Xmx16g -Ddold=0.5 -Doracle=remine -Dlimit=3600 -cp out test.QueryScheduleProbe datasets/VS-CHAIN96-CW_seq.txt datasets/VS-CHAIN96-CW_eui.txt 0.0005 17592 21 every remine-nogc,bud3
+# commit ee50aa981d1fe43dd4c1d7cca62524ec5774ba21 tree=0 modified
+# openjdk version "26.0.1" 2026-04-21 host ThaiTMs-MacBook-Pro
+VS-CHAIN96-CW N=650903 delta=0.0005 B=17592 k=21 dOld=0.5 schedule=every threads=10 fault=0 reference=parallel engine (NOT independent) -> results-probe/20261026_144820_VS-CHAIN96-CW
+  oracle after batch 1: N=341725 minUtil=1903037 patterns=1632
+  oracle after batch 2: N=357998 minUtil=1990803 patterns=1615
+  oracle after batch 3: N=374271 minUtil=2081589 patterns=1598
+  oracle after batch 4: N=390544 minUtil=2172334 patterns=1604
+  oracle after batch 5: N=406817 minUtil=2270798 patterns=1585
+  oracle after batch 6: N=423090 minUtil=2374504 patterns=1565
+  oracle after batch 7: N=439363 minUtil=2498204 patterns=1544
+  oracle after batch 8: N=455636 minUtil=2613009 patterns=1536
+  oracle after batch 9: N=471909 minUtil=2703860 patterns=1539
+  oracle after batch 10: N=488182 minUtil=2790046 patterns=1526
+  oracle after batch 11: N=504455 minUtil=2880062 patterns=1534
+  oracle after batch 12: N=520728 minUtil=2972024 patterns=1534
+  oracle after batch 13: N=537001 minUtil=3060048 patterns=1535
+  oracle after batch 14: N=553274 minUtil=3147113 patterns=1531
+  oracle after batch 15: N=569547 minUtil=3235312 patterns=1536
+  oracle after batch 16: N=585820 minUtil=3323067 patterns=1528
+  oracle after batch 17: N=602093 minUtil=3415383 patterns=1534
+  oracle after batch 18: N=618366 minUtil=3499257 patterns=1536
+  oracle after batch 19: N=634639 minUtil=3584246 patterns=1531
+  oracle after batch 20: N=650903 minUtil=3660918 patterns=1518
+  remine-nogc q0  after b1  N=341725 oracle=1632   got=1632   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=28021ms
+  remine-nogc q1  after b2  N=357998 oracle=1615   got=1615   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=28310ms
+  remine-nogc q2  after b3  N=374271 oracle=1598   got=1598   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=31087ms
+  remine-nogc q3  after b4  N=390544 oracle=1604   got=1604   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=32597ms
+  remine-nogc q4  after b5  N=406817 oracle=1585   got=1585   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=34373ms
+  remine-nogc q5  after b6  N=423090 oracle=1565   got=1565   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=35846ms
+  remine-nogc q6  after b7  N=439363 oracle=1544   got=1544   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=37586ms
+  remine-nogc q7  after b8  N=455636 oracle=1536   got=1536   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=39226ms
+  remine-nogc q8  after b9  N=471909 oracle=1539   got=1539   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=40812ms
+  remine-nogc q9  after b10 N=488182 oracle=1526   got=1526   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=41277ms
+  remine-nogc q10 after b11 N=504455 oracle=1534   got=1534   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=43683ms
+  remine-nogc q11 after b12 N=520728 oracle=1534   got=1534   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=44417ms
+  remine-nogc q12 after b13 N=537001 oracle=1535   got=1535   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=45583ms
+  remine-nogc q13 after b14 N=553274 oracle=1531   got=1531   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=48915ms
+  remine-nogc q14 after b15 N=569547 oracle=1536   got=1536   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=50066ms
+  remine-nogc q15 after b16 N=585820 oracle=1528   got=1528   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=53098ms
+  remine-nogc q16 after b17 N=602093 oracle=1534   got=1534   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=54924ms
+  remine-nogc q17 after b18 N=618366 oracle=1536   got=1536   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=68720ms
+  remine-nogc q18 after b19 N=634639 oracle=1531   got=1531   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=69430ms
+  remine-nogc q19 after b20 N=650903 oracle=1518   got=1518   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=61145ms
+  bud3   q0  after b1  N=341725 oracle=1632   got=1632   miss=0 extra=0 uErr=0 pErr=0  ingest=161ms query=28330ms  {budget=0 attempt=0 load=0 pre=0 enum=0 rebuild=0 abort=}  [REMINE r=8.1 thr=1903037 cand=1632 fresh=0 gapRej=0 mine=28330ms rebuild=0ms tracked=1638]
+  bud3   q1  after b2  N=357998 orac# stopped by hand ~16:10: machine slept 15:03-16:04 on battery; see results-probe/20261026_144820_VS-CHAIN96-CW/INVALID.txt
