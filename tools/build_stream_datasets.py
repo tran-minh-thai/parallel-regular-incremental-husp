@@ -35,6 +35,7 @@ Usage:
   python3 tools/build_stream_datasets.py vs         <transactions.csv.gz>      <out-dir> <manifest-dir> <chain>[,<chain>...] [max_weekly_items]
   python3 tools/build_stream_datasets.py dunnhumbyhw <transaction_data.csv>    <out-dir> <manifest-dir>
   python3 tools/build_stream_datasets.py tafeng     <ta_feng_all_months_merged.csv> <out-dir> <manifest-dir>
+  python3 tools/build_stream_datasets.py rees46     <kaggle archive .zip>      <out-dir> <manifest-dir> <NAME>
 
   HM-CW               sequence = (customer, ISO week), ordered by week then customer id; event = one
                       purchase day; item = article_id; utility = round(price * 1e6) per row.
@@ -48,6 +49,11 @@ Usage:
   TAFENG-CW           sequence = (ISO week of TRANSACTION_DT, CUSTOMER_ID), ordered by week then customer;
                       event = one transaction day; item = PRODUCT_ID; utility = SALES_PRICE (the line
                       total in New Taiwan dollars, already an integer).
+  REES46-<shop>-CW    REES46 / Open CDP event logs (Kaggle archives of monthly CSV files), purchase events only;
+                      sequence = (user_id, ISO week of event_time), ordered by week then user; event = one
+                      user_session (one order), ordered by its first purchase time; item = product_id;
+                      utility = round(price * 100), summed when a product is bought twice in one order.
+                      Rows repeated exactly (same time, product, session, price) are kept and counted.
   VS-CHAIN<c>-CW-NOACC  as VS-CHAIN<c>-CW without accounts that look like stores: a customer is removed
                       (every week of it) when some week of it holds more than max_weekly_items distinct items.
   For all four, the order of customers inside a week is arbitrary (by id) and B spans two weeks.
@@ -432,6 +438,57 @@ def build_dunnhumby_hw(raw, out_dir, manifest_dir):
              "(DAY, TRANS_TIME, BASKET_ID); item=PRODUCT_ID; utility=round(SALES_VALUE*100)")
 
 
+def build_rees46(raw, out_dir, manifest_dir, name):
+    """Kaggle archive of REES46 monthly CSVs (event_time,event_type,product_id,category_id,category_code,brand,
+    price,user_id,user_session); members are read in calendar order straight from the zip."""
+    import io
+    counts = defaultdict(int)
+    rows = defaultdict(lambda: defaultdict(OrderedDict))     # (week, user) -> (first time, session) -> event
+    first = {}                                               # (week, user, session) -> first purchase time
+    seen = set()
+    months = {m: i for i, m in enumerate(["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"])}
+    with zipfile.ZipFile(raw) as z:
+        members = sorted((n for n in z.namelist() if n.endswith(".csv")),
+                         key=lambda n: (int(n[:4]), months[n[5:8]]))
+        counts["files"] = len(members)
+        for m in members:
+            with z.open(m) as fb:
+                r = csv.reader(io.TextIOWrapper(fb, encoding="utf-8", newline=""))
+                next(r)
+                for row in r:
+                    counts["rows"] += 1
+                    if row[1] != "purchase":
+                        continue
+                    counts["purchase_rows"] += 1
+                    price = float(row[6]) if row[6] else 0.0
+                    u = int(round(price * 100))
+                    if u <= 0:
+                        counts["dropped_nonpositive_price"] += 1
+                        continue
+                    sig = (row[0], row[2], row[8], row[6])
+                    if sig in seen:
+                        counts["exact_repeats_kept"] += 1
+                    else:
+                        seen.add(sig)
+                    t = row[0]
+                    wk = iso_week(t)
+                    fk = (wk, row[7], row[8])
+                    if fk not in first:
+                        first[fk] = t
+                    add(rows[(wk, row[7])][(first[fk], row[8])], row[2], u)
+    seen = None
+    keys = sorted(rows, key=lambda k: (k[0], int(k[1])))
+    seqs = [[rows[k][e] for e in sorted(rows[k])] for k in keys]
+    weeks = len({k[0] for k in keys})
+    counts["weeks"] = weeks
+    b = math.ceil(2 * len(seqs) / weeks)
+    write_db(name, seqs, out_dir, manifest_dir, raw, counts,
+             "2 weeks of sequences, ceil(2 * N / weeks)", b,
+             "purchase events only; sequence=(user_id, ISO week of event_time), ordered by week then user id; "
+             "event=one user_session (one order), ordered by its first purchase time; item=product_id; "
+             "utility=round(price*100), summed per product and order; exact repeated rows kept")
+
+
 def build_tafeng(raw, out_dir, manifest_dir):
     counts = defaultdict(int)
     rows = defaultdict(lambda: defaultdict(OrderedDict))     # (week, customer) -> day -> event
@@ -463,6 +520,8 @@ if __name__ == "__main__":
     extra = sys.argv[5:]
     if kind == "hm":
         build_hm(raw, out_dir, manifest_dir, int(extra[0]) if extra else 0)
+    elif kind == "rees46":
+        build_rees46(raw, out_dir, manifest_dir, extra[0])
     elif kind == "hmtype":
         build_hm(raw, out_dir, manifest_dir, int(extra[1]) if len(extra) > 1 else 0, articles=extra[0])
     elif kind == "vs":
