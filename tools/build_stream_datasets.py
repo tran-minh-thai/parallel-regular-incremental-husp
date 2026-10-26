@@ -31,6 +31,7 @@ Usage:
   python3 tools/build_stream_datasets.py retail     <online_retail_II.xlsx>    <out-dir> <manifest-dir>
   python3 tools/build_stream_datasets.py dunnhumby  <transaction_data.csv>     <out-dir> <manifest-dir>
   python3 tools/build_stream_datasets.py hm         <transactions_train.csv>   <out-dir> <manifest-dir> [max_weeks]
+  python3 tools/build_stream_datasets.py hmtype     <transactions_train.csv>   <out-dir> <manifest-dir> <articles.csv> [max_weeks]
   python3 tools/build_stream_datasets.py vs         <transactions.csv.gz>      <out-dir> <manifest-dir> <chain>[,<chain>...]
   python3 tools/build_stream_datasets.py dunnhumbyhw <transaction_data.csv>    <out-dir> <manifest-dir>
   python3 tools/build_stream_datasets.py tafeng     <ta_feng_all_months_merged.csv> <out-dir> <manifest-dir>
@@ -39,6 +40,8 @@ Usage:
                       purchase day; item = article_id; utility = round(price * 1e6) per row.
   VS-CHAIN<c>-CW      one chain; same construction; item = category|company|brand;
                       utility = round(purchaseamount * 100).
+  HM-CW-TYPE          as HM-CW but item = product_type_no of the article (articles.csv), so co-occurrence is
+                      measured between product types rather than between the 105,542 article ids.
   DUNNHUMBY-HW        sequence = (WEEK_NO, household_key), ordered by week then household; event = one
                       basket, ordered by (DAY, TRANS_TIME, BASKET_ID); item = PRODUCT_ID;
                       utility = round(SALES_VALUE * 100).
@@ -284,9 +287,16 @@ def week_sequences(week_rows):
         yield [days[d] for d in sorted(days)]
 
 
-def build_hm(raw, out_dir, manifest_dir, max_weeks=0):
-    """H&M transactions_train.csv (t_dat, customer_id, article_id, price, sales_channel_id), sorted by date."""
+def build_hm(raw, out_dir, manifest_dir, max_weeks=0, articles=None):
+    """H&M transactions_train.csv (t_dat, customer_id, article_id, price, sales_channel_id), sorted by date.
+    With articles (path to articles.csv), the item is the article's product_type_no instead of its id."""
     counts = defaultdict(int)
+    type_of = None
+    if articles:
+        type_of = {}
+        with open(articles, newline="", encoding="utf-8") as f:
+            for row in csv.DictReader(f):
+                type_of[row["article_id"]] = row["product_type_no"]
 
     def stream():
         week_rows, cur, last_date, weeks = defaultdict(lambda: defaultdict(OrderedDict)), None, "", 0
@@ -314,18 +324,25 @@ def build_hm(raw, out_dir, manifest_dir, max_weeks=0):
                 if u <= 0:
                     counts["dropped_nonpositive_price"] += 1
                     continue
-                add(week_rows[row[1]][d], row[2], u)
+                item = row[2]
+                if type_of is not None:
+                    item = type_of.get(item)
+                    if item is None:
+                        counts["dropped_unknown_article"] += 1
+                        continue
+                add(week_rows[row[1]][d], item, u)
         if cur is not None:
             yield from week_sequences(week_rows)
             weeks += 1
         counts["weeks"] = weeks
 
-    name = "HM-CW" if not max_weeks else "HM-CW-%dW" % max_weeks
+    name = ("HM-CW-TYPE" if type_of is not None else "HM-CW") + ("" if not max_weeks else "-%dW" % max_weeks)
     write_db(name, stream(), out_dir, manifest_dir, raw, counts,
              "2 weeks of sequences, ceil(2 * N / weeks)", lambda n, c: math.ceil(2 * n / c["weeks"]),
              "sequence=(customer, ISO week), ordered by week then customer id; event=one purchase day of that "
-             "customer in the week; item=article_id; utility=round(price*1e6) per row (one row = one unit), "
-             "summed per item and day; the price column is scaled by an undisclosed constant")
+             "customer in the week; item=%s; utility=round(price*1e6) per row (one row = one unit), "
+             "summed per item and day; the price column is scaled by an undisclosed constant"
+             % ("product_type_no of the article" if type_of is not None else "article_id"))
 
 
 def build_vs(raw, out_dir, manifest_dir, chains):
@@ -430,6 +447,8 @@ if __name__ == "__main__":
     extra = sys.argv[5:]
     if kind == "hm":
         build_hm(raw, out_dir, manifest_dir, int(extra[0]) if extra else 0)
+    elif kind == "hmtype":
+        build_hm(raw, out_dir, manifest_dir, int(extra[1]) if len(extra) > 1 else 0, articles=extra[0])
     elif kind == "vs":
         build_vs(raw, out_dir, manifest_dir, extra[0])
     else:
