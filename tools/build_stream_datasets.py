@@ -32,7 +32,7 @@ Usage:
   python3 tools/build_stream_datasets.py dunnhumby  <transaction_data.csv>     <out-dir> <manifest-dir>
   python3 tools/build_stream_datasets.py hm         <transactions_train.csv>   <out-dir> <manifest-dir> [max_weeks]
   python3 tools/build_stream_datasets.py hmtype     <transactions_train.csv>   <out-dir> <manifest-dir> <articles.csv> [max_weeks]
-  python3 tools/build_stream_datasets.py vs         <transactions.csv.gz>      <out-dir> <manifest-dir> <chain>[,<chain>...]
+  python3 tools/build_stream_datasets.py vs         <transactions.csv.gz>      <out-dir> <manifest-dir> <chain>[,<chain>...] [max_weekly_items]
   python3 tools/build_stream_datasets.py dunnhumbyhw <transaction_data.csv>    <out-dir> <manifest-dir>
   python3 tools/build_stream_datasets.py tafeng     <ta_feng_all_months_merged.csv> <out-dir> <manifest-dir>
 
@@ -48,6 +48,8 @@ Usage:
   TAFENG-CW           sequence = (ISO week of TRANSACTION_DT, CUSTOMER_ID), ordered by week then customer;
                       event = one transaction day; item = PRODUCT_ID; utility = SALES_PRICE (the line
                       total in New Taiwan dollars, already an integer).
+  VS-CHAIN<c>-CW-NOACC  as VS-CHAIN<c>-CW without accounts that look like stores: a customer is removed
+                      (every week of it) when some week of it holds more than max_weekly_items distinct items.
   For all four, the order of customers inside a week is arbitrary (by id) and B spans two weeks.
 
 Standard library only, so it runs unchanged on Windows.
@@ -345,9 +347,10 @@ def build_hm(raw, out_dir, manifest_dir, max_weeks=0, articles=None):
              % ("product_type_no of the article" if type_of is not None else "article_id"))
 
 
-def build_vs(raw, out_dir, manifest_dir, chains):
+def build_vs(raw, out_dir, manifest_dir, chains, max_weekly_items=0):
     """Valued Shoppers transactions.csv.gz restricted to each listed chain (one pass over the file, one
-    database per chain); item = category|company|brand."""
+    database per chain); item = category|company|brand. With max_weekly_items > 0, every customer having a
+    week with more distinct items than that is removed, and the database is named ...-CW-NOACC."""
     import gzip
     chains = chains.split(",")
     counts = {c: defaultdict(int) for c in chains}
@@ -378,14 +381,27 @@ def build_vs(raw, out_dir, manifest_dir, chains):
         cnt["rows"] = total
         cnt = defaultdict(int, sorted(cnt.items(), key=lambda kv: kv[0] != "rows"))   # "rows" first, as before
         keys = sorted(rows[c])
+        name, extra = "VS-CHAIN%s-CW" % c, ""
+        if max_weekly_items:
+            widest = defaultdict(int)
+            for k in keys:
+                widest[k[1]] = max(widest[k[1]], len({it for ev in rows[c][k].values() for it in ev}))
+            removed = {cu for cu, w in widest.items() if w > max_weekly_items}
+            gone = [k for k in keys if k[1] in removed]
+            cnt["accounts_removed"] = len(removed)
+            cnt["sequences_removed"] = len(gone)
+            cnt["utility_removed"] = sum(u for k in gone for ev in rows[c][k].values() for u in ev.values())
+            keys = [k for k in keys if k[1] not in removed]
+            name = "VS-CHAIN%s-CW-NOACC" % c
+            extra = ("; customers with a week of more than %d distinct items removed (all their weeks)" % max_weekly_items)
         seqs = [[rows[c][k][d] for d in sorted(rows[c][k])] for k in keys]
         weeks = len({k[0] for k in keys})
         cnt["weeks"] = weeks
         b = math.ceil(2 * len(seqs) / weeks)
-        write_db("VS-CHAIN%s-CW" % c, seqs, out_dir, manifest_dir, raw, cnt,
+        write_db(name, seqs, out_dir, manifest_dir, raw, cnt,
                  "2 weeks of sequences, ceil(2 * N / weeks)", b,
                  "one chain (%s); sequence=(customer, ISO week), ordered by week then customer id; event=one purchase "
-                 "day; item=category|company|brand; utility=round(purchaseamount*100)" % c)
+                 "day; item=category|company|brand; utility=round(purchaseamount*100)%s" % (c, extra))
         rows[c] = None
 
 
@@ -450,7 +466,7 @@ if __name__ == "__main__":
     elif kind == "hmtype":
         build_hm(raw, out_dir, manifest_dir, int(extra[1]) if len(extra) > 1 else 0, articles=extra[0])
     elif kind == "vs":
-        build_vs(raw, out_dir, manifest_dir, extra[0])
+        build_vs(raw, out_dir, manifest_dir, extra[0], int(extra[1]) if len(extra) > 1 else 0)
     else:
         {"yoochoose": build_yoochoose, "retail": build_retail, "dunnhumby": build_dunnhumby,
          "dunnhumbyhw": build_dunnhumby_hw, "tafeng": build_tafeng}[kind](raw, out_dir, manifest_dir)
