@@ -16,7 +16,9 @@ target/
 Thumbs.db
 
 # Experiment outputs (generated, not versioned)
-results/
+# Measurement campaigns write under results/9950x/ and are committed; older local runs under results/ stay ignored.
+results/*
+!results/9950x/
 test_output/
 *.log
 

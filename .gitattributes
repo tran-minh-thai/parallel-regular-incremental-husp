@@ -10,3 +10,9 @@
 *.md        text
 *.gitignore text
 *.gitattributes text
+
+# Python tools: LF everywhere, so their hashes match on Windows and macOS.
+*.py        text eol=lf
+
+# Measurement artifacts keep their bytes exactly as written.
+results/9950x/** -text
