@@ -1,0 +1,11 @@
+dataset,policy,batches,schedule,fault,query,after_batch,n_seqs,oracle_size,returned,missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,gap_rejected,tracked_after,action,r,kept_on_abort,budget_ms,attempt_ms,attempt_load_ms,attempt_preprocess_ms,attempt_enum_ms,attempt_rebuild_ms,abort_phase
+REES46-MULTI-CW,remine-nogc,21,every:4,0,0,4,587827,2533,2533,0,0,0,0,,,,,,,,,,,,,,,,
+REES46-MULTI-CW,remine-nogc,21,every:4,0,1,8,685799,2211,2211,0,0,0,0,,,,,,,,,,,,,,,,
+REES46-MULTI-CW,remine-nogc,21,every:4,0,2,12,783771,2096,2096,0,0,0,0,,,,,,,,,,,,,,,,
+REES46-MULTI-CW,remine-nogc,21,every:4,0,3,16,881743,2011,2011,0,0,0,0,,,,,,,,,,,,,,,,
+REES46-MULTI-CW,remine-nogc,21,every:4,0,4,20,979709,1945,1945,0,0,0,0,,,,,,,,,,,,,,,,
+REES46-MULTI-CW,bud3,21,every:4,0,0,4,587827,2533,2533,0,0,0,0,97972,6048872,2533,0,0,2601,remine,19.59,0,0,0,0,0,0,0,
+REES46-MULTI-CW,bud3,21,every:4,0,1,8,685799,2211,2211,0,0,0,0,195944,7104376,2211,0,0,2423,aborted,39.19,0,1180,1189,15,31,1143,0,mining
+REES46-MULTI-CW,bud3,21,every:4,0,2,12,783771,2096,2096,0,0,0,0,293916,8167379,2096,0,0,2303,skipped,58.78,0,0,0,0,0,0,0,
+REES46-MULTI-CW,bud3,21,every:4,0,3,16,881743,2011,2011,0,0,0,0,391888,4043234,13135,11764,9206,2759,discover,78.38,0,936,691,23,16,440,186,
+REES46-MULTI-CW,bud3,21,every:4,0,4,20,979709,1945,1945,0,0,0,0,489854,5000538,2682,855,36,2731,discover,97.97,0,1040,596,27,17,515,35,
