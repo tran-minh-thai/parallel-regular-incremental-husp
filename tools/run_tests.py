@@ -22,7 +22,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 BUD3 = "bud3-c0,bud3-c0.001,bud3-c1,bud3-c1000000000"
 
-# (name, JVM properties, expected): "zero" = no failing query; "some" = at least one failing query.
+# (name, JVM properties, expected): "zero" = no failing query; "some" = at least one failing query;
+# "zero+aborts" = no failing query over a run that aborted at least one discovery in mining.
 STRESS = [
     ("clean: all policies", [], "zero"),
     ("clean: dense co-occurrence build", ["-Deucs.build=dense", "-Dpolicies=keep-sfx," + BUD3], "zero"),
@@ -48,6 +49,17 @@ STRESS = [
     ("defect: dense build stores s-pairs backward", ["-Deucs.build=dense", "-Deucs.fault=3", "-Dpolicies=keep-sfx," + BUD3], "some"),
     ("defect: partitioned build loses a partition", ["-Deucs.build=partitioned", "-Deucs.fault=4", "-Dpolicies=keep-sfx," + BUD3], "some"),
     ("defect: sketch estimate below the true value", ["-Deucs.build=sketch", "-Deucs.fault=5", "-Dpolicies=keep-sfx," + BUD3], "some"),
+    ("clean: heap guard judged on the live heap (bud3live)", ["-Dpolicies=keep-sfx," + BUD3.replace("bud3", "bud3live")], "zero"),
+    # A guard of a few bytes is breached at every attempt: bud3 aborts on the raw reading, bud3live collects and then aborts.
+    ("clean: heap guard breached at every attempt, bud3 and bud3live",
+     ["-DheapGuard=0.000000001", "-Dpolicies=keep-sfx,bud3-c1000000000,bud3live-c1000000000"], "zero+aborts"),
+]
+
+# (name, JVM properties, expected) for test.HeapValveCheck: "pass" = all four cases tested and correct; "fail" = a case fails.
+HEAP_VALVE = [
+    ("heap valve: raw and live modes on garbage and on live data", [], "pass"),
+    ("defect: live heap valve skips its collection", ["-Dheapvalve.fault=1"], "fail"),
+    ("defect: live heap valve never re-reads after collecting", ["-Dheapvalve.fault=2"], "fail"),
 ]
 
 
@@ -74,7 +86,8 @@ def main(argv=None):
             return report(results)
 
     for name, cmd in (("self-test: machine_info", [sys.executable, "tools/machine_info.py", "--self-test"]),
-                      ("self-test: campaign runner", [sys.executable, "tools/campaign.py", "--self-test"])):
+                      ("self-test: campaign runner", [sys.executable, "tools/campaign.py", "--self-test"]),
+                      ("self-test: heap guard summary", [sys.executable, "tools/summarize_heap_guard.py", "--self-test"])):
         if args.only and args.only not in name:
             continue
         p, secs = run(cmd)
@@ -93,8 +106,28 @@ def main(argv=None):
             print("%-70s FAILED (no summary)" % name, flush=True)
             continue
         compared, nonempty, failing = map(int, m.groups())
-        ok = compared > 0 and nonempty > 0 and ((failing == 0) if expected == "zero" else (failing > 0))
-        detail = "compared %d (non-empty %d), failing %d, expected %s (%.0f s)" % (compared, nonempty, failing, expected, secs)
+        ma = re.search(r"aborts-in-mining=(\d+)", p.stdout)
+        aborts = int(ma.group(1)) if ma else -1
+        ok = compared > 0 and nonempty > 0 and ((failing > 0) if expected == "some" else (failing == 0))
+        if expected == "zero+aborts":
+            ok = ok and aborts > 0
+        detail = "compared %d (non-empty %d), failing %d, aborts in mining %d, expected %s (%.0f s)" % (
+            compared, nonempty, failing, aborts, expected, secs)
+        results.append((name, ok, detail))
+        print("%-70s %s  %s" % (name, "ok" if ok else "FAILED", detail), flush=True)
+
+    for name, props, expected in HEAP_VALVE:
+        if args.only and args.only not in name:
+            continue
+        p, secs = run(["java", "-Xmx2g"] + props + ["-cp", "out", "test.HeapValveCheck"])
+        m = re.search(r"heap valve cases tested=(\d+) failing=(\d+)", p.stdout)
+        if not m:
+            results.append((name, False, "no summary line; exit %d; %s" % (p.returncode, (p.stderr or p.stdout)[-300:])))
+            print("%-70s FAILED (no summary)" % name, flush=True)
+            continue
+        tested, failing = map(int, m.groups())
+        ok = tested == 4 and ((failing == 0 and p.returncode == 0) if expected == "pass" else failing > 0)
+        detail = "tested %d of 4, failing %d, expected %s (%.0f s)" % (tested, failing, expected, secs)
         results.append((name, ok, detail))
         print("%-70s %s  %s" % (name, "ok" if ok else "FAILED", detail), flush=True)
     return report(results)

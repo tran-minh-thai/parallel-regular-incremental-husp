@@ -1264,6 +1264,17 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
     public boolean scaleFhatByN = false;
     /** Abort discovery once the used heap exceeds this fraction of the maximum heap (0 = off). */
     public double heapGuardFraction = 0;
+    /** Judge the heap guard on the live heap: on a breach collect once, abort only if still above (see the engine's valve). */
+    public boolean heapGuardLive = false;
+    /**
+     * Heap readings of the last cost-capped attempt, in MB (-1 = not taken): the guard, the raw reading
+     * when the attempt started and when it was aborted, and the reading after the collection that follows
+     * every abort; the collections the live guard forced; and the abort cause ("heap", "deadline", "oom"
+     * or ""). Read by the probes; they change no decision.
+     */
+    public long lastHeapGuardMb, lastHeapStartMb = -1, lastHeapAbortMb = -1, lastHeapLiveAfterAbortMb = -1;
+    public int lastHeapValveCollections;
+    public String lastAbortCause = "";
     private int lastRemineN = 0;
     private int backoffUntilWindow = 0;
     private long lastOverheadNanos = 0;
@@ -1375,6 +1386,8 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         lastQueryKept = 0;
         lastAttemptMs = lastAttemptLoadMs = lastAttemptPreprocessMs = lastAttemptEnumMs = lastAttemptRebuildMs = lastBudgetMs = 0;
         lastAttemptAbortPhase = "";
+        lastHeapGuardMb = 0; lastHeapStartMb = lastHeapAbortMb = lastHeapLiveAfterAbortMb = -1;
+        lastHeapValveCollections = 0; lastAbortCause = "";
         if (lastRemineNanos < 0) { lastQueryAction = 1; fullRemine(); return; }
         if (gateByOverhead && budgetFactor * lastRemineNanos < 2.0 * lastOverheadNanos) {
             lastQueryAction = 3;                                    // not worth trying: re-mine directly
@@ -1395,6 +1408,8 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         lastAttemptMs = lastAttemptLoadMs = lastAttemptPreprocessMs = lastAttemptEnumMs = lastAttemptRebuildMs = 0;
         lastAttemptAbortPhase = "";
         lastBudgetMs = (long) (budgetFactor * fhat) / 1_000_000;
+        lastHeapGuardMb = (long) (heapGuardFraction * Runtime.getRuntime().maxMemory()) >> 20;
+        lastHeapStartMb = usedHeapMb();
         discoveryDeadlineNanos = attemptStart + (long) (budgetFactor * fhat);
         try {
             reconcile();
@@ -1406,6 +1421,8 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
             }
         } catch (RuntimeException | OutOfMemoryError ex) {
             if (ex instanceof RuntimeException && !isDiscoveryAbort(ex)) throw (RuntimeException) ex;
+            lastHeapAbortMb = usedHeapMb();
+            lastAbortCause = abortCause(ex);
             if (pendingFresh == null) ABORTS_IN_MINING.incrementAndGet();
             if (pendingFresh != null && (FAULT == 4 || FAULT == 6 || keepRebuiltOnAbort)) {
                 // keepRebuiltOnAbort: only fully rebuilt candidates (exact state). FAULT 4 keeps every candidate,
@@ -1430,6 +1447,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
             lastAttemptAbortPhase = (pendingFresh == null ? "mining" : "rebuild")
                     + (ex instanceof OutOfMemoryError || ex.getCause() instanceof OutOfMemoryError ? "-oom" : "");
             settleHeapQuick();
+            lastHeapLiveAfterAbortMb = usedHeapMb();
             if (FAULT != 5) fullRemine();                           // FAULT 5: answer from the stale maintained set
         } finally {
             discoveryDeadlineNanos = Long.MAX_VALUE;
@@ -1449,6 +1467,22 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
             long end = e.endTimestamp > 0 ? e.endTimestamp : System.currentTimeMillis();
             lastAttemptEnumMs = Math.max(0, end - e.startTimestamp - e.preprocessMs);
         }
+        if (e != null) lastHeapValveCollections = e.heapValveCollections.get();
+    }
+
+    private static long usedHeapMb() {
+        Runtime rt = Runtime.getRuntime();
+        return (rt.totalMemory() - rt.freeMemory()) >> 20;
+    }
+
+    /** Why a discovery was aborted: the heap guard, the time budget, or an out-of-memory error. */
+    private static String abortCause(Throwable e) {
+        for (Throwable c = e; c != null; c = c.getCause()) {
+            if (c instanceof AlgoRHUSPMinerParallel.HeapBudgetExceeded) return "heap";
+            if (c instanceof OutOfMemoryError) return "oom";
+            if (c instanceof BudgetExceeded || (c.getMessage() != null && c.getMessage().contains("TIMEOUT_INTERRUPT"))) return "deadline";
+        }
+        return "other";
     }
 
     private static boolean isDiscoveryAbort(Throwable e) {
@@ -1558,6 +1592,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
             e.measureMemory = measureMemoryOnQuery;
             if (heapGuardFraction > 0 && discoveryDeadlineNanos != Long.MAX_VALUE)
                 e.abortHeapBytes = (long) (heapGuardFraction * Runtime.getRuntime().maxMemory());
+            e.abortHeapLive = heapGuardLive;
             lastDiscoveryEngine = e;
             e.windowMode = true;                               // a mid-stream part: neither leading nor
                                                                // trailing gap is a real gap of α in D

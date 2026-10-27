@@ -10,7 +10,8 @@ continues an interrupted campaign; a cell interrupted mid-run has no row and run
 
     python3 tools/campaign.py plan   [--exp E2]                       # cells and which are pending
     python3 tools/campaign.py lock                                    # record the environment lock
-    python3 tools/campaign.py run    --exp E2 [--hours H] [--dry-run] [--no-git] [--redo]
+    python3 tools/campaign.py run    --exp E2 [--hours H] [--dry-run] [--no-git] [--redo] [--interleave]
+    python3 tools/campaign.py --config experiments/<other>.json run --exp X   # another cell table, same ledger
     python3 tools/campaign.py status [--exp E2]                       # done / pending per experiment
     python3 tools/campaign.py --self-test                             # the runner's own checks
 
@@ -65,6 +66,18 @@ def cells(cfg, only=None):
                     out.append({"key": key, "experiment": exp, "dataset": ds, "schedule": sch, "policies": pol,
                                 "threads": th, "rep": rep, "oracle": spec["oracle"], "limit_s": spec["limit_s"]})
     return out
+
+
+def interleave(cs):
+    """Reorder cells so that the cells of different experiments on the same (dataset, schedule, threads, rep)
+    run next to each other, in experiment order, instead of one experiment after the other: a slow drift of
+    the machine then falls on every experiment alike."""
+    order = []
+    for c in cs:
+        g = (c["dataset"], c["schedule"], c["threads"], c["rep"])
+        if g not in order:
+            order.append(g)
+    return sorted(cs, key=lambda c: order.index((c["dataset"], c["schedule"], c["threads"], c["rep"])))
 
 
 def cell_id(c):
@@ -388,6 +401,8 @@ def preflight(cfg, todo, require_machine=True):
 
 def cmd_run(cfg, args):
     todo = [c for c in cells(cfg, args.exp) if args.redo or FAULT == 1 or c["key"] not in read_ledger(cfg)]
+    if args.interleave:
+        todo = interleave(todo)
     print("%d cell(s) pending" % len(todo), flush=True)
     if not todo:
         return 0
@@ -552,6 +567,10 @@ def self_test():
     check(classify(1, "compared queries=3 failing=1", False) == "FAIL", "exit 1 after a comparison is FAIL")
     check(classify(4, "x TIMEOUT after 60 s", False) == "TIMEOUT", "watchdog halt is TIMEOUT")
     check(classify(0, "java.lang.OutOfMemoryError", False) == "OOM", "out of memory is OOM")
+    two = {"datasets": {"A": {}, "B": {}}, "threads": 2, "experiments": {
+        x: {"datasets": ["A", "B"], "schedules": ["S1"], "policies": [x], "oracle": "first", "limit_s": 60} for x in ("X", "Y")}}
+    check([(c["experiment"], c["dataset"]) for c in interleave(cells(two))] == [("X", "A"), ("Y", "A"), ("X", "B"), ("Y", "B")],
+          "interleave alternates experiments per dataset")
     check(classify(137, "", True) == "TIMEOUT", "outer kill is TIMEOUT")
 
     # 5. a dataset that does not hash to its manifest refuses the run
@@ -595,6 +614,7 @@ def main(argv=None):
     global ROOT, CONFIG
     ap = argparse.ArgumentParser()
     ap.add_argument("--root", help=argparse.SUPPRESS)
+    ap.add_argument("--config", help="cell table to read instead of experiments/campaign_9950x.json")
     ap.add_argument("--self-test", action="store_true")
     sub = ap.add_subparsers(dest="cmd")
     for name in ("plan", "status"):
@@ -607,6 +627,7 @@ def main(argv=None):
     s.add_argument("--dry-run", action="store_true")
     s.add_argument("--no-git", action="store_true")
     s.add_argument("--redo", action="store_true")
+    s.add_argument("--interleave", action="store_true")
     s.add_argument("--self-test-mode", action="store_true", help=argparse.SUPPRESS)
     args = ap.parse_args(argv)
     if args.self_test:
@@ -614,6 +635,10 @@ def main(argv=None):
     if args.root:
         ROOT = Path(args.root).resolve()
         CONFIG = ROOT / "experiments" / "campaign_9950x.json"
+    if args.config:
+        CONFIG = Path(args.config)
+        if not CONFIG.is_absolute():
+            CONFIG = ROOT / CONFIG
     cfg = load_config(CONFIG)
     if args.cmd == "plan":
         led = read_ledger(cfg)
