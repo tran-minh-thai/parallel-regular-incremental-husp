@@ -1,0 +1,11 @@
+dataset,policy,batches,schedule,fault,query,after_batch,ingest_ms,query_ms,discovery_mine_ms,rebuild_ms,seed_ms
+HM-CW-TYPE-12W,remine-nogc,21,every:4,0,0,4,0,893,,,0
+HM-CW-TYPE-12W,remine-nogc,21,every:4,0,1,8,0,306,,,
+HM-CW-TYPE-12W,remine-nogc,21,every:4,0,2,12,0,300,,,
+HM-CW-TYPE-12W,remine-nogc,21,every:4,0,3,16,0,351,,,
+HM-CW-TYPE-12W,remine-nogc,21,every:4,0,4,20,0,431,,,
+HM-CW-TYPE-12W,bud3,21,every:4,0,0,4,178,236,236,0,612
+HM-CW-TYPE-12W,bud3,21,every:4,0,1,8,11,714,328,0,
+HM-CW-TYPE-12W,bud3,21,every:4,0,2,12,10,296,296,0,
+HM-CW-TYPE-12W,bud3,21,every:4,0,3,16,8,278,132,144,
+HM-CW-TYPE-12W,bud3,21,every:4,0,4,20,12,188,173,12,

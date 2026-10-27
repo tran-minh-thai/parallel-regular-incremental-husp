@@ -1,0 +1,11 @@
+dataset,policy,batches,schedule,fault,query,after_batch,n_seqs,oracle_size,returned,missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,gap_rejected,tracked_after,action,r,kept_on_abort,budget_ms,attempt_ms,attempt_load_ms,attempt_preprocess_ms,attempt_enum_ms,attempt_rebuild_ms,abort_phase
+HM-CW-TYPE-12W,remine-nogc,21,every:4,0,0,4,574977,2727,2727,0,0,0,0,,,,,,,,,,,,,,,,
+HM-CW-TYPE-12W,remine-nogc,21,every:4,0,1,8,670805,2574,2574,0,0,0,0,,,,,,,,,,,,,,,,
+HM-CW-TYPE-12W,remine-nogc,21,every:4,0,2,12,766633,2549,2549,0,0,0,0,,,,,,,,,,,,,,,,
+HM-CW-TYPE-12W,remine-nogc,21,every:4,0,3,16,862461,2504,2504,0,0,0,0,,,,,,,,,,,,,,,,
+HM-CW-TYPE-12W,remine-nogc,21,every:4,0,4,20,958298,2400,2400,0,0,0,0,,,,,,,,,,,,,,,,
+HM-CW-TYPE-12W,bud3,21,every:4,0,0,4,574977,2727,2727,0,0,0,0,95828,66917761,2727,0,0,2880,remine,95.83,0,0,0,0,0,0,0,
+HM-CW-TYPE-12W,bud3,21,every:4,0,1,8,670805,2574,2574,0,0,0,0,191656,77632135,2574,0,0,2880,aborted,191.66,0,275,335,14,3,318,0,mining
+HM-CW-TYPE-12W,bud3,21,every:4,0,2,12,766633,2549,2549,0,0,0,0,287484,88027568,2549,0,0,2880,skipped,287.48,0,0,0,0,0,0,0,
+HM-CW-TYPE-12W,bud3,21,every:4,0,3,16,862461,2504,2504,0,0,0,0,383312,42086191,2135,89,0,2969,discover,383.31,0,333,278,33,4,95,144,
+HM-CW-TYPE-12W,bud3,21,every:4,0,4,20,958298,2400,2400,0,0,0,0,479149,51642573,2021,5,0,2400,discover,479.15,0,370,187,43,4,126,12,
