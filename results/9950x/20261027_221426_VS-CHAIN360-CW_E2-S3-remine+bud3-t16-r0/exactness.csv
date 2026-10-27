@@ -1,0 +1,11 @@
+dataset,policy,batches,schedule,fault,query,after_batch,n_seqs,oracle_size,returned,missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,gap_rejected,tracked_after,action,r,kept_on_abort,budget_ms,attempt_ms,attempt_load_ms,attempt_preprocess_ms,attempt_enum_ms,attempt_rebuild_ms,abort_phase
+VS-CHAIN360-CW,remine-nogc,21,every:4,0,0,4,241522,1792,1792,0,0,0,0,,,,,,,,,,,,,,,,
+VS-CHAIN360-CW,remine-nogc,21,every:4,0,1,8,281774,1697,1697,0,0,0,0,,,,,,,,,,,,,,,,
+VS-CHAIN360-CW,remine-nogc,21,every:4,0,2,12,322026,1689,1689,0,0,0,0,,,,,,,,,,,,,,,,
+VS-CHAIN360-CW,remine-nogc,21,every:4,0,3,16,362278,1657,1657,0,0,0,0,,,,,,,,,,,,,,,,
+VS-CHAIN360-CW,remine-nogc,21,every:4,0,4,20,402539,1666,1666,0,0,0,0,,,,,,,,,,,,,,,,
+VS-CHAIN360-CW,bud3,21,every:4,0,0,4,241522,1792,1792,0,0,0,0,40252,1250779,1792,0,0,1859,remine,20.13,0,0,0,0,0,0,0,
+VS-CHAIN360-CW,bud3,21,every:4,0,1,8,281774,1697,1697,0,0,0,0,80504,461921,1666,493,29,2314,discover,40.25,0,6873,2398,25,309,1839,225,
+VS-CHAIN360-CW,bud3,21,every:4,0,2,12,322026,1689,1689,0,0,0,0,120756,682195,1697,113,20,2338,discover,60.38,0,7855,2770,37,360,2339,33,
+VS-CHAIN360-CW,bud3,21,every:4,0,3,16,362278,1657,1657,0,0,0,0,161008,895454,1634,44,14,2357,discover,80.50,0,8837,4225,38,655,3503,29,
+VS-CHAIN360-CW,bud3,21,every:4,0,4,20,402539,1666,1666,0,0,0,0,201269,1105238,1664,34,14,2373,discover,100.63,0,9819,4854,54,583,4196,21,
