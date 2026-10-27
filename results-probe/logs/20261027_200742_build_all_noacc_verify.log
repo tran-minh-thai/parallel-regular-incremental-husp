@@ -1,0 +1,5 @@
+# python3 tools/build_all_datasets.py <library> --only VS-CHAIN152-CW-NOACC,VS-CHAIN46-CW-NOACC (commit 332b728, manifests committed)
+raw ok  <library>/01_BanLe_GioHang/valued-shopper/transactions.csv.gz
+build   VS-CHAIN152-CW-NOACC,VS-CHAIN46-CW-NOACC
+all 2 dataset(s) built byte-identical to the committed manifests
+exit=0
