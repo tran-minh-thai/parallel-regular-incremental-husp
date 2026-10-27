@@ -1,0 +1,6 @@
+dataset,policy,batches,schedule,fault,query,after_batch,n_seqs,oracle_size,returned,missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,gap_rejected,tracked_after,action,r,kept_on_abort,budget_ms,attempt_ms,attempt_load_ms,attempt_preprocess_ms,attempt_enum_ms,attempt_rebuild_ms,abort_phase
+VS-CHAIN152-CW,keep-sfx-gf-nogc,21,every:4,0,0,4,312743,0,1356,0,0,0,0,52124,285204,1326,323,7,1729,,,,,,,,,,
+VS-CHAIN152-CW,keep-sfx-gf-nogc,21,every:4,0,1,8,364867,0,1331,0,0,0,0,104248,596596,1392,204,10,1895,,,,,,,,,,
+VS-CHAIN152-CW,keep-sfx-gf-nogc,21,every:4,0,2,12,416991,0,1366,0,0,0,0,156372,904868,1540,132,12,1987,,,,,,,,,,
+VS-CHAIN152-CW,keep-sfx-gf-nogc,21,every:4,0,3,16,469115,0,1371,0,0,0,0,208496,1203947,1537,70,10,2044,,,,,,,,,,
+VS-CHAIN152-CW,keep-sfx-gf-nogc,21,every:4,0,4,20,521237,0,1311,0,0,0,0,260618,1500340,1460,36,12,1966,,,,,,,,,,

@@ -1,0 +1,9 @@
+# java -Xmx32g -Xss4m -Dthreads=16 -Ddold=0.5 -Doracle=none -Dlimit=1800 -Dout=results/9950x -Dcell=E2K-S3-keep-t16-r0 -Dkind=measurement -cp out test.QueryScheduleProbe datasets/VS-CHAIN152-CW_seq.txt datasets/VS-CHAIN152-CW_eui.txt 0.0005 14088 21 every:4 keep-sfx-gf-nogc
+# commit 2766c51422d62206f90deb339b51c81850e89be5
+VS-CHAIN152-CW N=521237 delta=0.0005 B=14088 k=21 dOld=0.5 schedule=every:4 threads=16 fault=0 reference=none -> results\9950x\20261027_231652_VS-CHAIN152-CW_E2K-S3-keep-t16-r0
+  keep-sfx-gf-nogc q0  after b4  N=312743 oracle=0      got=1356   miss=0 extra=0 uErr=0 pErr=0  ingest=232ms query=1702ms  [thr=285204 cand=1326 fresh=323 gapRej=7 mine=1414ms rebuild=285ms tracked=1729]
+  keep-sfx-gf-nogc q1  after b8  N=364867 oracle=0      got=1331   miss=0 extra=0 uErr=0 pErr=0  ingest=73ms query=269711ms  [thr=596596 cand=1392 fresh=204 gapRej=10 mine=269611ms rebuild=99ms tracked=1895]
+  keep-sfx-gf-nogc q2  after b12 N=416991 oracle=0      got=1366   miss=0 extra=0 uErr=0 pErr=0  ingest=54ms query=353941ms  [thr=904868 cand=1540 fresh=132 gapRej=12 mine=353841ms rebuild=99ms tracked=1987]
+  keep-sfx-gf-nogc q3  after b16 N=469115 oracle=0      got=1371   miss=0 extra=0 uErr=0 pErr=0  ingest=39ms query=350178ms  [thr=1203947 cand=1537 fresh=70 gapRej=10 mine=350103ms rebuild=74ms tracked=2044]
+  keep-sfx-gf-nogc q4  after b20 N=521237 oracle=0      got=1311   miss=0 extra=0 uErr=0 pErr=0  ingest=27ms query=261484ms  [thr=1500340 cand=1460 fresh=36 gapRej=12 mine=261422ms rebuild=61ms tracked=1966]
+compared queries=0 failing=0
