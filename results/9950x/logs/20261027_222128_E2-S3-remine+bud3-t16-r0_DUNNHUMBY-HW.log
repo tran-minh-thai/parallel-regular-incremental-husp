@@ -1,0 +1,14 @@
+# java -Xmx32g -Xss4m -Dthreads=16 -Ddold=0.5 -Doracle=first -Dlimit=3600 -Dout=results/9950x -Dcell=E2-S3-remine+bud3-t16-r0 -Dkind=measurement -cp out test.QueryScheduleProbe datasets/DUNNHUMBY-HW_seq.txt datasets/DUNNHUMBY-HW_eui.txt 0.0002 2430 21 every:4 remine-nogc,bud3
+# commit 44328aae38ab60f9b59aa9216cfb5626afe9c1b0
+DUNNHUMBY-HW N=123887 delta=0.0002 B=2430 k=21 dOld=0.5 schedule=every:4 threads=16 fault=0 reference=first policy of this run (NOT independent) -> results\9950x\20261027_222128_DUNNHUMBY-HW_E2-S3-remine+bud3-t16-r0
+  remine-nogc q0  after b4  N=74332  oracle=532    got=532    miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=885ms
+  remine-nogc q1  after b8  N=86720  oracle=508    got=508    miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=421ms
+  remine-nogc q2  after b12 N=99108  oracle=480    got=480    miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=385ms
+  remine-nogc q3  after b16 N=111496 oracle=459    got=459    miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=431ms
+  remine-nogc q4  after b20 N=123887 oracle=445    got=445    miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=456ms
+  bud3   q0  after b4  N=74332  oracle=532    got=532    miss=0 extra=0 uErr=0 pErr=0  ingest=77ms query=327ms  {budget=0 attempt=0 load=0 pre=0 enum=0 rebuild=0 abort=}  [REMINE r=2.5 thr=95049 cand=532 fresh=0 gapRej=0 mine=327ms rebuild=0ms tracked=538]
+  bud3   q1  after b8  N=86720  oracle=508    got=508    miss=0 extra=0 uErr=0 pErr=0  ingest=11ms query=798ms  {budget=381 attempt=383 load=7 pre=134 enum=242 rebuild=0 abort=mining}  [ABORTED+REMINE r=5.0 thr=111330 cand=508 fresh=0 gapRej=0 mine=382ms rebuild=0ms tracked=516]
+  bud3   q2  after b12 N=99108  oracle=480    got=480    miss=0 extra=0 uErr=0 pErr=0  ingest=4ms query=385ms  {budget=0 attempt=0 load=0 pre=0 enum=0 rebuild=0 abort=}  [SKIP+REMINE r=7.4 thr=127227 cand=480 fresh=0 gapRej=0 mine=385ms rebuild=0ms tracked=494]
+  bud3   q3  after b16 N=111496 oracle=459    got=459    miss=0 extra=0 uErr=0 pErr=0  ingest=8ms query=881ms  {budget=433 attempt=437 load=13 pre=45 enum=232 rebuild=0 abort=rebuild}  [ABORTED+REMINE r=9.9 thr=144156 cand=459 fresh=198 gapRej=0 mine=393ms rebuild=0ms tracked=516]
+  bud3   q4  after b20 N=123887 oracle=445    got=445    miss=0 extra=0 uErr=0 pErr=0  ingest=4ms query=434ms  {budget=0 attempt=0 load=0 pre=0 enum=0 rebuild=0 abort=}  [SKIP+REMINE r=12.4 thr=161149 cand=445 fresh=0 gapRej=0 mine=434ms rebuild=0ms tracked=478]
+compared queries=5 failing=0

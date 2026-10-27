@@ -1,0 +1,11 @@
+dataset,policy,batches,schedule,fault,query,after_batch,n_seqs,oracle_size,returned,missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,gap_rejected,tracked_after,action,r,kept_on_abort,budget_ms,attempt_ms,attempt_load_ms,attempt_preprocess_ms,attempt_enum_ms,attempt_rebuild_ms,abort_phase
+DUNNHUMBY-HW,remine-nogc,21,every:4,0,0,4,74332,532,532,0,0,0,0,,,,,,,,,,,,,,,,
+DUNNHUMBY-HW,remine-nogc,21,every:4,0,1,8,86720,508,508,0,0,0,0,,,,,,,,,,,,,,,,
+DUNNHUMBY-HW,remine-nogc,21,every:4,0,2,12,99108,480,480,0,0,0,0,,,,,,,,,,,,,,,,
+DUNNHUMBY-HW,remine-nogc,21,every:4,0,3,16,111496,459,459,0,0,0,0,,,,,,,,,,,,,,,,
+DUNNHUMBY-HW,remine-nogc,21,every:4,0,4,20,123887,445,445,0,0,0,0,,,,,,,,,,,,,,,,
+DUNNHUMBY-HW,bud3,21,every:4,0,0,4,74332,532,532,0,0,0,0,12388,95049,532,0,0,538,remine,2.48,0,0,0,0,0,0,0,
+DUNNHUMBY-HW,bud3,21,every:4,0,1,8,86720,508,508,0,0,0,0,24776,111330,508,0,0,516,aborted,4.96,0,381,383,7,134,242,0,mining
+DUNNHUMBY-HW,bud3,21,every:4,0,2,12,99108,480,480,0,0,0,0,37164,127227,480,0,0,494,skipped,7.43,0,0,0,0,0,0,0,
+DUNNHUMBY-HW,bud3,21,every:4,0,3,16,111496,459,459,0,0,0,0,49552,144156,459,198,0,516,aborted,9.91,45,433,437,13,45,232,0,rebuild
+DUNNHUMBY-HW,bud3,21,every:4,0,4,20,123887,445,445,0,0,0,0,61943,161149,445,0,0,478,skipped,12.39,0,0,0,0,0,0,0,

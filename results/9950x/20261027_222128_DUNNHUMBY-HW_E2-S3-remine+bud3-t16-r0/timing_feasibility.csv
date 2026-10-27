@@ -1,0 +1,11 @@
+dataset,policy,batches,schedule,fault,query,after_batch,ingest_ms,query_ms,discovery_mine_ms,rebuild_ms,seed_ms
+DUNNHUMBY-HW,remine-nogc,21,every:4,0,0,4,0,885,,,0
+DUNNHUMBY-HW,remine-nogc,21,every:4,0,1,8,0,421,,,
+DUNNHUMBY-HW,remine-nogc,21,every:4,0,2,12,0,385,,,
+DUNNHUMBY-HW,remine-nogc,21,every:4,0,3,16,0,431,,,
+DUNNHUMBY-HW,remine-nogc,21,every:4,0,4,20,0,456,,,
+DUNNHUMBY-HW,bud3,21,every:4,0,0,4,77,327,327,0,676
+DUNNHUMBY-HW,bud3,21,every:4,0,1,8,11,798,382,0,
+DUNNHUMBY-HW,bud3,21,every:4,0,2,12,4,385,385,0,
+DUNNHUMBY-HW,bud3,21,every:4,0,3,16,8,881,393,0,
+DUNNHUMBY-HW,bud3,21,every:4,0,4,20,4,434,434,0,
