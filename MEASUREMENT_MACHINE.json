@@ -1,0 +1,24 @@
+{
+  "utc": "2026-10-27T06:36:52+00:00",
+  "hostname": "PC-THAI",
+  "os": {
+    "system": "Windows",
+    "release": "11",
+    "version": "10.0.26300",
+    "windows_edition": "Education"
+  },
+  "architecture": "AMD64",
+  "cpu": "AMD Ryzen 9 9950X 16-Core Processor",
+  "cpu_physical_cores": 16,
+  "cpu_logical_threads": 32,
+  "ram_gb": 61.6,
+  "java_vm_name": "OpenJDK 64-Bit Server VM",
+  "java_home_name": "jdk-25.0.5.8-hotspot",
+  "locked": {
+    "java_runtime_version": "25.0.5+8-LTS",
+    "java_vendor": "Eclipse Adoptium",
+    "python": "3.14.7"
+  },
+  "python_implementation": "CPython",
+  "errors": []
+}
