@@ -1,0 +1,9 @@
+# python3 tools/run_tests.py --only 'hook-only' and --only 'defect 6' (final defect-6 configuration); commit 093741db0bce4e3461138c6d0a18179e3f90cef0 with tools/run_tests.py modified
+clean: hook-only aborts, bud and bud2                                  ok  compared 1354 (non-empty 1332), failing 0, expected zero (209 s)
+
+1/1 tests as expected
+exit=0
+defect 6: aborted discovery keeps candidates mid-rebuild               ok  compared 1354 (non-empty 1332), failing 2, expected some (213 s)
+
+1/1 tests as expected
+exit=0

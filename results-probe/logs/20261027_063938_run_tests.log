@@ -1,0 +1,24 @@
+# python3 tools/run_tests.py --compile --trials 150; commit f3ec0ce94ee0d94f8111aec147779eba35e8abc4 (AlgoPRIncHUSP comments and run_tests.py uncommitted)
+self-test: machine_info                                                ok
+self-test: campaign runner                                             ok
+clean: all policies                                                    ok  compared 10155 (non-empty 9990), failing 0, expected zero (1854 s)
+clean: dense co-occurrence build                                       ok  compared 3385 (non-empty 3330), failing 0, expected zero (265 s)
+clean: partitioned build                                               ok  compared 3385 (non-empty 3330), failing 0, expected zero (254 s)
+clean: sketch-filtered build                                           ok  compared 3385 (non-empty 3330), failing 0, expected zero (250 s)
+clean: sketch with 16 counters per row                                 ok  compared 3385 (non-empty 3330), failing 0, expected zero (254 s)
+clean: original hash build                                             ok  compared 3385 (non-empty 3330), failing 0, expected zero (245 s)
+defect 1: discovery threshold one unit too high                        ok  compared 677 (non-empty 666), failing 28, expected some (130 s)
+defect 2: anchor reset drops the raw increment                         ok  compared 677 (non-empty 666), failing 260, expected some (130 s)
+defect 3: fresh candidates rebuilt from the increment only             ok  compared 677 (non-empty 666), failing 403, expected some (127 s)
+defect 4: half-built candidates left in the tracked set (measured harmless) ok  compared 2708 (non-empty 2664), failing 0, expected zero (121 s)
+defect 5: aborted discovery skips the fallback re-mine                 ok  compared 2708 (non-empty 2664), failing 407, expected some (117 s)
+defect 6: aborted discovery keeps candidates mid-rebuild               FAILED  compared 2708 (non-empty 2664), failing 0, expected some (128 s)
+defect 7: backoff answers from the stale set                           ok  compared 2708 (non-empty 2664), failing 447, expected some (124 s)
+defect 8: whole-database index misses the last sequence                ok  compared 1354 (non-empty 1332), failing 347, expected some (167 s)
+defect: dense build stores s-pairs backward                            ok  compared 3385 (non-empty 3330), failing 431, expected some (259 s)
+defect: partitioned build loses a partition                            ok  compared 3385 (non-empty 3330), failing 2626, expected some (252 s)
+defect: sketch estimate below the true value                           ok  compared 3385 (non-empty 3330), failing 565, expected some (258 s)
+
+19/20 tests as expected
+  FAILED: defect 6: aborted discovery keeps candidates mid-rebuild: compared 2708 (non-empty 2664), failing 0, expected some (128 s)
+exit=1

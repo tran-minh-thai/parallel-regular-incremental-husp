@@ -35,7 +35,14 @@ STRESS = [
     ("defect 3: fresh candidates rebuilt from the increment only", ["-Dfault=3", "-Dpolicies=keep-sfx"], "some"),
     ("defect 4: half-built candidates left in the tracked set (measured harmless)", ["-Dfault=4", "-Dpolicies=" + BUD3], "zero"),
     ("defect 5: aborted discovery skips the fallback re-mine", ["-Dfault=5", "-Dpolicies=" + BUD3], "some"),
-    ("defect 6: aborted discovery keeps candidates mid-rebuild", ["-Dfault=6", "-DforceMidCandidateAbort=true", "-Dpolicies=" + BUD3], "some"),
+    # Defect 6 needs a query after the abort that answers from the tracked set. bud3 re-mines the queries after an
+    # abort (window backoff), so there the defect cannot act (measured: 0 failing over 2708 queries). bud and bud2
+    # share the abort path without backoff; with a budget so large that only the test hook aborts, the outcome does
+    # not depend on timing (measured three times: 3, 3 and 2 failing over 1354 queries; clean twin: 0). The count stays
+    # small because the hook hits one candidate per abort, and which one varies with thread scheduling: a weak check.
+    ("defect 6: aborted discovery keeps candidates mid-rebuild",
+     ["-Dfault=6", "-DforceMidCandidateAbort=true", "-Dpolicies=bud2-c1000000000,bud-c1000000000"], "some"),
+    ("clean: hook-only aborts, bud and bud2", ["-DforceMidCandidateAbort=true", "-Dpolicies=bud2-c1000000000,bud-c1000000000"], "zero"),
     ("defect 7: backoff answers from the stale set", ["-Dfault=7", "-Dpolicies=" + BUD3], "some"),
     ("defect 8: whole-database index misses the last sequence", ["-Dfault=8", "-Dpolicies=keep-sfx,bud3-c1"], "some"),
     ("defect: dense build stores s-pairs backward", ["-Deucs.build=dense", "-Deucs.fault=3", "-Dpolicies=keep-sfx," + BUD3], "some"),

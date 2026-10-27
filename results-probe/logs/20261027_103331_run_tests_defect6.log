@@ -1,0 +1,8 @@
+# python3 tools/run_tests.py --only 'bud2' --trials 150 (after moving defect 6 to bud2); commit 093741db0bce4e3461138c6d0a18179e3f90cef0 with tools/run_tests.py modified
+clean: bud2 with the mid-rebuild abort hook                            ok  compared 2031 (non-empty 1998), failing 0, expected zero (84 s)
+
+1/1 tests as expected
+defect 6: aborted discovery keeps candidates mid-rebuild               ok  compared 2031 (non-empty 1998), failing 2, expected some (83 s)
+
+1/1 tests as expected
+exit=0
