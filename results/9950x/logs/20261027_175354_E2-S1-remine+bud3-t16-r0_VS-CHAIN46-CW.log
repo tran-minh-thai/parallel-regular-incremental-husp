@@ -1,0 +1,13 @@
+# java -Xmx32g -Xss4m -Dthreads=16 -Ddold=0.5 -Doracle=first -Dlimit=3600 -Dout=results/9950x -Dcell=E2-S1-remine+bud3-t16-r0 -Dkind=measurement -cp out test.QueryScheduleProbe datasets/VS-CHAIN46-CW_seq.txt datasets/VS-CHAIN46-CW_eui.txt 0.0005 12151 21 every remine-nogc,bud3
+# commit 902aca3fc3c1671a934ffa41f8333e77c32df654
+VS-CHAIN46-CW N=449552 delta=0.0005 B=12151 k=21 dOld=0.5 schedule=every threads=16 fault=0 reference=first policy of this run (NOT independent) -> results\9950x\20261027_175355_VS-CHAIN46-CW_E2-S1-remine+bud3-t16-r0
+  remine-nogc q0  after b1  N=236015 oracle=2728   got=2728   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=324730ms
+  remine-nogc q1  after b2  N=247254 oracle=2748   got=2748   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=321768ms
+  remine-nogc q2  after b3  N=258493 oracle=2736   got=2736   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=351472ms
+  remine-nogc q3  after b4  N=269732 oracle=2737   got=2737   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=359566ms
+  remine-nogc q4  after b5  N=280971 oracle=2701   got=2701   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=358186ms
+  remine-nogc q5  after b6  N=292210 oracle=2740   got=2740   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=414159ms
+  remine-nogc q6  after b7  N=303449 oracle=2730   got=2730   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=409438ms
+  remine-nogc q7  after b8  N=314688 oracle=2804   got=2804   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=402078ms
+  remine-nogc q8  after b9  N=325927 oracle=2816   got=2816   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=382839ms
+  remine-nogc TIMEOUT after 3600 s (policy time, reference excluded)

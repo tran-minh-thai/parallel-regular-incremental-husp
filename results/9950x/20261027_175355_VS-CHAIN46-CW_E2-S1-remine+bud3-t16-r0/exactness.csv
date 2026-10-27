@@ -1,0 +1,10 @@
+dataset,policy,batches,schedule,fault,query,after_batch,n_seqs,oracle_size,returned,missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,gap_rejected,tracked_after,action,r,kept_on_abort,budget_ms,attempt_ms,attempt_load_ms,attempt_preprocess_ms,attempt_enum_ms,attempt_rebuild_ms,abort_phase
+VS-CHAIN46-CW,remine-nogc,21,every,0,0,1,236015,2728,2728,0,0,0,0,,,,,,,,,,,,,,,,
+VS-CHAIN46-CW,remine-nogc,21,every,0,1,2,247254,2748,2748,0,0,0,0,,,,,,,,,,,,,,,,
+VS-CHAIN46-CW,remine-nogc,21,every,0,2,3,258493,2736,2736,0,0,0,0,,,,,,,,,,,,,,,,
+VS-CHAIN46-CW,remine-nogc,21,every,0,3,4,269732,2737,2737,0,0,0,0,,,,,,,,,,,,,,,,
+VS-CHAIN46-CW,remine-nogc,21,every,0,4,5,280971,2701,2701,0,0,0,0,,,,,,,,,,,,,,,,
+VS-CHAIN46-CW,remine-nogc,21,every,0,5,6,292210,2740,2740,0,0,0,0,,,,,,,,,,,,,,,,
+VS-CHAIN46-CW,remine-nogc,21,every,0,6,7,303449,2730,2730,0,0,0,0,,,,,,,,,,,,,,,,
+VS-CHAIN46-CW,remine-nogc,21,every,0,7,8,314688,2804,2804,0,0,0,0,,,,,,,,,,,,,,,,
+VS-CHAIN46-CW,remine-nogc,21,every,0,8,9,325927,2816,2816,0,0,0,0,,,,,,,,,,,,,,,,
