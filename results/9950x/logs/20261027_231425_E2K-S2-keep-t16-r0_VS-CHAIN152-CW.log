@@ -1,0 +1,19 @@
+# java -Xmx32g -Xss4m -Dthreads=16 -Ddold=0.9 -Doracle=none -Dlimit=1800 -Dout=results/9950x -Dcell=E2K-S2-keep-t16-r0 -Dkind=measurement -cp out test.QueryScheduleProbe datasets/VS-CHAIN152-CW_seq.txt datasets/VS-CHAIN152-CW_eui.txt 0.0005 14088 11 every keep-sfx-gf-nogc
+# commit b95cd29a3354f048e1a12a5cba1a828841ae1b72
+VS-CHAIN152-CW N=521237 delta=0.0005 B=14088 k=11 dOld=0.9 schedule=every threads=16 fault=0 reference=none -> results\9950x\20261027_231426_VS-CHAIN152-CW_E2K-S2-keep-t16-r0
+Exception in thread "main" java.lang.OutOfMemoryError
+	at java.base/jdk.internal.reflect.DirectConstructorHandleAccessor.newInstance(DirectConstructorHandleAccessor.java:62)
+	at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:499)
+	at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:483)
+	at java.base/java.util.concurrent.ForkJoinTask.getException(ForkJoinTask.java:564)
+	at java.base/java.util.concurrent.ForkJoinTask.reportException(ForkJoinTask.java:580)
+	at java.base/java.util.concurrent.ForkJoinTask.join(ForkJoinTask.java:670)
+	at java.base/java.util.concurrent.ForkJoinPool.invoke(ForkJoinPool.java:3149)
+	at algorithms.AlgoRHUSPMinerParallel.mineCore(AlgoRHUSPMinerParallel.java:389)
+	at algorithms.AlgoRHUSPMinerParallel.runAlgorithmInMemory(AlgoRHUSPMinerParallel.java:353)
+	at algorithms.AlgoPRIncHUSP.runEngineWithinBudget(AlgoPRIncHUSP.java:1758)
+	at algorithms.AlgoPRIncHUSP.discoverFrom(AlgoPRIncHUSP.java:1575)
+	at algorithms.AlgoPRIncHUSP.reconcile(AlgoPRIncHUSP.java:1346)
+	at algorithms.AlgoPRIncHUSP.getHighUtilityPatterns(AlgoPRIncHUSP.java:1327)
+	at test.QueryScheduleProbe.main(QueryScheduleProbe.java:164)
+Caused by: java.lang.OutOfMemoryError: Java heap space
