@@ -1,0 +1,11 @@
+dataset,policy,batches,schedule,fault,query,after_batch,n_seqs,oracle_size,returned,missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,gap_rejected,tracked_after,action,r,kept_on_abort,budget_ms,attempt_ms,attempt_load_ms,attempt_preprocess_ms,attempt_enum_ms,attempt_rebuild_ms,abort_phase
+ONLINE-RETAIL-II-H,remine-nogc,21,every:4,0,0,4,3473,312,312,0,0,0,0,,,,,,,,,,,,,,,,
+ONLINE-RETAIL-II-H,remine-nogc,21,every:4,0,1,8,4053,245,245,0,0,0,0,,,,,,,,,,,,,,,,
+ONLINE-RETAIL-II-H,remine-nogc,21,every:4,0,2,12,4633,201,201,0,0,0,0,,,,,,,,,,,,,,,,
+ONLINE-RETAIL-II-H,remine-nogc,21,every:4,0,3,16,5213,178,178,0,0,0,0,,,,,,,,,,,,,,,,
+ONLINE-RETAIL-II-H,remine-nogc,21,every:4,0,4,20,5786,164,164,0,0,0,0,,,,,,,,,,,,,,,,
+ONLINE-RETAIL-II-H,bud3,21,every:4,0,0,4,3473,312,312,0,0,0,0,580,234502,312,0,0,313,remine,0.12,0,0,0,0,0,0,0,
+ONLINE-RETAIL-II-H,bud3,21,every:4,0,1,8,4053,245,245,0,0,0,0,1160,265457,245,0,0,246,aborted,0.23,0,69,79,3,16,61,0,mining
+ONLINE-RETAIL-II-H,bud3,21,every:4,0,2,12,4633,201,201,0,0,0,0,1740,299328,201,0,0,202,skipped,0.35,0,0,0,0,0,0,0,
+ONLINE-RETAIL-II-H,bud3,21,every:4,0,3,16,5213,178,178,0,0,0,0,2320,341236,178,0,0,179,aborted,0.46,0,40,41,2,8,31,0,mining
+ONLINE-RETAIL-II-H,bud3,21,every:4,0,4,20,5786,164,164,0,0,0,0,2893,401150,164,0,0,166,skipped,0.58,0,0,0,0,0,0,0,

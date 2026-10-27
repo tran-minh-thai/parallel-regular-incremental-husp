@@ -1,0 +1,14 @@
+# java -Xmx32g -Xss4m -Dthreads=16 -Ddold=0.5 -Doracle=first -Dlimit=3600 -Dout=results/9950x -Dcell=E2-S3-remine+bud3-t16-r0 -Dkind=measurement -cp out test.QueryScheduleProbe datasets/ONLINE-RETAIL-II-H_seq.txt datasets/ONLINE-RETAIL-II-H_eui.txt 0.0002 68 21 every:4 remine-nogc,bud3
+# commit be0e0ada32a0128c23d38a877cab623416d42d7f
+ONLINE-RETAIL-II-H N=5786 delta=0.0002 B=68 k=21 dOld=0.5 schedule=every:4 threads=16 fault=0 reference=first policy of this run (NOT independent) -> results\9950x\20261027_222015_ONLINE-RETAIL-II-H_E2-S3-remine+bud3-t16-r0
+  remine-nogc q0  after b4  N=3473   oracle=312    got=312    miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=390ms
+  remine-nogc q1  after b8  N=4053   oracle=245    got=245    miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=73ms
+  remine-nogc q2  after b12 N=4633   oracle=201    got=201    miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=44ms
+  remine-nogc q3  after b16 N=5213   oracle=178    got=178    miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=46ms
+  remine-nogc q4  after b20 N=5786   oracle=164    got=164    miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=38ms
+  bud3   q0  after b4  N=3473   oracle=312    got=312    miss=0 extra=0 uErr=0 pErr=0  ingest=126ms query=59ms  {budget=0 attempt=0 load=0 pre=0 enum=0 rebuild=0 abort=}  [REMINE r=0.1 thr=234502 cand=312 fresh=0 gapRej=0 mine=59ms rebuild=0ms tracked=313]
+  bud3   q1  after b8  N=4053   oracle=245    got=245    miss=0 extra=0 uErr=0 pErr=0  ingest=27ms query=165ms  {budget=69 attempt=79 load=3 pre=16 enum=61 rebuild=0 abort=mining}  [ABORTED+REMINE r=0.2 thr=265457 cand=245 fresh=0 gapRej=0 mine=58ms rebuild=0ms tracked=246]
+  bud3   q2  after b12 N=4633   oracle=201    got=201    miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=36ms  {budget=0 attempt=0 load=0 pre=0 enum=0 rebuild=0 abort=}  [SKIP+REMINE r=0.3 thr=299328 cand=201 fresh=0 gapRej=0 mine=36ms rebuild=0ms tracked=202]
+  bud3   q3  after b16 N=5213   oracle=178    got=178    miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=108ms  {budget=40 attempt=41 load=2 pre=8 enum=31 rebuild=0 abort=mining}  [ABORTED+REMINE r=0.5 thr=341236 cand=178 fresh=0 gapRej=0 mine=39ms rebuild=0ms tracked=179]
+  bud3   q4  after b20 N=5786   oracle=164    got=164    miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=41ms  {budget=0 attempt=0 load=0 pre=0 enum=0 rebuild=0 abort=}  [SKIP+REMINE r=0.6 thr=401150 cand=164 fresh=0 gapRej=0 mine=41ms rebuild=0ms tracked=166]
+compared queries=5 failing=0
