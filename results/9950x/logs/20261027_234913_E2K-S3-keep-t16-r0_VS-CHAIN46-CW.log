@@ -1,0 +1,4 @@
+# java -Xmx32g -Xss4m -Dthreads=16 -Ddold=0.5 -Doracle=none -Dlimit=1800 -Dout=results/9950x -Dcell=E2K-S3-keep-t16-r0 -Dkind=measurement -cp out test.QueryScheduleProbe datasets/VS-CHAIN46-CW_seq.txt datasets/VS-CHAIN46-CW_eui.txt 0.0005 12151 21 every:4 keep-sfx-gf-nogc
+# commit e0d6be6787ff11eb4183a96b88e980bdfd83da65
+VS-CHAIN46-CW N=449552 delta=0.0005 B=12151 k=21 dOld=0.5 schedule=every:4 threads=16 fault=0 reference=none -> results\9950x\20261027_234914_VS-CHAIN46-CW_E2K-S3-keep-t16-r0
+  keep-sfx-gf-nogc TIMEOUT after 1800 s (policy time, reference excluded)
