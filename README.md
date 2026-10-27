@@ -101,8 +101,8 @@ always exact? Every tool is standard-library Python 3 or Java and runs on Window
 | Command | What it does |
 |---|---|
 | `python3 tools/run_tests.py --compile` | The test suite: tool self-tests, randomised exactness of every query policy against brute force on tiny databases, and every deliberate defect with the outcome it must produce (about 1 hour) |
-| `python3 tools/fetch_datasets.py` | Download the benchmark datasets of the pinned `huspm-datasets` release and verify them against that release's manifest |
-| `python3 tools/build_all_datasets.py RAW_DIR` | Build the measured datasets (Valued Shoppers chains, H&M, REES46, Dunnhumby, Online Retail II, Ta-Feng) from the raw files and accept the build only when every output matches the committed manifest in `tools/stream_datasets/manifests/` |
+| `python3 tools/fetch_datasets.py [--library DATA_ROOT]` | Fetch the benchmark datasets of the pinned `huspm-datasets` release (from GitHub, or from a local copy under `DATA_ROOT` whose archive and manifest must match the release digests) and verify them against that release's manifest |
+| `python3 tools/build_all_datasets.py DATA_ROOT [--verify-only]` | Build the measured datasets (Valued Shoppers chains, H&M, REES46, Dunnhumby, Online Retail II, Ta-Feng) from the raw files, read at the paths under `DATA_ROOT` listed in the tool's `RAW` table, and accept the build only when every output matches the committed manifest in `tools/stream_datasets/manifests/`; `--verify-only` checks the raw files' SHA-256 and stops |
 | `python3 tools/machine_info.py --write` | Record the measurement machine in `MEASUREMENT_MACHINE.json` |
 | `python3 tools/campaign.py lock` / `run --exp E2` / `status` | Lock the Java build, run the cells of an experiment one JVM at a time, report progress; an interrupted run continues where it stopped |
 | `python3 tools/summarize_campaign.py [--write-repeats]` | Per dataset and schedule: total cost of re-mining (F) and of cost-capped discovery (BUD3), their ratio, the checks of the pre-registered hypotheses, and the cells close to a tie that need repetitions |

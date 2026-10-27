@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Build every measured dataset of the campaign from the raw files and prove the build is byte-identical.
 
-    python3 tools/build_all_datasets.py <raw-dir> [--only NAME[,NAME...]]
+    python3 tools/build_all_datasets.py <library-root> [--only NAME[,NAME...]] [--verify-only]
 
-<raw-dir> holds the raw files under their original names (listed in RAW below). Each raw file must hash to
+<library-root> is the data root holding the raw files in the layout below; each raw file is
+read at its path inside it (RAW below). --verify-only checks the raw files and stops. Each raw file must hash to
 the value recorded in the committed manifests; then every dataset is built with tools/build_stream_datasets.py
 into datasets/, which rewrites its manifest under tools/stream_datasets/manifests/. The build is accepted only
 if every field of each new manifest except the builder's own hash equals the committed one (so every output file
@@ -18,15 +19,24 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+# raw file -> (path inside the library, SHA-256)
 RAW = {
-    "transactions.csv.gz": "75cc4fa0d0006b9c43454e3dc1dea502b297ed5c75f3d679aae1df1acf633303",
-    "transactions_train.csv": "fff5e3b35c1b26016aa0bf2231be9525bc766eed32c94f1653420b465aef84fa",
-    "articles.csv": "25f21882053517f7684ea43f524225a9481a7bb9aab9cf0abfc7fe8c4576a72b",
-    "ecommerce-behavior-data-from-multi-category-store.zip": "0d23bc5116a31f34ee97e459bcd1ebfff5a4d262391ae82a4ddaab830314eecb",
-    "ecommerce-events-history-in-cosmetics-shop.zip": "9e6412743b279180e025d0d4491033dc693867ae92a7851264ea2dbbf5568922",
-    "transaction_data.csv": "3a685c0729cef664d634486189f774518b84f53cde7cbf701a5963238692b476",
-    "online_retail_II.xlsx": "bcbe73b35f5b7babf197fb0cb983a11f5d9ff929078d4aa53d171b1f2df2e980",
-    "ta_feng_all_months_merged.csv": "1d575e5d0b7207d7706d22ca56c7535886fff8175ca5537a310333a4ab7a7b67",
+    "transactions.csv.gz": ("01_BanLe_GioHang/valued-shopper",
+                            "75cc4fa0d0006b9c43454e3dc1dea502b297ed5c75f3d679aae1df1acf633303"),
+    "transactions_train.csv": ("01_BanLe_GioHang/hm-fashion",
+                               "fff5e3b35c1b26016aa0bf2231be9525bc766eed32c94f1653420b465aef84fa"),
+    "articles.csv": ("01_BanLe_GioHang/hm-fashion",
+                     "25f21882053517f7684ea43f524225a9481a7bb9aab9cf0abfc7fe8c4576a72b"),
+    "ecommerce-behavior-data-from-multi-category-store.zip": ("01_BanLe_GioHang/rees46",
+                                                              "0d23bc5116a31f34ee97e459bcd1ebfff5a4d262391ae82a4ddaab830314eecb"),
+    "ecommerce-events-history-in-cosmetics-shop.zip": ("01_BanLe_GioHang/rees46",
+                                                       "9e6412743b279180e025d0d4491033dc693867ae92a7851264ea2dbbf5568922"),
+    "transaction_data.csv": ("01_BanLe_GioHang/dunnhumby-complete-journey",
+                             "3a685c0729cef664d634486189f774518b84f53cde7cbf701a5963238692b476"),
+    "online_retail_II.xlsx": ("01_BanLe_GioHang/online-retail",
+                              "bcbe73b35f5b7babf197fb0cb983a11f5d9ff929078d4aa53d171b1f2df2e980"),
+    "ta_feng_all_months_merged.csv": ("01_BanLe_GioHang/ta-feng",
+                                      "1d575e5d0b7207d7706d22ca56c7535886fff8175ca5537a310333a4ab7a7b67"),
 }
 # (datasets produced, builder arguments after the kind; {raw:NAME} is replaced by the raw file path)
 BUILDS = [
@@ -53,33 +63,40 @@ def sha256(path):
 
 def main(argv=None):
     ap = argparse.ArgumentParser()
-    ap.add_argument("raw_dir")
+    ap.add_argument("library_root")
     ap.add_argument("--only")
+    ap.add_argument("--verify-only", action="store_true")
     args = ap.parse_args(argv)
-    raw_dir = Path(args.raw_dir)
+    lib = Path(args.library_root)
+
+    def raw_path(name):
+        return lib / RAW[name][0] / name
     only = set(args.only.split(",")) if args.only else None
     builds = [b for b in BUILDS if not only or only & set(b[0])]
     needed = sorted({a[5:-1] for _, argl in builds for a in argl if a.startswith("{raw:")})
     problems = []
     for name in needed:
-        p = raw_dir / name
+        p = raw_path(name)
         if not p.exists():
             problems.append("raw file %s does not exist" % p.as_posix())
             continue
         got = sha256(p)
-        if got != RAW[name]:
-            problems.append("raw file %s: sha256 %s, expected %s" % (p.as_posix(), got, RAW[name]))
+        if got != RAW[name][1]:
+            problems.append("raw file %s: sha256 %s, expected %s" % (p.as_posix(), got, RAW[name][1]))
         else:
-            print("raw ok  %s" % name, flush=True)
+            print("raw ok  %s" % p.as_posix(), flush=True)
     if problems:
         for x in problems:
             print("REFUSED: " + x)
         return 2
+    if args.verify_only:
+        print("all %d raw file(s) present with the expected SHA-256" % len(needed))
+        return 0
     for names, argl in builds:
         cmd = [sys.executable, "tools/build_stream_datasets.py", argl[0]] + \
-              [str(raw_dir / a[5:-1]) if a.startswith("{raw:") else a for a in argl[1:2]] + \
+              [str(raw_path(a[5:-1])) if a.startswith("{raw:") else a for a in argl[1:2]] + \
               ["datasets", "tools/stream_datasets/manifests"] + \
-              [str(raw_dir / a[5:-1]) if a.startswith("{raw:") else a for a in argl[2:]]
+              [str(raw_path(a[5:-1])) if a.startswith("{raw:") else a for a in argl[2:]]
         print("build   %s" % ",".join(names), flush=True)
         r = subprocess.run(cmd, cwd=str(ROOT), capture_output=True, text=True)
         if r.returncode != 0:
