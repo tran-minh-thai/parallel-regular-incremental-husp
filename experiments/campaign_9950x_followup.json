@@ -1,5 +1,5 @@
 {
-  "about": "Heap guard experiment run after the main campaign: bud3 against bud3live (heap guard judged on the live heap), schedule S2, same ledger and environment lock as the campaign.",
+  "about": "Experiments run after the main campaign, same ledger and environment lock: E2G (bud3 against bud3live, the heap guard judged on the live heap, schedule S2), E2L (VS-CHAIN46-CW schedule S1 with a per-policy limit its re-mine fits in), E2N (two datasets rebuilt without store-type accounts)",
   "out": "results/9950x",
   "branch": "campaign-9950x",
   "status_project": "07_RegIncHUSPM_Parallel",
@@ -88,6 +88,16 @@
       "delta": "0.005",
       "B": 1091,
       "role": "speed"
+    },
+    "VS-CHAIN152-CW-NOACC": {
+      "delta": "0.0005",
+      "B": 14088,
+      "role": "costly"
+    },
+    "VS-CHAIN46-CW-NOACC": {
+      "delta": "0.0005",
+      "B": 12147,
+      "role": "costly"
     }
   },
   "schedules": {
@@ -127,7 +137,7 @@
       ],
       "oracle": "first",
       "reps": 1,
-      "limit_s": 3600
+      "limit_s": 14400
     },
     "E2G-live": {
       "about": "schedule S2, F then bud3live in one JVM; compared with the other E2G experiment on the same dataset",
@@ -148,7 +158,42 @@
       ],
       "oracle": "first",
       "reps": 1,
-      "limit_s": 3600
+      "limit_s": 14400
+    },
+    "E2L": {
+      "about": "VS-CHAIN46-CW, schedule S1, F then BUD3 in one JVM, with a per-policy limit the re-mine fits in (its S2 cell is E2G-raw)",
+      "pairs": [
+        [
+          "VS-CHAIN46-CW",
+          "S1"
+        ]
+      ],
+      "policies": [
+        "remine-nogc",
+        "bud3"
+      ],
+      "oracle": "first",
+      "reps": 1,
+      "limit_s": 14400
+    },
+    "E2N": {
+      "about": "the two chains rebuilt without store-type accounts (a customer with a week of more than 1000 distinct items is removed), F then BUD3 in one JVM, as E2",
+      "datasets": [
+        "VS-CHAIN152-CW-NOACC",
+        "VS-CHAIN46-CW-NOACC"
+      ],
+      "schedules": [
+        "S1",
+        "S2",
+        "S3"
+      ],
+      "policies": [
+        "remine-nogc",
+        "bud3"
+      ],
+      "oracle": "first",
+      "reps": 1,
+      "limit_s": 14400
     }
   }
 }

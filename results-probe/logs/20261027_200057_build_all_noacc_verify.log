@@ -1,0 +1,6 @@
+# python3 tools/build_all_datasets.py <library> --only VS-CHAIN152-CW-NOACC,VS-CHAIN46-CW-NOACC (commit d14cef2, working tree with the new build entry)
+raw ok  <library>/01_BanLe_GioHang/valued-shopper/transactions.csv.gz
+build   VS-CHAIN152-CW-NOACC,VS-CHAIN46-CW-NOACC
+MISMATCH: tools/stream_datasets/manifests/VS-CHAIN152-CW-NOACC.manifest.json: not in the commit
+MISMATCH: tools/stream_datasets/manifests/VS-CHAIN46-CW-NOACC.manifest.json: not in the commit
+exit=1

@@ -21,7 +21,7 @@ otherwise. The configured role is printed beside it as the expectation.
 Every comparison prints its denominator. Cells whose ratio lies within the margin of 1 (rule: a ranking
 inside the noise needs repetitions) are listed; --write-repeats stores them as experiment E2R (two more
 repetitions, indices 1 and 2) in experiments/campaign_9950x.json, which tools/campaign.py then runs.
-Output: <out>/summary_E2.tsv and the printed report. Exit status is non-zero when a hypothesis fails or a
+Output: <out>/summary_E2.tsv (summary_<experiments>.tsv with --exp) and the printed report. Exit status is non-zero when a hypothesis fails or a
 recorded cell cannot be read.
 """
 import argparse
@@ -96,6 +96,7 @@ def main(argv=None):
     ap.add_argument("--write-repeats", action="store_true")
     ap.add_argument("--margin", type=float, default=0.10)
     ap.add_argument("--config", default=str(CONFIG))
+    ap.add_argument("--exp", action="append", help="experiments to read (default E2 and its repeats E2R)")
     args = ap.parse_args(argv)
     config = Path(args.config)
     cfg = json.loads(config.read_text(encoding="utf-8"))
@@ -104,7 +105,7 @@ def main(argv=None):
     groups = defaultdict(list)
     problems = []
     for r in ledger:
-        if r["experiment"] not in ("E2", "E2R"):
+        if r["experiment"] not in (args.exp or ("E2", "E2R")):
             continue
         if r["status"] != "OK":
             problems.append("%s: status %s" % (r["key"], r["status"]))
@@ -157,7 +158,8 @@ def main(argv=None):
         lines.append([ds, "%s (expected %s)" % (role, cfg["datasets"][ds]["role"]), sch, len(runs), "%.0f" % fm, "%.0f" % bm, "%.3f" % ratio, " ".join(acts), "; ".join(verdicts)])
     head = ["dataset", "role", "schedule", "runs", "F_ms", "BUD3_ms", "BUD3_over_F", "bud3_actions", "checks"]
     out.mkdir(parents=True, exist_ok=True)
-    with open(out / "summary_E2.tsv", "w", encoding="utf-8", newline="\n") as f:
+    name = "summary_%s.tsv" % "_".join(args.exp) if args.exp else "summary_E2.tsv"   # never overwrite the main summary
+    with open(out / name, "w", encoding="utf-8", newline="\n") as f:
         f.write("\t".join(head) + "\n")
         for l in lines:
             f.write("\t".join(str(x) for x in l) + "\n")
