@@ -1,0 +1,11 @@
+dataset,policy,batches,schedule,fault,query,after_batch,ingest_ms,query_ms,discovery_mine_ms,rebuild_ms,seed_ms
+HM-CW-TYPE,keep-sfx-gf-nogc,11,every,0,0,1,166,2133,189,1939,6331
+HM-CW-TYPE,keep-sfx-gf-nogc,11,every,0,1,2,8,424,123,299,
+HM-CW-TYPE,keep-sfx-gf-nogc,11,every,0,2,3,11,252,104,146,
+HM-CW-TYPE,keep-sfx-gf-nogc,11,every,0,3,4,8,274,122,151,
+HM-CW-TYPE,keep-sfx-gf-nogc,11,every,0,4,5,9,274,158,115,
+HM-CW-TYPE,keep-sfx-gf-nogc,11,every,0,5,6,7,266,178,86,
+HM-CW-TYPE,keep-sfx-gf-nogc,11,every,0,6,7,8,294,214,79,
+HM-CW-TYPE,keep-sfx-gf-nogc,11,every,0,7,8,7,325,240,84,
+HM-CW-TYPE,keep-sfx-gf-nogc,11,every,0,8,9,7,410,262,147,
+HM-CW-TYPE,keep-sfx-gf-nogc,11,every,0,9,10,7,398,289,108,
