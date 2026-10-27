@@ -1,0 +1,11 @@
+dataset,policy,batches,schedule,fault,query,after_batch,ingest_ms,query_ms,discovery_mine_ms,rebuild_ms,seed_ms
+TAFENG-CW,remine-nogc,21,every:4,0,0,4,0,975,,,0
+TAFENG-CW,remine-nogc,21,every:4,0,1,8,0,552,,,
+TAFENG-CW,remine-nogc,21,every:4,0,2,12,0,546,,,
+TAFENG-CW,remine-nogc,21,every:4,0,3,16,0,593,,,
+TAFENG-CW,remine-nogc,21,every:4,0,4,20,0,623,,,
+TAFENG-CW,bud3,21,every:4,0,0,4,71,473,473,0,716
+TAFENG-CW,bud3,21,every:4,0,1,8,9,1231,611,0,
+TAFENG-CW,bud3,21,every:4,0,2,12,1,571,571,0,
+TAFENG-CW,bud3,21,every:4,0,3,16,0,501,426,73,
+TAFENG-CW,bud3,21,every:4,0,4,20,14,475,468,7,

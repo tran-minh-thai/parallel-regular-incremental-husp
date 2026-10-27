@@ -1,0 +1,11 @@
+dataset,policy,batches,schedule,fault,query,after_batch,n_seqs,oracle_size,returned,missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,gap_rejected,tracked_after,action,r,kept_on_abort,budget_ms,attempt_ms,attempt_load_ms,attempt_preprocess_ms,attempt_enum_ms,attempt_rebuild_ms,abort_phase
+TAFENG-CW,remine-nogc,21,every:4,0,0,4,59842,722,722,0,0,0,0,,,,,,,,,,,,,,,,
+TAFENG-CW,remine-nogc,21,every:4,0,1,8,69814,684,684,0,0,0,0,,,,,,,,,,,,,,,,
+TAFENG-CW,remine-nogc,21,every:4,0,2,12,79786,659,659,0,0,0,0,,,,,,,,,,,,,,,,
+TAFENG-CW,remine-nogc,21,every:4,0,3,16,89758,642,642,0,0,0,0,,,,,,,,,,,,,,,,
+TAFENG-CW,remine-nogc,21,every:4,0,4,20,99739,629,629,0,0,0,0,,,,,,,,,,,,,,,,
+TAFENG-CW,bud3,21,every:4,0,0,4,59842,722,722,0,0,0,0,9972,12961,722,0,0,744,remine,1.99,0,0,0,0,0,0,0,
+TAFENG-CW,bud3,21,every:4,0,1,8,69814,684,684,0,0,0,0,19944,15751,684,0,0,720,aborted,3.99,0,552,554,5,25,524,0,mining
+TAFENG-CW,bud3,21,every:4,0,2,12,79786,659,659,0,0,0,0,29916,17821,659,0,0,684,skipped,5.98,0,0,0,0,0,0,0,
+TAFENG-CW,bud3,21,every:4,0,3,16,89758,642,642,0,0,0,0,39888,9201,864,431,240,847,discover,7.98,0,643,501,5,24,397,73,
+TAFENG-CW,bud3,21,every:4,0,4,20,99739,629,629,0,0,0,0,49869,10918,788,195,182,829,discover,9.97,0,714,475,6,21,441,7,
