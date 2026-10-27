@@ -92,6 +92,43 @@ distorts every timing and can fill the disk. On a laptop, plug in and disable po
 first log line reports the thread sweep, and if it says the sweep was truncated then the machine is
 not offering all of its cores.
 
+## Query-time experiments and the measurement campaign
+
+These tools answer a different question from the suite above: when the result is queried after a batch, is
+discovery from the anchor (bounded by a cost budget, with an exact fallback) cheaper than re-mining, and is it
+always exact? Every tool is standard-library Python 3 or Java and runs on Windows, macOS and Linux.
+
+| Command | What it does |
+|---|---|
+| `python3 tools/run_tests.py --compile` | The test suite: tool self-tests, randomised exactness of every query policy against brute force on tiny databases, and every deliberate defect with the outcome it must produce (about 1 hour) |
+| `python3 tools/fetch_datasets.py` | Download the benchmark datasets of the pinned `huspm-datasets` release and verify them against that release's manifest |
+| `python3 tools/build_all_datasets.py RAW_DIR` | Build the measured datasets (Valued Shoppers chains, H&M, REES46, Dunnhumby, Online Retail II, Ta-Feng) from the raw files and accept the build only when every output matches the committed manifest in `tools/stream_datasets/manifests/` |
+| `python3 tools/machine_info.py --write` | Record the measurement machine in `MEASUREMENT_MACHINE.json` |
+| `python3 tools/campaign.py lock` / `run --exp E2` / `status` | Lock the Java build, run the cells of an experiment one JVM at a time, report progress; an interrupted run continues where it stopped |
+| `python3 tools/summarize_campaign.py [--write-repeats]` | Per dataset and schedule: total cost of re-mining (F) and of cost-capped discovery (BUD3), their ratio, the checks of the pre-registered hypotheses, and the cells close to a tie that need repetitions |
+
+The cells (datasets, thresholds, regularity bounds, query schedules, policies, repetitions, time limits) are
+defined in `experiments/campaign_9950x.json`; the raw files, their hashes and the role of every column are
+documented in `tools/build_stream_datasets.py` and the manifests. A single run outside the campaign:
+
+```bash
+java -Xmx16g -Ddold=0.5 -Doracle=first -cp out test.QueryScheduleProbe \
+     datasets/VS-CHAIN96-CW_seq.txt datasets/VS-CHAIN96-CW_eui.txt 0.0005 17592 21 every remine-nogc,bud3
+```
+
+Results:
+
+- `results-probe/` holds development-machine feasibility runs. Their timings decide what is worth building and
+  are not reported.
+- `results/9950x/` holds the measurement campaign: `cells.tsv` (one row per finished cell: status, run
+  directory, commit, Java build), one directory per cell with `run_meta.json` (command, commit, tree state,
+  source and data hashes, Java, heap, threads), `exactness.csv` (per query: patterns returned, missing, extra,
+  value mismatches, the policy's action) and `timing_feasibility.csv` (per query: ingest and query time), the
+  console log of every cell under `logs/`, `ENV_LOCK.json` and `summary_E2.tsv`.
+
+`COMMIT_MAP.tsv` maps commit ids that changed when manuscript tables were removed from the unpublished history;
+artifacts that cite an old id are resolved through it.
+
 ## Datasets
 
 `datasets/` holds `<name>_seq.txt` (quantitative sequences) and `<name>_eui.txt` (item profits).
@@ -230,10 +267,12 @@ src/main/java/
   common/       sequence model used by the reference baselines
   test/         experiment harness: runners, configuration, probes
 datasets/       example data; RUNNING_EXAMPLE.md works through it by hand
+tools/          dataset builders, test suite, campaign runner and summaries (Python, standard library)
+experiments/    campaign definition
 ```
 
-`algorithms/README.md` maps the classes onto the manuscript and explains the exactness argument in
-more detail.
+`algorithms/README.md` describes the role of every class and explains the exactness argument in more
+detail.
 
 ## References
 
