@@ -1,0 +1,10 @@
+{
+  "java_runtime_version": "25.0.5+8-LTS",
+  "java_vendor": "Eclipse Adoptium",
+  "jvm": [
+    "-Xmx32g",
+    "-Xss4m"
+  ],
+  "locked_at": "2026-10-27T15:27:21",
+  "host": "PC-THAI"
+}
