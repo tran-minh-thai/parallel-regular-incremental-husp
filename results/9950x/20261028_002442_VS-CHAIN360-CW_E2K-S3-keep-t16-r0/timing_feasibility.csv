@@ -1,0 +1,6 @@
+dataset,policy,batches,schedule,fault,query,after_batch,ingest_ms,query_ms,discovery_mine_ms,rebuild_ms,seed_ms
+VS-CHAIN360-CW,keep-sfx-gf-nogc,21,every:4,0,0,4,220,1321,1099,218,5383
+VS-CHAIN360-CW,keep-sfx-gf-nogc,21,every:4,0,1,8,45,1743,1707,35,
+VS-CHAIN360-CW,keep-sfx-gf-nogc,21,every:4,0,2,12,53,2637,2604,32,
+VS-CHAIN360-CW,keep-sfx-gf-nogc,21,every:4,0,3,16,16,3746,3717,27,
+VS-CHAIN360-CW,keep-sfx-gf-nogc,21,every:4,0,4,20,13,4841,4817,21,
