@@ -20,7 +20,7 @@ import java.lang.management.ThreadMXBean;
  * RHUSP set regardless of the thread count. The distinction lies in execution strategy:
  *
  *   Phase 1 (preprocessing) -- PARALLEL: SWU/maxPeriod scan and EUCS co-occurrence counting
- *   split across T thread slices; per-slice results merged via reduction. (paper §4.2, Phase 1)
+ *   split across T thread slices; per-slice results merged via reduction. (Phase 1)
  *
  *   Phase 2 (mining) -- PARALLEL: the prefix-enumeration tree is traversed by a
  *   {@link ForkJoinPool} in which each thread owns a local deque and pushes/pops in LIFO
@@ -28,16 +28,15 @@ import java.lang.management.ThreadMXBean;
  *   automatic load balancing. Recursive dynamic load balancing (RDLB) is achieved by
  *   conditionally forking a subtask only when the pool has surplus capacity
  *   (getSurplusQueuedTaskCount), and recursing inline otherwise to retain locality.
- *   (paper §4.3)
  *
  *   Hardware-friendly layout: the immutable CSR-layout sequence database is shared across
  *   all threads. Per-task hot buffers (frequency counters, bound accumulators, candidate
  *   lists, pattern buffer, LA-stamp array) are managed through a
  *   {@link ConcurrentLinkedQueue} pool (NOT ThreadLocal -- see the contextPool field for
- *   the rationale) to eliminate lock contention and reduce false sharing. (paper §4.1)
+ *   the rationale) to eliminate lock contention and reduce false sharing.
  *
  * Correctness: the result set is independent of thread count and matches the sequential
- * engine (verified by test.StrategyVerificationTest, Theorem 1 in the paper).
+ * engine (verified by test.StrategyVerificationTest).
  */
 public class AlgoRHUSPMinerParallel {
 
@@ -53,7 +52,7 @@ public class AlgoRHUSPMinerParallel {
     public String label = "RHUSPM_Par";
 
     // Fork threshold: only fork when the local surplus task count is <= this value -- keeps
-    // all threads busy without exploding the number of tiny tasks (RDLB). paper §4.3
+    // all threads busy without exploding the number of tiny tasks (RDLB).
     public int forkSurplusThreshold = 3;
     // Granularity threshold: only fork when the projected database is large enough; small
     // projections recurse inline to avoid spawning micro-tasks (each task borrows a context
@@ -67,12 +66,11 @@ public class AlgoRHUSPMinerParallel {
     //   STRAT_STEAL  : thread pool + work stealing at the root level only (each level-1 branch
     //                  is a task); deeper recursion runs inline (no dynamic splitting).
     //   STRAT_RDLB   : full -- work stealing + recursive dynamic load balancing (fork deeper
-    //                  branches when pool has surplus capacity). paper §4.3
+    //                  branches when pool has surplus capacity).
     public static final int STRAT_STATIC = 0, STRAT_STEAL = 1, STRAT_RDLB = 2;
     public int parallelStrategy = STRAT_RDLB;
     // Hardware-friendly buffer layout: true = buffers indexed by DENSE id (numValid); false =
     // by raw item id (maxItemId+1). Toggle to measure the contribution of the compact layout.
-    // paper §4.1
     public boolean denseBuffers = true;
 
     // ----- Statistics (thread-safe via LongAdder) -----
@@ -264,7 +262,7 @@ public class AlgoRHUSPMinerParallel {
     /**
      * All hot buffers allocated per task. Physical isolation (separate arrays per context)
      * eliminates locks on the hot path and reduces false sharing because threads write to
-     * disjoint memory regions. paper §4.1
+     * disjoint memory regions.
      */
     private final class MiningContext {
         final long[] seqBoundI, seqBoundS;
@@ -472,7 +470,7 @@ public class AlgoRHUSPMinerParallel {
      * per-item occurrence periods locally, then merges into global arrays via reduction.
      * The period merge must stitch cross-slice gaps: the largest gap spanning the boundary
      * between two adjacent slices is computed from the last SID in the earlier slice and
-     * the first SID in the later slice. (paper §4.2, Phase 1)
+     * the first SID in the later slice. (Phase 1)
      */
     private void tier0BuildValidItemsParallel() {
         final int n = maxItemId + 1;
@@ -1369,7 +1367,7 @@ public class AlgoRHUSPMinerParallel {
         }
     }
 
-    /** Fork a subtask only when the pool has surplus capacity (RDLB). paper §4.3 */
+    /** Fork a subtask only when the pool has surplus capacity (RDLB). */
     private boolean shouldFork() {
         return ForkJoinTask.getSurplusQueuedTaskCount() <= forkSurplusThreshold;
     }
@@ -1474,7 +1472,7 @@ public class AlgoRHUSPMinerParallel {
      * Parallel counterpart of expand() in the sequential engine. Computes bounds, filters
      * candidates, then for each candidate: FORK if the pool has surplus capacity (pushing
      * onto the local deque -- work stealing/RDLB), else recurse inline to retain cache
-     * locality. paper §4.3
+     * locality.
      */
     private void mine(MiningContext ctx, InstanceList projected, int lastItem) {
         if (abortHeapBytes > 0) {

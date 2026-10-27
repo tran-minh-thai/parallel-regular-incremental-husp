@@ -18,7 +18,7 @@ import java.util.Map;
  * </ul>
  * Also maintains the total database utility {@link #totalDbUtility} and the per-item {@link #SWU} table.
  * <p>
- * Core incremental property (Lemma 1, {@code lem:additive}): updates only ADD the contribution of
+ * Core incremental property (additivity over sequences): updates only ADD the contribution of
  * the new batch {@code ΔD}, never re-scanning history; the result equals a full recompute over
  * {@code D_new} and preserves the upper-bound guarantee.
  */

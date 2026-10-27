@@ -145,7 +145,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
      * NON-DECREASING as sequences are appended: a new occurrence turns the current tail into an inner
      * gap. So for every future {@code N' ≤ N_final}, {@code maxPer_{N'} ≥ π_{N'} ≥ π_now > ρ·N_final
      * ≥ ρ·N'}. Such a pattern is irregular then and at every point after, so holding it only costs
-     * heap. This is the bound Theorem 2 justifies for seed pruning, applied to RETENTION as well.
+     * heap. This is the bound that makes seed pruning safe, applied to RETENTION as well.
      *
      * <p>The effect is largest where the increment dominates. Discovery enumerates ΔD in window mode,
      * which necessarily prunes on consecutive-occurrence gaps only, because a pattern's leading gap

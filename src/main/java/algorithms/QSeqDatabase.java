@@ -18,7 +18,7 @@ import java.util.Map;
  * <p>
  * This class supports <b>tail insertion</b> ({@link #appendBatch}), the foundational invariant
  * of incremental update: a new batch carries only SIDs greater than every existing SID, so all old
- * positions and successive differences are invariant (Lemma 3, {@code lem:tail}).
+ * positions and successive differences are invariant.
  */
 public class QSeqDatabase {
 

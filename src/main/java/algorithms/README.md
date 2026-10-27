@@ -25,14 +25,14 @@ full experiment workflow.
 
 ## Core classes
 
-| File | Role | In the paper |
+| File | Role | Concept |
 |---|---|---|
-| `QSeqDatabase.java` | Quantitative sequence database in CSR form (flat `items/utils/rems` plus offsets); batches are appended at the tail | Definition 1; Lemma 3 (tail-only update) |
-| `DEUCS.java` | Directed estimated-utility co-occurrence structure, accumulated per batch | Definition 6; Algorithm `IncUpdateDEUCS`; Lemma 1 (additivity) |
+| `QSeqDatabase.java` | Quantitative sequence database in CSR form (flat `items/utils/rems` plus offsets); batches are appended at the tail | quantitative sequence database; tail-only update |
+| `DEUCS.java` | Directed estimated-utility co-occurrence structure, accumulated per batch | co-occurrence structure; incremental update; additivity over sequences |
 | `VerticalUtilityList.java` | Vertical utility list: one entry per non-dominated end position, plus the regularity fields `lastSeqId` and `maxInnerPeriod` | Data structures |
 | `PatternTree.java` | Prefix enumeration tree | Data structures |
 | `AdaptiveBuffer.java` | Seed threshold θ₀ = λ·δ·U(D_old) (the class name predates λ; at λ=1 nothing is buffered). Fixed at λ = 1 for the proposed miner; the adaptive strategies are exercised only by the diagnostic probes | Seed-split factor discussion |
-| **`AlgoPRIncHUSP.java`** | **The proposed algorithm.** Seeding, parallel content-driven maintenance, discovery. `numThreads=1` gives the sequential reference point | Algorithms `P-RIncHUSP`, `ParallelEnumerate`, `Extend`, `ProcessBatch`; Theorem 1; Lemma 4 |
+| **`AlgoPRIncHUSP.java`** | **The proposed algorithm.** Seeding, parallel content-driven maintenance, discovery. `numThreads=1` gives the sequential reference point | seeding, parallel enumeration, extension, batch processing; exactness at query time |
 | `AlgoRHUSPMinerParallel.java` | Parallel static engine from the companion study (CSR, EUCS + LA-PEU, RDLB). Used to seed `D_old`, and as the re-mining baseline | Comparison algorithms |
 | `AlgoRHUSP.java`, `AlgoRHUSPRecompute.java` | Static RHUSP mining; re-mining from scratch supplies the ground truth for recall | Oracle |
 | `AlgoRIncHUSP.java` | The sequential incremental predecessor, run at a fixed buffer factor | `RIncHusp Fix(μ)` rows |
@@ -75,12 +75,12 @@ searched for, and costs at most about a quarter against searching, on the datase
 1. `initialBuild` mines `D_old` once and stores a vertical utility list per surviving pattern. With
    `seedWithEngine05` the enumeration is delegated to the companion parallel engine, which is
    substantially faster and returns the state needed to continue tracking regularity.
-2. `processBatch` appends a batch, accumulates `DEUCS` (Lemma 1), recomputes the thresholds (both are
+2. `processBatch` appends a batch, accumulates `DEUCS` (additive over sequences), recomputes the thresholds (both are
    ratios, so they scale as the database grows) and calls `maintain`.
 3. `maintain` propagates the new sequences through the pattern set. Maintenance is content-driven: a
    shared prefix is matched once for every pattern extending it, and the work is split over disjoint
    ascending sequence ranges, which keeps the result independent of the thread count. Regularity is
-   updated at the tail in constant time (Lemma 3).
+   updated at the tail in constant time.
 4. `classify` promotes patterns that have reached `minUtil`.
 5. Querying the result runs `discoverFrom` once over the accumulated increment, which is what makes
    the answer exact rather than high-coverage.

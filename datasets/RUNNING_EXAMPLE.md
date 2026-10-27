@@ -44,7 +44,7 @@ serving two purposes at once: (1) illustrating the contributions throughout the 
 | 7 | ΔD | `(a:1)(b:12)(d:10 e:10)` | |
 | 8 | ΔD | `(a:1)(d:2)(d:10 e:10)` | d appears **twice** -> tests the MAX-measure |
 
-## 3. Incremental DEUCS update (illustrates Lemma 1: accumulation)
+## 3. Incremental DEUCS update (illustrates accumulation)
 
 `UD` and every DEUCS/SWU cell of `D_new` = the `D_old` value **plus** the contribution from `ΔD` only,
 without rescanning history:
@@ -86,7 +86,7 @@ without rescanning history:
 
 ## 5. Where each contribution is illustrated
 
-1. **Accumulative incremental update (Lemma 1):** §3 table: ΔD is appended at the tail, every cell accumulates.
+1. **Accumulative incremental update:** the table of section 3: ΔD is appended at the tail, every cell accumulates.
 2. **Regularity-based pruning (Corollary 2):** `<(c)>` has utility = 40·4 = **160 ≥ minUtil**
    but appears only in SID 2 -> maxPer = max(3, 9−2) = 7 > maxReg = 5 -> **rejected**. A high-utility
    pattern is rejected *purely due to non-regularity*.
