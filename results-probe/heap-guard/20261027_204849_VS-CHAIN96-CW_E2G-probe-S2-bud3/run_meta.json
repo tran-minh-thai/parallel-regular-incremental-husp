@@ -1,0 +1,18 @@
+{
+  "kind": "probe (development machine, feasibility only)",
+  "cell": "E2G-probe-S2-bud3",
+  "command": "java -Dthreads=10 -Ddold=0.9 -Doracle=first -Dlimit=3600 -Dout=results-probe/heap-guard -Dcell=E2G-probe-S2-bud3 test.QueryScheduleProbe datasets/VS-CHAIN96-CW_seq.txt datasets/VS-CHAIN96-CW_eui.txt 0.0005 17592 11 every remine-nogc,bud3",
+  "git_commit": "092f249cfa391188dd797685b47357dd993054fc",
+  "tree": "clean",
+  "sha256_AlgoPRIncHUSP": "32915177c63fa395a422c07545ef45d753755f6f0c542b64f607f29609dc4ef9",
+  "sha256_AlgoParRemine": "1c2d15b22aa6bef9a6bc5f24022edb6b4b564bba984c6cd07f932e6c335364e4",
+  "sha256_AlgoRHUSPMinerParallel": "06c3192bc4d863ca124457f18b05fc4bd3c2698a72dfc97e32aa989e11304ce3",
+  "sha256_QueryScheduleProbe": "ddf39e5c94468d51730bbb5ce97d560bde177caa9b46e3980a9cf612f1a2dbb1",
+  "sha256_seq": "8f8287a7c24f8337b8c41a9df64e9e1e9fcf795e24628e2846cf5af49acc6f83",
+  "sha256_eui": "f19cfa96f54476c11f4c98f5cc073bf3cbe6860cd678dba9bcfe3bcb41eea08a",
+  "java": "26.0.1+8-34 Oracle Corporation",
+  "os": "Mac OS X 27.0.1 aarch64",
+  "threads": "10",
+  "max_heap_mb": "16384",
+  "started": "2026-10-27T20:48:49+07:00"
+}

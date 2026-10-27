@@ -1,0 +1,27 @@
+# java -Xmx16g -Xss4m -Dthreads=10 -Ddold=0.9 -Doracle=first -Dlimit=3600 -Dout=results-probe/heap-guard -Dcell=E2G-probe-S2-bud3live -cp out test.QueryScheduleProbe datasets/VS-CHAIN96-CW_seq.txt datasets/VS-CHAIN96-CW_eui.txt 0.0005 17592 11 every remine-nogc,bud3live
+# commit 092f249cfa391188dd797685b47357dd993054fc tree clean
+#  java.runtime.version = 26.0.1+8-34  java.vendor = Oracle Corporation 
+# Apple M5, 34 GB, feasibility probe, not a measurement
+VS-CHAIN96-CW N=650903 delta=0.0005 B=17592 k=11 dOld=0.9 schedule=every threads=10 fault=0 reference=first policy of this run (NOT independent) -> results-probe/heap-guard/20261027_210417_VS-CHAIN96-CW_E2G-probe-S2-bud3live
+  remine-nogc q0  after b1  N=592322 oracle=1529   got=1529   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=40997ms
+  remine-nogc q1  after b2  N=598831 oracle=1534   got=1534   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=46652ms
+  remine-nogc q2  after b3  N=605340 oracle=1533   got=1533   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=45742ms
+  remine-nogc q3  after b4  N=611849 oracle=1532   got=1532   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=45378ms
+  remine-nogc q4  after b5  N=618358 oracle=1536   got=1536   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=44474ms
+  remine-nogc q5  after b6  N=624867 oracle=1537   got=1537   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=53996ms
+  remine-nogc q6  after b7  N=631376 oracle=1532   got=1532   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=65329ms
+  remine-nogc q7  after b8  N=637885 oracle=1528   got=1528   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=67552ms
+  remine-nogc q8  after b9  N=644394 oracle=1524   got=1524   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=89257ms
+  remine-nogc q9  after b10 N=650903 oracle=1518   got=1518   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=102035ms
+  bud3live q0  after b1  N=592322 oracle=1529   got=1529   miss=0 extra=0 uErr=0 pErr=0  ingest=95ms query=121406ms  {budget=0 attempt=0 load=0 pre=0 enum=0 rebuild=0 abort= cause= heapMB guard=0 start=-1 abort=-1 afterGC=-1 valveGCs=0}  [REMINE r=3.3 thr=3360555 cand=1529 fresh=0 gapRej=0 mine=121405ms rebuild=0ms tracked=1529]
+  bud3live q1  after b2  N=598831 oracle=1534   got=1534   miss=0 extra=0 uErr=0 pErr=0  ingest=26ms query=197771ms  {budget=122739 attempt=127573 load=116 pre=216 enum=127234 rebuild=0 abort=mining cause=deadline heapMB guard=9830 start=1048 abort=8189 afterGC=8148 valveGCs=5}  [ABORTED+REMINE r=6.5 thr=3397512 cand=1534 fresh=0 gapRej=0 mine=60665ms rebuild=0ms tracked=1528]
+  bud3live q2  after b3  N=605340 oracle=1533   got=1533   miss=0 extra=0 uErr=0 pErr=0  ingest=37ms query=89561ms  {budget=0 attempt=0 load=0 pre=0 enum=0 rebuild=0 abort= cause= heapMB guard=0 start=-1 abort=-1 afterGC=-1 valveGCs=0}  [SKIP+REMINE r=9.8 thr=3432786 cand=1533 fresh=0 gapRej=0 mine=89561ms rebuild=0ms tracked=1528]
+  bud3live q3  after b4  N=611849 oracle=1532   got=1532   miss=0 extra=0 uErr=0 pErr=0  ingest=67ms query=141741ms  {budget=90524 attempt=90679 load=67 pre=331 enum=90281 rebuild=0 abort=mining cause=deadline heapMB guard=9830 start=8661 abort=9831 afterGC=9788 valveGCs=254}  [ABORTED+REMINE r=13.0 thr=3467601 cand=1532 fresh=0 gapRej=0 mine=50530ms rebuild=0ms tracked=1528]
+  bud3live q4  after b5  N=618358 oracle=1536   got=1536   miss=0 extra=0 uErr=0 pErr=0  ingest=7ms query=63407ms  {budget=0 attempt=0 load=0 pre=0 enum=0 rebuild=0 abort= cause= heapMB guard=0 start=-1 abort=-1 afterGC=-1 valveGCs=0}  [SKIP+REMINE r=16.3 thr=3499232 cand=1536 fresh=0 gapRej=0 mine=63406ms rebuild=0ms tracked=1528]
+  bud3live q5  after b6  N=624867 oracle=1537   got=1537   miss=0 extra=0 uErr=0 pErr=0  ingest=14ms query=85075ms  {budget=0 attempt=0 load=0 pre=0 enum=0 rebuild=0 abort= cause= heapMB guard=0 start=-1 abort=-1 afterGC=-1 valveGCs=0}  [SKIP+REMINE r=19.5 thr=3531262 cand=1537 fresh=0 gapRej=0 mine=85066ms rebuild=0ms tracked=1528]
+  bud3live q6  after b7  N=631376 oracle=1532   got=1532   miss=0 extra=0 uErr=0 pErr=0  ingest=11ms query=86256ms  {budget=0 attempt=0 load=0 pre=0 enum=0 rebuild=0 abort= cause= heapMB guard=0 start=-1 abort=-1 afterGC=-1 valveGCs=0}  [SKIP+REMINE r=22.8 thr=3565892 cand=1532 fresh=0 gapRej=0 mine=86255ms rebuild=0ms tracked=1528]
+  bud3live q7  after b8  N=637885 oracle=1528   got=1528   miss=0 extra=0 uErr=0 pErr=0  ingest=18ms query=187834ms  {budget=87144 attempt=87164 load=414 pre=1586 enum=85163 rebuild=0 abort=mining cause=deadline heapMB guard=9830 start=10813 abort=1801 afterGC=622 valveGCs=1}  [ABORTED+REMINE r=26.0 thr=3601579 cand=1528 fresh=0 gapRej=0 mine=100486ms rebuild=0ms tracked=1528]
+  bud3live q8  after b9  N=644394 oracle=1524   got=1524   miss=0 extra=0 uErr=0 pErr=0  ingest=9ms query=120594ms  {budget=0 attempt=0 load=0 pre=0 enum=0 rebuild=0 abort= cause= heapMB guard=0 start=-1 abort=-1 afterGC=-1 valveGCs=0}  [SKIP+REMINE r=29.3 thr=3633494 cand=1524 fresh=0 gapRej=0 mine=120594ms rebuild=0ms tracked=1527]
+  bud3live q9  after b10 N=650903 oracle=1518   got=1518   miss=0 extra=0 uErr=0 pErr=0  ingest=19ms query=45989ms  {budget=0 attempt=0 load=0 pre=0 enum=0 rebuild=0 abort= cause= heapMB guard=0 start=-1 abort=-1 afterGC=-1 valveGCs=0}  [SKIP+REMINE r=32.5 thr=3660918 cand=1518 fresh=0 gapRej=0 mine=45988ms rebuild=0ms tracked=1527]
+compared queries=10 failing=0
+# exit=0 power check 2026-10-27 21:04:14 .. 2026-10-27 21:34:35: sleep/darkwake events=0

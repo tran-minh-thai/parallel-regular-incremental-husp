@@ -1,0 +1,21 @@
+log	policy	query	query_ms	F_query_ms	action	budget_ms	attempt_ms	enum_ms	abort_cause	heap_guard_mb	heap_start_mb	heap_abort_mb	heap_after_gc_mb	valve_collections	missing	extra
+20261027_204847_E2G-probe-S2-bud3_VS-CHAIN96-CW.log	bud3	0	35402	35794	remine	0	0	0		0	-1	-1	-1	0	0	0
+20261027_204847_E2G-probe-S2-bud3_VS-CHAIN96-CW.log	bud3	1	44092	35670	aborted	35791	8407	8354	heap	9830	4574	9832	3502	0	0	0
+20261027_204847_E2G-probe-S2-bud3_VS-CHAIN96-CW.log	bud3	2	35686	36000	skipped	0	0	0		0	-1	-1	-1	0	0	0
+20261027_204847_E2G-probe-S2-bud3_VS-CHAIN96-CW.log	bud3	3	37821	37586	aborted	36069	346	237	heap	9830	6282	9844	638	0	0	0
+20261027_204847_E2G-probe-S2-bud3_VS-CHAIN96-CW.log	bud3	4	37705	36833	skipped	0	0	0		0	-1	-1	-1	0	0	0
+20261027_204847_E2G-probe-S2-bud3_VS-CHAIN96-CW.log	bud3	5	38373	39292	skipped	0	0	0		0	-1	-1	-1	0	0	0
+20261027_204847_E2G-probe-S2-bud3_VS-CHAIN96-CW.log	bud3	6	40892	40138	skipped	0	0	0		0	-1	-1	-1	0	0	0
+20261027_204847_E2G-probe-S2-bud3_VS-CHAIN96-CW.log	bud3	7	97977	41756	aborted	41313	41315	40916	deadline	9830	5839	6412	623	0	0	0
+20261027_204847_E2G-probe-S2-bud3_VS-CHAIN96-CW.log	bud3	8	79461	42352	skipped	0	0	0		0	-1	-1	-1	0	0	0
+20261027_204847_E2G-probe-S2-bud3_VS-CHAIN96-CW.log	bud3	9	53538	42660	skipped	0	0	0		0	-1	-1	-1	0	0	0
+20261027_210414_E2G-probe-S2-bud3live_VS-CHAIN96-CW.log	bud3live	0	121406	40997	remine	0	0	0		0	-1	-1	-1	0	0	0
+20261027_210414_E2G-probe-S2-bud3live_VS-CHAIN96-CW.log	bud3live	1	197771	46652	aborted	122739	127573	127234	deadline	9830	1048	8189	8148	5	0	0
+20261027_210414_E2G-probe-S2-bud3live_VS-CHAIN96-CW.log	bud3live	2	89561	45742	skipped	0	0	0		0	-1	-1	-1	0	0	0
+20261027_210414_E2G-probe-S2-bud3live_VS-CHAIN96-CW.log	bud3live	3	141741	45378	aborted	90524	90679	90281	deadline	9830	8661	9831	9788	254	0	0
+20261027_210414_E2G-probe-S2-bud3live_VS-CHAIN96-CW.log	bud3live	4	63407	44474	skipped	0	0	0		0	-1	-1	-1	0	0	0
+20261027_210414_E2G-probe-S2-bud3live_VS-CHAIN96-CW.log	bud3live	5	85075	53996	skipped	0	0	0		0	-1	-1	-1	0	0	0
+20261027_210414_E2G-probe-S2-bud3live_VS-CHAIN96-CW.log	bud3live	6	86256	65329	skipped	0	0	0		0	-1	-1	-1	0	0	0
+20261027_210414_E2G-probe-S2-bud3live_VS-CHAIN96-CW.log	bud3live	7	187834	67552	aborted	87144	87164	85163	deadline	9830	10813	1801	622	1	0	0
+20261027_210414_E2G-probe-S2-bud3live_VS-CHAIN96-CW.log	bud3live	8	120594	89257	skipped	0	0	0		0	-1	-1	-1	0	0	0
+20261027_210414_E2G-probe-S2-bud3live_VS-CHAIN96-CW.log	bud3live	9	45989	102035	skipped	0	0	0		0	-1	-1	-1	0	0	0
