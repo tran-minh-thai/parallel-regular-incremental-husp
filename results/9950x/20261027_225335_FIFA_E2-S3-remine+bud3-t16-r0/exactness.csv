@@ -1,0 +1,11 @@
+dataset,policy,batches,schedule,fault,query,after_batch,n_seqs,oracle_size,returned,missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,gap_rejected,tracked_after,action,r,kept_on_abort,budget_ms,attempt_ms,attempt_load_ms,attempt_preprocess_ms,attempt_enum_ms,attempt_rebuild_ms,abort_phase
+FIFA,remine-nogc,21,every:4,0,0,4,12269,1034,1034,0,0,0,0,,,,,,,,,,,,,,,,
+FIFA,remine-nogc,21,every:4,0,1,8,14313,1000,1000,0,0,0,0,,,,,,,,,,,,,,,,
+FIFA,remine-nogc,21,every:4,0,2,12,16357,940,940,0,0,0,0,,,,,,,,,,,,,,,,
+FIFA,remine-nogc,21,every:4,0,3,16,18401,949,949,0,0,0,0,,,,,,,,,,,,,,,,
+FIFA,remine-nogc,21,every:4,0,4,20,20450,921,921,0,0,0,0,,,,,,,,,,,,,,,,
+FIFA,bud3,21,every:4,0,0,4,12269,1034,1034,0,0,0,0,2044,1035916,1034,0,0,1057,remine,81.76,0,0,0,0,0,0,0,
+FIFA,bud3,21,every:4,0,1,8,14313,1000,1000,0,0,0,0,4088,346092,908,65,0,1122,discover,163.52,0,8126,2034,3,4,1912,114,
+FIFA,bud3,21,every:4,0,2,12,16357,940,940,0,0,0,0,6132,512655,768,1,0,1123,discover,245.28,0,9286,2605,3,4,2593,4,
+FIFA,bud3,21,every:4,0,3,16,18401,949,949,0,0,0,0,8176,679049,814,3,0,1126,discover,327.04,0,10446,3752,5,4,3740,3,
+FIFA,bud3,21,every:4,0,4,20,20450,921,921,0,0,0,0,10225,845808,787,0,0,921,discover,409.00,0,11610,4516,5,4,4507,0,
