@@ -1,0 +1,2 @@
+key	experiment	dataset	schedule	policies	threads	rep	status	exit_code	run_dir	commit	java	started	ended	seconds
+E2|VS-CHAIN96-CW|S1|remine-nogc,bud3|t16|r0	E2	VS-CHAIN96-CW	S1	remine-nogc,bud3	16	0	OK	0	results/9950x/20261027_152733_VS-CHAIN96-CW_E2-S1-remine+bud3-t16-r0	fb82e904e363bc0aa9bbe9f68526129cac94d1cb	25.0.5+8-LTS Eclipse Adoptium	2026-10-27T15:27:31	2026-10-27T15:37:36	605
