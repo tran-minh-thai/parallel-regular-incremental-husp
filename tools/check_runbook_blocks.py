@@ -48,7 +48,8 @@ function py {
     }
     '*summarize_campaign.py' {
       New-Item -ItemType Directory -Force results/9950x | Out-Null
-      if ($rest -contains '--exp') { Set-Content results/9950x/summary_E2L_E2N_E2G-raw.tsv 'x'; "P1: 0 disagreeing" }
+      if ($rest -contains 'E2F') { Set-Content results/9950x/summary_E2F.tsv 'x'; "P1 bud3fs: 0 disagreeing" }
+      elseif ($rest -contains '--exp') { Set-Content results/9950x/summary_E2L_E2N_E2G-raw.tsv 'x'; "P1: 0 disagreeing" }
       else { Set-Content results/9950x/summary_E2.tsv 'x'; Set-Content experiments/campaign_9950x.json '{"experiments": {"E2R": {}}}' }
       $code = 1
     }
@@ -229,12 +230,13 @@ def check_followup(block, report, base, check):
     camp = [l for l in calls if "tools/campaign.py" in l]
     check(camp == ["py tools/campaign.py run --exp E2K", "py tools/campaign.py run --exp E2R", "py tools/campaign.py run --exp E5",
                    "py tools/campaign.py --config experiments/campaign_9950x_followup.json run --exp E2G-raw --exp E2G-live "
-                   "--exp E2L --exp E2N --interleave"], "followup A: rest of the main campaign, then the follow-up %s" % camp)
+                   "--exp E2L --exp E2N --exp E2F --interleave"], "followup A: rest of the main campaign, then the follow-up %s" % camp)
     check(any("repeats: exit 1" in l for l in log) and "results/9950x/summary_E2.tsv" in remote_files(T, "refs/heads/campaign-9950x"),
           "followup A: repeats generated and committed before E2R")
     check(sum("run_tests.py" in l for l in calls) == 1, "followup A: tests run once on the merged code")
     files = remote_files(T, "refs/heads/campaign-9950x")
     check({"results/9950x/summary_E2G.txt", "results/9950x/summary_followup.txt", "results/9950x/summary_E2L_E2N_E2G-raw.tsv",
+           "results/9950x/summary_E2F.txt", "results/9950x/summary_E2F.tsv",
            "experiments/campaign_9950x_followup.json"} <= files, "followup A: merge and the three summaries on campaign-9950x")
     s = (c / "results/9950x/summary_E2G.txt").read_bytes()
     check(b"G1 ok" in s and not s.startswith(b"\xef\xbb\xbf") and b"\x00" not in s, "followup A: summary is UTF-8 without BOM")
