@@ -1,0 +1,7 @@
+# java -Xmx24g -Xss4m -cp out test.SeedProbe datasets/REES46-MULTI-CW_seq.txt datasets/REES46-MULTI-CW_eui.txt 0.0002 217714 0.5 21 10 strict,seed
+# commit b6a8263 + uncommitted src/main/java/test/SeedProbe.java; 'Battery Power'; diagnosis, not a measurement
+REES46-MULTI-CW N=979709 old=489855 U(old)=25512550615 threshold=5102511 B=217714 threads=10
+mode          ms  patterns  explored_nodes  candidates  pruned_eucs  pruned_bound  pruned_node_cond  pruned_regularity
+strict       1283715      5208      2888810201 37445979816   2435701863   32121467752                 0             152015
+seed          826736      5208      2888810213 37445980354   2435702093   32121468048                 0             152018
+# exit=0

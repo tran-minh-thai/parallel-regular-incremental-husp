@@ -1,0 +1,8 @@
+# java -Xmx24g -Xss4m -cp out test.SeedProbe datasets/REES46-MULTI-CW_seq.txt datasets/REES46-MULTI-CW_eui.txt 0.0002 217714 0.5 21 10 strict:b1,strict:x1.05,strict:x1.02
+# commit b6a8263 + uncommitted src/main/java/test/SeedProbe.java; 'AC Power'; diagnosis, not a measurement
+REES46-MULTI-CW N=979709 old=489855 U(old)=25512550615 threshold=5102511 B=217714 threads=10
+mode          ms  patterns  explored_nodes  candidates  pruned_eucs  pruned_bound  pruned_node_cond  pruned_regularity
+strict:b1       1701      2979         2239042    28901504      1281814      25380648                 0             244576  n=514348 threshold=5327718
+strict:x1.05  255754      2848       924519075 12615554759    982823340   10708212344                 0             107118  n=489855 threshold=5357637
+strict:x1.02  434964      3128      1829408947 24189652226   1710444246   20649799033                 0             130602  n=489855 threshold=5204562
+# exit=0
