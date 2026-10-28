@@ -188,7 +188,7 @@ public class QueryScheduleProbe {
                             p == null ? "" : "" + m.trackedCount(),
                             p == null || !(p.adaptiveQuery || p.costCapped) ? "" : (p.lastQueryAction == 0 ? "discover"
                                     : p.lastQueryAction == 1 ? "remine" : p.lastQueryAction == 2 ? "aborted"
-                                    : p.lastQueryAction == 3 ? "skipped" : "none"),
+                                    : p.lastQueryAction == 3 ? "skipped" : p.lastQueryAction == 4 ? "seed" : "none"),
                             p == null || !(p.adaptiveQuery || p.costCapped) ? "" : String.format(java.util.Locale.ROOT, "%.2f", p.lastQueryR),
                             p == null || !p.costCapped ? "" : "" + p.lastQueryKept,
                             p == null || !p.costCapped ? "" : "" + p.lastBudgetMs,
@@ -221,7 +221,8 @@ public class QueryScheduleProbe {
                                     p.lastHeapValveCollections) : "")
                                     + String.format(java.util.Locale.ROOT, "  [%sthr=%d cand=%d fresh=%d gapRej=%d mine=%dms rebuild=%dms tracked=%d]",
                                     p.adaptiveQuery || p.costCapped ? (p.lastQueryAction == 0 ? "DISCOVER r="
-                                            : p.lastQueryAction == 2 ? "ABORTED+REMINE r=" : p.lastQueryAction == 3 ? "SKIP+REMINE r=" : "REMINE r=")
+                                            : p.lastQueryAction == 2 ? "ABORTED+REMINE r=" : p.lastQueryAction == 3 ? "SKIP+REMINE r="
+                                            : p.lastQueryAction == 4 ? "FUSED-SEED r=" : "REMINE r=")
                                             + String.format(java.util.Locale.ROOT, "%.1f ", p.lastQueryR) : "",
                                     p.lastQueryThreshold, p.lastQueryCandidates, p.lastQueryFresh, p.lastQueryGapRejected,
                                     p.lastQueryMineMs, p.lastQueryRebuildMs, m.trackedCount()));
@@ -268,7 +269,8 @@ public class QueryScheduleProbe {
                 boolean sel = parts.get(0).equals("sel");
                 boolean bud2 = parts.get(0).equals("bud2");          // bud2: bud + keep rebuilt + overhead gate + no GC
                 boolean live = parts.get(0).equals("bud3live");      // bud3live: bud3 with the heap guard judged on the live heap
-                if (live) parts.set(0, "bud3");
+                boolean fused = parts.get(0).equals("bud3fs");       // bud3fs: bud3 seeded at the first query (fused seed)
+                if (live || fused) parts.set(0, "bud3");
                 boolean bud3 = parts.get(0).equals("bud3");          // bud3: bud + keep rebuilt + window backoff + scaled F_hat
                                                                      //       + heap guard 0.6 + no GC (no overhead gate)
                 if (bud2 || bud3) { parts.set(0, "bud"); parts.add("nogc"); }
@@ -299,6 +301,7 @@ public class QueryScheduleProbe {
                 p.scaleFhatByN = bud3;
                 p.heapGuardFraction = bud3 ? Double.parseDouble(System.getProperty("heapGuard", "0.6")) : 0;  // tests only override
                 p.heapGuardLive = live;
+                p.fusedSeed = fused;
                 p.measureMemoryOnQuery = !parts.contains("nogc");
                 p.selectorKappa = kappa;
                 m = p;

@@ -97,6 +97,7 @@ def main(argv=None):
     ap.add_argument("--margin", type=float, default=0.10)
     ap.add_argument("--config", default=str(CONFIG))
     ap.add_argument("--exp", action="append", help="experiments to read (default E2 and its repeats E2R)")
+    ap.add_argument("--policy", default="bud3", help="the proposal's policy in the cells (default bud3)")
     args = ap.parse_args(argv)
     config = Path(args.config)
     cfg = json.loads(config.read_text(encoding="utf-8"))
@@ -127,7 +128,7 @@ def main(argv=None):
         role = measured.get(ds, "unmeasured")
         f_tot, b_tot, acts, p2_ok, p2_det, allow = [], [], [], True, "", 0
         for by in runs:
-            f, b = by.get("remine-nogc", []), by.get("bud3", [])
+            f, b = by.get("remine-nogc", []), by.get(args.policy, [])
             for e, _ in b:
                 p1_n += 1
                 if int(e["missing"]) + int(e["extra"]) + int(e["utility_mismatch"]) + int(e["period_mismatch"]) > 0:

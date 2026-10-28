@@ -49,6 +49,8 @@ STRESS = [
     ("defect: dense build stores s-pairs backward", ["-Deucs.build=dense", "-Deucs.fault=3", "-Dpolicies=keep-sfx," + BUD3], "some"),
     ("defect: partitioned build loses a partition", ["-Deucs.build=partitioned", "-Deucs.fault=4", "-Dpolicies=keep-sfx," + BUD3], "some"),
     ("defect: sketch estimate below the true value", ["-Deucs.build=sketch", "-Deucs.fault=5", "-Dpolicies=keep-sfx," + BUD3], "some"),
+    ("clean: seed fused into the first query (bud3fs)", ["-Dpolicies=keep-sfx," + BUD3.replace("bud3", "bud3fs")], "zero"),
+    ("defect 9: fused seed loses the batches before the first query", ["-Dfault=9", "-Dpolicies=" + BUD3.replace("bud3", "bud3fs")], "some"),
     ("clean: heap guard judged on the live heap (bud3live)", ["-Dpolicies=keep-sfx," + BUD3.replace("bud3", "bud3live")], "zero"),
     # A guard of a few bytes is breached at every attempt: bud3 aborts on the raw reading, bud3live collects and then aborts.
     ("clean: heap guard breached at every attempt, bud3 and bud3live",

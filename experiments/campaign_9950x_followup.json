@@ -1,5 +1,5 @@
 {
-  "about": "Experiments run after the main campaign, same ledger and environment lock: E2G (bud3 against bud3live, the heap guard judged on the live heap, schedule S2), E2L (VS-CHAIN46-CW schedule S1 with a per-policy limit its re-mine fits in), E2N (two datasets rebuilt without store-type accounts)",
+  "about": "Experiments run after the main campaign, same ledger and environment lock: E2G (bud3 against bud3live, the heap guard judged on the live heap, schedule S2), E2L (VS-CHAIN46-CW schedule S1 with a per-policy limit its re-mine fits in), E2N (two datasets rebuilt without store-type accounts), E2F (bud3 with the seed fused into the first query)",
   "out": "results/9950x",
   "branch": "campaign-9950x",
   "status_project": "07_RegIncHUSPM_Parallel",
@@ -190,6 +190,66 @@
       "policies": [
         "remine-nogc",
         "bud3"
+      ],
+      "oracle": "first",
+      "reps": 1,
+      "limit_s": 14400
+    },
+    "E2F": {
+      "about": "F then bud3fs (the seed fused into the first query) in one JVM, compared by ratio with the E2 cell of the same dataset and schedule",
+      "pairs": [
+        [
+          "REES46-MULTI-CW",
+          "S1"
+        ],
+        [
+          "REES46-MULTI-CW",
+          "S2"
+        ],
+        [
+          "REES46-MULTI-CW",
+          "S3"
+        ],
+        [
+          "VS-CHAIN96-CW",
+          "S1"
+        ],
+        [
+          "VS-CHAIN101-CW",
+          "S1"
+        ],
+        [
+          "HM-CW-TYPE",
+          "S1"
+        ],
+        [
+          "ONLINE-RETAIL-II-H",
+          "S1"
+        ],
+        [
+          "DUNNHUMBY-H",
+          "S1"
+        ],
+        [
+          "TAFENG-CW",
+          "S1"
+        ],
+        [
+          "REES46-COSMETICS-CW",
+          "S1"
+        ],
+        [
+          "FIFA",
+          "S1"
+        ],
+        [
+          "KOSARAK",
+          "S1"
+        ]
+      ],
+      "policies": [
+        "remine-nogc",
+        "bud3fs"
       ],
       "oracle": "first",
       "reps": 1,
