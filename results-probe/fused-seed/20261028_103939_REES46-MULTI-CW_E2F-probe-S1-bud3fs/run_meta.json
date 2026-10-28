@@ -1,0 +1,18 @@
+{
+  "kind": "probe (development machine, feasibility only)",
+  "cell": "E2F-probe-S1-bud3fs",
+  "command": "java -Dthreads=10 -Ddold=0.5 -Doracle=first -Dlimit=3600 -Dout=<scratch>/fused-out -Dcell=E2F-probe-S1-bud3fs test.QueryScheduleProbe datasets/REES46-MULTI-CW_seq.txt datasets/REES46-MULTI-CW_eui.txt 0.0002 217714 21 every remine-nogc,bud3fs",
+  "git_commit": "1b6a4dd69720dc96e766d6adce3adf0fce542497",
+  "tree": "clean",
+  "sha256_AlgoPRIncHUSP": "62529312efb980e2d2d240b2a5dfb495df7d34b694392a8fb457f851fa9069d4",
+  "sha256_AlgoParRemine": "1c2d15b22aa6bef9a6bc5f24022edb6b4b564bba984c6cd07f932e6c335364e4",
+  "sha256_AlgoRHUSPMinerParallel": "06c3192bc4d863ca124457f18b05fc4bd3c2698a72dfc97e32aa989e11304ce3",
+  "sha256_QueryScheduleProbe": "86baa4044d69b8c3028e510d9351acd87db0484a3262174ea979052583ad15bc",
+  "sha256_seq": "84c6c95fd7bb66cf91f8afac6d0aa0b0a77436735ef430014794d45bde12a624",
+  "sha256_eui": "d1c573bfdfef9d7ef324e557562e883d16351c371252c101e40205d45550a1eb",
+  "java": "26.0.1+8-34 Oracle Corporation",
+  "os": "Mac OS X 27.0.1 aarch64",
+  "threads": "10",
+  "max_heap_mb": "24576",
+  "started": "2026-10-28T10:39:39+07:00"
+}
