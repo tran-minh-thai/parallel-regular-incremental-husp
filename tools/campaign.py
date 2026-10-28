@@ -29,6 +29,7 @@ import platform
 import re
 import subprocess
 import sys
+import threading
 import tempfile
 import time
 from pathlib import Path
@@ -345,15 +346,25 @@ def run_cell(cfg, c, use_git, dry_run=False):
     logdir.mkdir(parents=True, exist_ok=True)
     started = datetime.datetime.now()
     log = logdir / ("%s_%s.log" % (started.strftime("%Y%m%d_%H%M%S"), cell_id(c) + "_" + c["dataset"]))
+    # The outer limit must fire even when the JVM prints nothing (a heap near exhaustion can keep it collecting for
+    # hours with no output), so it is enforced by a timer, not by the read loop, which blocks while the JVM is silent.
     outer = c["limit_s"] * len(c["policies"].split(",")) + 900
-    killed = False
+    outer = float(os.environ.get("CAMPAIGN_OUTER_S", outer))      # test hook: the self-test shortens it
+    killed_flag = []
     with open(log, "w", encoding="utf-8", newline="\n") as lf:
         lf.write("# " + " ".join(cmd) + "\n# commit %s\n" % head_commit())
         lf.flush()
         p = subprocess.Popen(cmd, cwd=str(ROOT), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
                              encoding="utf-8", errors="replace")
         chunks = []
-        t0 = time.monotonic()
+        done = threading.Event()
+
+        def outer_limit():
+            if not done.wait(outer) and p.poll() is None:
+                killed_flag.append(True)
+                p.kill()
+
+        threading.Thread(target=outer_limit, daemon=True).start()
         while True:
             line = p.stdout.readline()
             if line:
@@ -362,10 +373,9 @@ def run_cell(cfg, c, use_git, dry_run=False):
                 lf.flush()
             elif p.poll() is not None:
                 break
-            if time.monotonic() - t0 > outer and p.poll() is None:
-                p.kill()
-                killed = True
         p.wait()
+        done.set()
+    killed = bool(killed_flag)
     ended = datetime.datetime.now()
     output = "".join(chunks)
     status = classify(p.returncode, output, killed)
@@ -556,6 +566,14 @@ def self_test():
     killed_rows = len(ledger_rows(repo))
     run(repo, env)
     check(killed_rows == 0 and len(ledger_rows(repo)) == 2, "interrupted cell has no row and runs on restart (rows after kill=%d)" % killed_rows)
+
+    # 2b. a JVM that goes silent past the outer limit is killed and recorded as TIMEOUT (it used to hang the campaign)
+    tmp, repo, remote, env = scenario(0)
+    t0 = time.monotonic()
+    r = run(repo, dict(env, STUB_SLEEP="30", CAMPAIGN_OUTER_S="3"))
+    rows = ledger_rows(repo)
+    check(r.returncode == 0 and len(rows) == 2 and all("\tTIMEOUT\t" in x for x in rows) and time.monotonic() - t0 < 30,
+          "silent cell killed at the outer limit and recorded as TIMEOUT (%.0f s)" % (time.monotonic() - t0))
 
     # 3. a push that fails does not stop the campaign
     tmp, repo, remote, env = scenario(0)

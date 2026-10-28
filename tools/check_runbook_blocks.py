@@ -227,29 +227,32 @@ def check_followup(block, report, base, check):
     check(data == ["py tools/build_all_datasets.py %s/lib --only VS-CHAIN152-CW-NOACC,VS-CHAIN46-CW-NOACC" % T],
           "followup A: filtered datasets built from the library %s" % data)
     camp = [l for l in calls if "tools/campaign.py" in l]
-    check(camp == ["py tools/campaign.py --config experiments/campaign_9950x_followup.json run --exp E2G-raw --exp E2G-live "
-                   "--exp E2L --exp E2N --interleave"], "followup A: campaign call %s" % camp)
+    check(camp == ["py tools/campaign.py run --exp E2K", "py tools/campaign.py run --exp E2R", "py tools/campaign.py run --exp E5",
+                   "py tools/campaign.py --config experiments/campaign_9950x_followup.json run --exp E2G-raw --exp E2G-live "
+                   "--exp E2L --exp E2N --interleave"], "followup A: rest of the main campaign, then the follow-up %s" % camp)
+    check(any("repeats: exit 1" in l for l in log) and "results/9950x/summary_E2.tsv" in remote_files(T, "refs/heads/campaign-9950x"),
+          "followup A: repeats generated and committed before E2R")
     check(sum("run_tests.py" in l for l in calls) == 1, "followup A: tests run once on the merged code")
     files = remote_files(T, "refs/heads/campaign-9950x")
     check({"results/9950x/summary_E2G.txt", "results/9950x/summary_followup.txt", "results/9950x/summary_E2L_E2N_E2G-raw.tsv",
            "experiments/campaign_9950x_followup.json"} <= files, "followup A: merge and the three summaries on campaign-9950x")
     s = (c / "results/9950x/summary_E2G.txt").read_bytes()
     check(b"G1 ok" in s and not s.startswith(b"\xef\xbb\xbf") and b"\x00" not in s, "followup A: summary is UTF-8 without BOM")
-    check(any("followup summary: exit 1" in l for l in log) and any("followup finished" in l for l in log),
+    check(any("resume summary: exit 1" in l for l in log) and any("resume finished" in l for l in log),
           "followup A: failing summary checks reported, block finished")
     check(AWAKE_OK in r.stdout, "followup A: keep-awake set then released")
     n = git("rev-list", "--count", "HEAD", cwd=c)
     r, calls, log = run_block(T, block, followup_subs(T), {})
-    check(any("followup tests: passed before" in l for l in log) and any("followup data: built and verified before" in l for l in log)
+    check(any("resume tests: passed before" in l for l in log) and any("resume data: built and verified before" in l for l in log)
           and not any("run_tests" in l or "build_all" in l for l in calls), "followup B: second paste skips data and tests")
     check(git("rev-list", "--count", "HEAD", cwd=c) == n, "followup B: no new commit")
     T, c = fresh("followup_C")
     r, calls, log = run_block(T, block, followup_subs(T), {"FAKE_JAVA": "1"})
-    check(any("STOPPED at followup setup" in l for l in log) and not calls
+    check(any("STOPPED at resume setup" in l for l in log) and not calls
           and not ok_git("merge-base", "--is-ancestor", "origin/heap-guard-live", "HEAD", cwd=c), "followup C: running java stops it")
     T, c = fresh("followup_D", conflict=True)
     r, calls, log = run_block(T, block, followup_subs(T), {})
-    check(any("STOPPED at followup setup" in l for l in log) and not (c / ".git" / "MERGE_HEAD").exists()
+    check(any("STOPPED at resume setup" in l for l in log) and not (c / ".git" / "MERGE_HEAD").exists()
           and git("status", "--porcelain", "--untracked-files=no", cwd=c, check=False) == "" and not calls,
           "followup D: conflicting merge aborted, tree clean, nothing runs")
 
