@@ -1,0 +1,9 @@
+# java -Xmx32g -Xss4m -Dthreads=16 -Ddold=0.5 -Doracle=none -Dlimit=1800 -Dout=results/9950x -Dcell=E2K-S3-keep-t16-r0 -Dkind=measurement -cp out test.QueryScheduleProbe datasets/KOSARAK_seq.txt datasets/KOSARAK_eui.txt 0.015 297000 21 every:4 keep-sfx-gf-nogc
+# commit fc532c0ef57c154e1aab7a4f1134c7f359b1f6be
+KOSARAK N=990002 delta=0.015 B=297000 k=21 dOld=0.5 schedule=every:4 threads=16 fault=0 reference=none -> results\9950x\20261029_223234_KOSARAK_E2K-S3-keep-t16-r0
+  keep-sfx-gf-nogc q0  after b4  N=594001 oracle=0      got=27     miss=0 extra=0 uErr=0 pErr=0  ingest=143ms query=1072ms  [thr=572902 cand=29 fresh=2 gapRej=0 mine=394ms rebuild=676ms tracked=29]
+  keep-sfx-gf-nogc q1  after b8  N=693001 oracle=0      got=27     miss=0 extra=0 uErr=0 pErr=0  ingest=15ms query=605ms  [thr=1149378 cand=24 fresh=0 gapRej=0 mine=605ms rebuild=0ms tracked=29]
+  keep-sfx-gf-nogc q2  after b12 N=792001 oracle=0      got=27     miss=0 extra=0 uErr=0 pErr=0  ingest=15ms query=986ms  [thr=1738331 cand=24 fresh=0 gapRej=0 mine=986ms rebuild=0ms tracked=29]
+  keep-sfx-gf-nogc q3  after b16 N=891001 oracle=0      got=27     miss=0 extra=0 uErr=0 pErr=0  ingest=15ms query=1188ms  [thr=2310761 cand=25 fresh=0 gapRej=0 mine=1188ms rebuild=0ms tracked=29]
+  keep-sfx-gf-nogc q4  after b20 N=990002 oracle=0      got=27     miss=0 extra=0 uErr=0 pErr=0  ingest=14ms query=1482ms  [thr=2885699 cand=25 fresh=0 gapRej=0 mine=1482ms rebuild=0ms tracked=29]
+compared queries=0 failing=0

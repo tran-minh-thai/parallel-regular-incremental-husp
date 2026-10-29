@@ -1,0 +1,6 @@
+dataset,policy,batches,schedule,fault,query,after_batch,n_seqs,oracle_size,returned,missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,gap_rejected,tracked_after,action,r,kept_on_abort,budget_ms,attempt_ms,attempt_load_ms,attempt_preprocess_ms,attempt_enum_ms,attempt_rebuild_ms,abort_phase
+KOSARAK,keep-sfx-gf-nogc,21,every:4,0,0,4,594001,0,27,0,0,0,0,99000,572902,29,2,0,29,,,,,,,,,,
+KOSARAK,keep-sfx-gf-nogc,21,every:4,0,1,8,693001,0,27,0,0,0,0,198000,1149378,24,0,0,29,,,,,,,,,,
+KOSARAK,keep-sfx-gf-nogc,21,every:4,0,2,12,792001,0,27,0,0,0,0,297000,1738331,24,0,0,29,,,,,,,,,,
+KOSARAK,keep-sfx-gf-nogc,21,every:4,0,3,16,891001,0,27,0,0,0,0,396000,2310761,25,0,0,29,,,,,,,,,,
+KOSARAK,keep-sfx-gf-nogc,21,every:4,0,4,20,990002,0,27,0,0,0,0,495001,2885699,25,0,0,29,,,,,,,,,,
