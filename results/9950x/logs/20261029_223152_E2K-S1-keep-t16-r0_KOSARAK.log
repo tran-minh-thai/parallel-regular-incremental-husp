@@ -1,0 +1,24 @@
+# java -Xmx32g -Xss4m -Dthreads=16 -Ddold=0.5 -Doracle=none -Dlimit=1800 -Dout=results/9950x -Dcell=E2K-S1-keep-t16-r0 -Dkind=measurement -cp out test.QueryScheduleProbe datasets/KOSARAK_seq.txt datasets/KOSARAK_eui.txt 0.015 297000 21 every keep-sfx-gf-nogc
+# commit ce727d07beda657854cd4a1e423714ed9ef7e398
+KOSARAK N=990002 delta=0.015 B=297000 k=21 dOld=0.5 schedule=every threads=16 fault=0 reference=none -> results\9950x\20261029_223154_KOSARAK_E2K-S1-keep-t16-r0
+  keep-sfx-gf-nogc q0  after b1  N=519751 oracle=0      got=27     miss=0 extra=0 uErr=0 pErr=0  ingest=150ms query=867ms  [thr=144521 cand=32 fresh=5 gapRej=0 mine=297ms rebuild=569ms tracked=32]
+  keep-sfx-gf-nogc q1  after b2  N=544501 oracle=0      got=27     miss=0 extra=0 uErr=0 pErr=0  ingest=4ms query=147ms  [thr=288844 cand=28 fresh=0 gapRej=0 mine=147ms rebuild=0ms tracked=32]
+  keep-sfx-gf-nogc q2  after b3  N=569251 oracle=0      got=27     miss=0 extra=0 uErr=0 pErr=0  ingest=4ms query=196ms  [thr=431603 cand=29 fresh=0 gapRej=0 mine=196ms rebuild=0ms tracked=32]
+  keep-sfx-gf-nogc q3  after b4  N=594001 oracle=0      got=27     miss=0 extra=0 uErr=0 pErr=0  ingest=4ms query=211ms  [thr=572902 cand=29 fresh=0 gapRej=0 mine=211ms rebuild=0ms tracked=32]
+  keep-sfx-gf-nogc q4  after b5  N=618751 oracle=0      got=27     miss=0 extra=0 uErr=0 pErr=0  ingest=3ms query=344ms  [thr=713459 cand=26 fresh=0 gapRej=0 mine=344ms rebuild=0ms tracked=32]
+  keep-sfx-gf-nogc q5  after b6  N=643501 oracle=0      got=27     miss=0 extra=0 uErr=0 pErr=0  ingest=3ms query=404ms  [thr=855723 cand=25 fresh=0 gapRej=0 mine=404ms rebuild=0ms tracked=32]
+  keep-sfx-gf-nogc q6  after b7  N=668251 oracle=0      got=27     miss=0 extra=0 uErr=0 pErr=0  ingest=4ms query=459ms  [thr=1007451 cand=25 fresh=0 gapRej=0 mine=459ms rebuild=0ms tracked=32]
+  keep-sfx-gf-nogc q7  after b8  N=693001 oracle=0      got=27     miss=0 extra=0 uErr=0 pErr=0  ingest=3ms query=495ms  [thr=1149378 cand=24 fresh=0 gapRej=0 mine=495ms rebuild=0ms tracked=32]
+  keep-sfx-gf-nogc q8  after b9  N=717751 oracle=0      got=27     miss=0 extra=0 uErr=0 pErr=0  ingest=4ms query=544ms  [thr=1294373 cand=26 fresh=0 gapRej=0 mine=544ms rebuild=0ms tracked=32]
+  keep-sfx-gf-nogc q9  after b10 N=742501 oracle=0      got=27     miss=0 extra=0 uErr=0 pErr=0  ingest=3ms query=708ms  [thr=1442170 cand=24 fresh=0 gapRej=0 mine=708ms rebuild=0ms tracked=32]
+  keep-sfx-gf-nogc q10 after b11 N=767251 oracle=0      got=27     miss=0 extra=0 uErr=0 pErr=0  ingest=4ms query=814ms  [thr=1591593 cand=24 fresh=0 gapRej=0 mine=814ms rebuild=0ms tracked=32]
+  keep-sfx-gf-nogc q11 after b12 N=792001 oracle=0      got=27     miss=0 extra=0 uErr=0 pErr=0  ingest=4ms query=965ms  [thr=1738331 cand=24 fresh=0 gapRej=0 mine=965ms rebuild=0ms tracked=32]
+  keep-sfx-gf-nogc q12 after b13 N=816751 oracle=0      got=27     miss=0 extra=0 uErr=0 pErr=0  ingest=4ms query=970ms  [thr=1883831 cand=24 fresh=0 gapRej=0 mine=970ms rebuild=0ms tracked=32]
+  keep-sfx-gf-nogc q13 after b14 N=841501 oracle=0      got=27     miss=0 extra=0 uErr=0 pErr=0  ingest=4ms query=1042ms  [thr=2022420 cand=25 fresh=0 gapRej=0 mine=1042ms rebuild=0ms tracked=32]
+  keep-sfx-gf-nogc q14 after b15 N=866251 oracle=0      got=27     miss=0 extra=0 uErr=0 pErr=0  ingest=4ms query=1154ms  [thr=2166759 cand=25 fresh=0 gapRej=0 mine=1154ms rebuild=0ms tracked=32]
+  keep-sfx-gf-nogc q15 after b16 N=891001 oracle=0      got=27     miss=0 extra=0 uErr=0 pErr=0  ingest=4ms query=1219ms  [thr=2310761 cand=25 fresh=0 gapRej=0 mine=1219ms rebuild=0ms tracked=32]
+  keep-sfx-gf-nogc q16 after b17 N=915751 oracle=0      got=27     miss=0 extra=0 uErr=0 pErr=0  ingest=4ms query=1254ms  [thr=2454745 cand=25 fresh=0 gapRej=0 mine=1254ms rebuild=0ms tracked=32]
+  keep-sfx-gf-nogc q17 after b18 N=940501 oracle=0      got=27     miss=0 extra=0 uErr=0 pErr=0  ingest=2ms query=1295ms  [thr=2599898 cand=25 fresh=0 gapRej=0 mine=1295ms rebuild=0ms tracked=32]
+  keep-sfx-gf-nogc q18 after b19 N=965251 oracle=0      got=27     miss=0 extra=0 uErr=0 pErr=0  ingest=2ms query=1363ms  [thr=2743770 cand=25 fresh=0 gapRej=0 mine=1363ms rebuild=0ms tracked=32]
+  keep-sfx-gf-nogc q19 after b20 N=990002 oracle=0      got=27     miss=0 extra=0 uErr=0 pErr=0  ingest=3ms query=1540ms  [thr=2885699 cand=25 fresh=0 gapRej=0 mine=1540ms rebuild=0ms tracked=32]
+compared queries=0 failing=0
