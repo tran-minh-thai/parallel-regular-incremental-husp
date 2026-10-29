@@ -1,0 +1,6 @@
+dataset,policy,batches,schedule,fault,query,after_batch,n_seqs,oracle_size,returned,missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,gap_rejected,tracked_after,action,r,kept_on_abort,budget_ms,attempt_ms,attempt_load_ms,attempt_preprocess_ms,attempt_enum_ms,attempt_rebuild_ms,abort_phase
+FIFA,keep-sfx-gf-nogc,21,every:4,0,0,4,12269,0,1034,0,0,0,0,2044,170450,996,130,0,1187,,,,,,,,,,
+FIFA,keep-sfx-gf-nogc,21,every:4,0,1,8,14313,0,1000,0,0,0,0,4088,346092,908,14,0,1201,,,,,,,,,,
+FIFA,keep-sfx-gf-nogc,21,every:4,0,2,12,16357,0,940,0,0,0,0,6132,512655,768,0,0,1201,,,,,,,,,,
+FIFA,keep-sfx-gf-nogc,21,every:4,0,3,16,18401,0,949,0,0,0,0,8176,679049,814,2,0,1203,,,,,,,,,,
+FIFA,keep-sfx-gf-nogc,21,every:4,0,4,20,20450,0,921,0,0,0,0,10225,845808,787,0,0,1203,,,,,,,,,,

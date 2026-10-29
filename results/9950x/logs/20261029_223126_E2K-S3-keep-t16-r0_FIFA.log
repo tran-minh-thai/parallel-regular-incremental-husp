@@ -1,0 +1,9 @@
+# java -Xmx32g -Xss4m -Dthreads=16 -Ddold=0.5 -Doracle=none -Dlimit=1800 -Dout=results/9950x -Dcell=E2K-S3-keep-t16-r0 -Dkind=measurement -cp out test.QueryScheduleProbe datasets/FIFA_seq.txt datasets/FIFA_eui.txt 0.04 6135 21 every:4 keep-sfx-gf-nogc
+# commit 59b37449cf2c6eb0636a7523bc44585a6d12c398
+FIFA N=20450 delta=0.04 B=6135 k=21 dOld=0.5 schedule=every:4 threads=16 fault=0 reference=none -> results\9950x\20261029_223126_FIFA_E2K-S3-keep-t16-r0
+  keep-sfx-gf-nogc q0  after b4  N=12269  oracle=0      got=1034   miss=0 extra=0 uErr=0 pErr=0  ingest=114ms query=1183ms  [thr=170450 cand=996 fresh=130 gapRej=0 mine=1065ms rebuild=116ms tracked=1187]
+  keep-sfx-gf-nogc q1  after b8  N=14313  oracle=0      got=1000   miss=0 extra=0 uErr=0 pErr=0  ingest=5ms query=1765ms  [thr=346092 cand=908 fresh=14 gapRej=0 mine=1760ms rebuild=4ms tracked=1201]
+  keep-sfx-gf-nogc q2  after b12 N=16357  oracle=0      got=940    miss=0 extra=0 uErr=0 pErr=0  ingest=4ms query=2543ms  [thr=512655 cand=768 fresh=0 gapRej=0 mine=2543ms rebuild=0ms tracked=1201]
+  keep-sfx-gf-nogc q3  after b16 N=18401  oracle=0      got=949    miss=0 extra=0 uErr=0 pErr=0  ingest=4ms query=3668ms  [thr=679049 cand=814 fresh=2 gapRej=0 mine=3663ms rebuild=5ms tracked=1203]
+  keep-sfx-gf-nogc q4  after b20 N=20450  oracle=0      got=921    miss=0 extra=0 uErr=0 pErr=0  ingest=6ms query=4497ms  [thr=845808 cand=787 fresh=0 gapRej=0 mine=4497ms rebuild=0ms tracked=1203]
+compared queries=0 failing=0
