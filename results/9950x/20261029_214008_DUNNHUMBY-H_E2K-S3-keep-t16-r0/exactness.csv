@@ -1,0 +1,6 @@
+dataset,policy,batches,schedule,fault,query,after_batch,n_seqs,oracle_size,returned,missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,gap_rejected,tracked_after,action,r,kept_on_abort,budget_ms,attempt_ms,attempt_load_ms,attempt_preprocess_ms,attempt_enum_ms,attempt_rebuild_ms,abort_phase
+DUNNHUMBY-H,keep-sfx-gf-nogc,21,every:4,0,0,4,9144,0,162,0,0,0,0,1524,17510,41774,41614,39334,165,,,,,,,,,,
+DUNNHUMBY-H,keep-sfx-gf-nogc,21,every:4,0,1,8,10668,0,160,0,0,0,0,3048,34808,18648,18491,16915,165,,,,,,,,,,
+DUNNHUMBY-H,keep-sfx-gf-nogc,21,every:4,0,2,12,12192,0,158,0,0,0,0,4572,51533,12075,11919,10567,162,,,,,,,,,,
+DUNNHUMBY-H,keep-sfx-gf-nogc,21,every:4,0,3,16,13716,0,153,0,0,0,0,6096,69548,8468,8316,7197,158,,,,,,,,,,
+DUNNHUMBY-H,keep-sfx-gf-nogc,21,every:4,0,4,20,15240,0,150,0,0,0,0,7620,88587,7778,7629,6531,154,,,,,,,,,,

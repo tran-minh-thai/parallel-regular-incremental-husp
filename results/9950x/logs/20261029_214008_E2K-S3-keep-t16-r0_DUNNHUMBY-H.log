@@ -1,0 +1,9 @@
+# java -Xmx32g -Xss4m -Dthreads=16 -Ddold=0.5 -Doracle=none -Dlimit=1800 -Dout=results/9950x -Dcell=E2K-S3-keep-t16-r0 -Dkind=measurement -cp out test.QueryScheduleProbe datasets/DUNNHUMBY-H_seq.txt datasets/DUNNHUMBY-H_eui.txt 0.0002 151 21 every:4 keep-sfx-gf-nogc
+# commit ef6da164ab9cf17ccb1e6dc5b682ba02ac6fd860
+DUNNHUMBY-H N=15240 delta=0.0002 B=151 k=21 dOld=0.5 schedule=every:4 threads=16 fault=0 reference=none -> results\9950x\20261029_214008_DUNNHUMBY-H_E2K-S3-keep-t16-r0
+  keep-sfx-gf-nogc q0  after b4  N=9144   oracle=0      got=162    miss=0 extra=0 uErr=0 pErr=0  ingest=104ms query=4596ms  [thr=17510 cand=41774 fresh=41614 gapRej=39334 mine=3745ms rebuild=797ms tracked=165]
+  keep-sfx-gf-nogc q1  after b8  N=10668  oracle=0      got=160    miss=0 extra=0 uErr=0 pErr=0  ingest=58ms query=1903ms  [thr=34808 cand=18648 fresh=18491 gapRej=16915 mine=1421ms rebuild=470ms tracked=165]
+  keep-sfx-gf-nogc q2  after b12 N=12192  oracle=0      got=158    miss=0 extra=0 uErr=0 pErr=0  ingest=4ms query=1446ms  [thr=51533 cand=12075 fresh=11919 gapRej=10567 mine=1015ms rebuild=424ms tracked=162]
+  keep-sfx-gf-nogc q3  after b16 N=13716  oracle=0      got=153    miss=0 extra=0 uErr=0 pErr=0  ingest=7ms query=1225ms  [thr=69548 cand=8468 fresh=8316 gapRej=7197 mine=859ms rebuild=360ms tracked=158]
+  keep-sfx-gf-nogc q4  after b20 N=15240  oracle=0      got=150    miss=0 extra=0 uErr=0 pErr=0  ingest=4ms query=1343ms  [thr=88587 cand=7778 fresh=7629 gapRej=6531 mine=909ms rebuild=429ms tracked=154]
+compared queries=0 failing=0

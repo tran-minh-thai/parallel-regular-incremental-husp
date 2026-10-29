@@ -1,0 +1,18 @@
+{
+  "kind": "measurement",
+  "cell": "E2K-S3-keep-t16-r0",
+  "command": "java -Dthreads=16 -Ddold=0.5 -Doracle=none -Dlimit=1800 -Dout=results/9950x -Dcell=E2K-S3-keep-t16-r0 -Dkind=measurement test.QueryScheduleProbe datasets/DUNNHUMBY-H_seq.txt datasets/DUNNHUMBY-H_eui.txt 0.0002 151 21 every:4 keep-sfx-gf-nogc",
+  "git_commit": "ef6da164ab9cf17ccb1e6dc5b682ba02ac6fd860",
+  "tree": "clean",
+  "sha256_AlgoPRIncHUSP": "c9b46cad018abf5410b1c77a26f07d926afee84c40e0a5f1c9729bad8a5c4979",
+  "sha256_AlgoParRemine": "d0be829fcd600b10e8fd7de3407d8177f6dbab97214ed67c2c7c6ff4149b8989",
+  "sha256_AlgoRHUSPMinerParallel": "0c3c074697874933519117c20468a5060395a6f1519f607389b2537899d0c72c",
+  "sha256_QueryScheduleProbe": "60dee3392359d0e3409096d3e1cdb2ac2edfa59078266973c80a7dc961a822f1",
+  "sha256_seq": "87ef87e049dbab47b6c976b3078570214c34ee51051b8ff28d46189329c8dcad",
+  "sha256_eui": "2b6ab0bac87e753a8a9d23855a923f7aebd0bf9d7969c35c7924be7df68aa59d",
+  "java": "25.0.5+8-LTS Eclipse Adoptium",
+  "os": "Windows 11 10.0 amd64",
+  "threads": "16",
+  "max_heap_mb": "32768",
+  "started": "2026-10-29T21:40:09+07:00"
+}
