@@ -1,0 +1,18 @@
+{
+  "kind": "measurement",
+  "cell": "E2K-S1-keep-t16-r0",
+  "command": "java -Dthreads=16 -Ddold=0.5 -Doracle=none -Dlimit=1800 -Dout=results/9950x -Dcell=E2K-S1-keep-t16-r0 -Dkind=measurement test.QueryScheduleProbe datasets/TAFENG-CW_seq.txt datasets/TAFENG-CW_eui.txt 0.0002 11083 21 every keep-sfx-gf-nogc",
+  "git_commit": "52bd4da5ac24167e1cb225d67ea91aa20227372c",
+  "tree": "clean",
+  "sha256_AlgoPRIncHUSP": "c9b46cad018abf5410b1c77a26f07d926afee84c40e0a5f1c9729bad8a5c4979",
+  "sha256_AlgoParRemine": "d0be829fcd600b10e8fd7de3407d8177f6dbab97214ed67c2c7c6ff4149b8989",
+  "sha256_AlgoRHUSPMinerParallel": "0c3c074697874933519117c20468a5060395a6f1519f607389b2537899d0c72c",
+  "sha256_QueryScheduleProbe": "60dee3392359d0e3409096d3e1cdb2ac2edfa59078266973c80a7dc961a822f1",
+  "sha256_seq": "93b1197fd7b8e98869e9f3ac9083ff3c932cca19a70ea3aa99fab7d1a8fdc1af",
+  "sha256_eui": "c92b1252c750ce3c84ad405ecd296a492f5e96efae675780586d2e1c29d35ccb",
+  "java": "25.0.5+8-LTS Eclipse Adoptium",
+  "os": "Windows 11 10.0 amd64",
+  "threads": "16",
+  "max_heap_mb": "32768",
+  "started": "2026-10-29T21:44:34+07:00"
+}
