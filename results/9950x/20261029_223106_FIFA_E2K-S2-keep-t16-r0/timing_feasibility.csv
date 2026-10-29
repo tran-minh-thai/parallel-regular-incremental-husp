@@ -1,0 +1,11 @@
+dataset,policy,batches,schedule,fault,query,after_batch,ingest_ms,query_ms,discovery_mine_ms,rebuild_ms,seed_ms
+FIFA,keep-sfx-gf-nogc,11,every,0,0,1,50,546,345,198,10749
+FIFA,keep-sfx-gf-nogc,11,every,0,1,2,7,243,196,46,
+FIFA,keep-sfx-gf-nogc,11,every,0,2,3,7,242,233,8,
+FIFA,keep-sfx-gf-nogc,11,every,0,3,4,2,283,280,2,
+FIFA,keep-sfx-gf-nogc,11,every,0,4,5,1,282,278,2,
+FIFA,keep-sfx-gf-nogc,11,every,0,5,6,2,363,359,3,
+FIFA,keep-sfx-gf-nogc,11,every,0,6,7,1,342,342,0,
+FIFA,keep-sfx-gf-nogc,11,every,0,7,8,1,404,404,0,
+FIFA,keep-sfx-gf-nogc,11,every,0,8,9,1,489,485,3,
+FIFA,keep-sfx-gf-nogc,11,every,0,9,10,1,594,591,3,
