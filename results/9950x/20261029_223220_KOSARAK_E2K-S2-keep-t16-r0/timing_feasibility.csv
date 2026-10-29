@@ -1,0 +1,11 @@
+dataset,policy,batches,schedule,fault,query,after_batch,ingest_ms,query_ms,discovery_mine_ms,rebuild_ms,seed_ms
+KOSARAK,keep-sfx-gf-nogc,11,every,0,0,1,81,207,206,0,3736
+KOSARAK,keep-sfx-gf-nogc,11,every,0,1,2,1,129,129,0,
+KOSARAK,keep-sfx-gf-nogc,11,every,0,2,3,2,113,113,0,
+KOSARAK,keep-sfx-gf-nogc,11,every,0,3,4,1,152,152,0,
+KOSARAK,keep-sfx-gf-nogc,11,every,0,4,5,1,150,150,0,
+KOSARAK,keep-sfx-gf-nogc,11,every,0,5,6,1,171,171,0,
+KOSARAK,keep-sfx-gf-nogc,11,every,0,6,7,1,202,202,0,
+KOSARAK,keep-sfx-gf-nogc,11,every,0,7,8,1,216,216,0,
+KOSARAK,keep-sfx-gf-nogc,11,every,0,8,9,1,267,267,0,
+KOSARAK,keep-sfx-gf-nogc,11,every,0,9,10,1,266,265,0,
