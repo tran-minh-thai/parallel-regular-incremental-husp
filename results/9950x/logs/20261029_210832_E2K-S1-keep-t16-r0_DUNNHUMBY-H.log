@@ -1,0 +1,4 @@
+# java -Xmx32g -Xss4m -Dthreads=16 -Ddold=0.5 -Doracle=none -Dlimit=1800 -Dout=results/9950x -Dcell=E2K-S1-keep-t16-r0 -Dkind=measurement -cp out test.QueryScheduleProbe datasets/DUNNHUMBY-H_seq.txt datasets/DUNNHUMBY-H_eui.txt 0.0002 151 21 every keep-sfx-gf-nogc
+# commit d60d1348028d7eda3eb3f1e507c5298027b1ddb6
+DUNNHUMBY-H N=15240 delta=0.0002 B=151 k=21 dOld=0.5 schedule=every threads=16 fault=0 reference=none -> results\9950x\20261029_210833_DUNNHUMBY-H_E2K-S1-keep-t16-r0
+  keep-sfx-gf-nogc TIMEOUT after 1800 s (policy time, reference excluded)
