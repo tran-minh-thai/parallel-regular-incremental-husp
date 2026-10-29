@@ -1,0 +1,9 @@
+# java -Xmx32g -Xss4m -Dthreads=16 -Ddold=0.5 -Doracle=none -Dlimit=1800 -Dout=results/9950x -Dcell=E2K-S3-keep-t16-r0 -Dkind=measurement -cp out test.QueryScheduleProbe datasets/HM-CW-TYPE-12W_seq.txt datasets/HM-CW-TYPE-12W_eui.txt 0.001 159717 21 every:4 keep-sfx-gf-nogc
+# commit 7051e74e72d643f608820b48a07955b401b1a6ad
+HM-CW-TYPE-12W N=958298 delta=0.001 B=159717 k=21 dOld=0.5 schedule=every:4 threads=16 fault=0 reference=none -> results\9950x\20261029_215236_HM-CW-TYPE-12W_E2K-S3-keep-t16-r0
+  keep-sfx-gf-nogc q0  after b4  N=574977 oracle=0      got=2727   miss=0 extra=0 uErr=0 pErr=0  ingest=173ms query=504ms  [thr=11110580 cand=2219 fresh=154 gapRej=0 mine=315ms rebuild=185ms tracked=3034]
+  keep-sfx-gf-nogc q1  after b8  N=670805 oracle=0      got=2574   miss=0 extra=0 uErr=0 pErr=0  ingest=11ms query=82ms  [thr=21824954 cand=2017 fresh=9 gapRej=0 mine=69ms rebuild=11ms tracked=3043]
+  keep-sfx-gf-nogc q2  after b12 N=766633 oracle=0      got=2549   miss=0 extra=0 uErr=0 pErr=0  ingest=9ms query=124ms  [thr=32220387 cand=2156 fresh=22 gapRej=0 mine=97ms rebuild=25ms tracked=3065]
+  keep-sfx-gf-nogc q3  after b16 N=862461 oracle=0      got=2504   miss=0 extra=0 uErr=0 pErr=0  ingest=9ms query=143ms  [thr=42086191 cand=2135 fresh=11 gapRej=0 mine=128ms rebuild=13ms tracked=3076]
+  keep-sfx-gf-nogc q4  after b20 N=958298 oracle=0      got=2400   miss=0 extra=0 uErr=0 pErr=0  ingest=13ms query=183ms  [thr=51642573 cand=2021 fresh=3 gapRej=0 mine=168ms rebuild=13ms tracked=3079]
+compared queries=0 failing=0

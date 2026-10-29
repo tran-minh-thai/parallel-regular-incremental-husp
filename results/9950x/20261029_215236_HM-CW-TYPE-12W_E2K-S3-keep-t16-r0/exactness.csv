@@ -1,0 +1,6 @@
+dataset,policy,batches,schedule,fault,query,after_batch,n_seqs,oracle_size,returned,missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,gap_rejected,tracked_after,action,r,kept_on_abort,budget_ms,attempt_ms,attempt_load_ms,attempt_preprocess_ms,attempt_enum_ms,attempt_rebuild_ms,abort_phase
+HM-CW-TYPE-12W,keep-sfx-gf-nogc,21,every:4,0,0,4,574977,0,2727,0,0,0,0,95828,11110580,2219,154,0,3034,,,,,,,,,,
+HM-CW-TYPE-12W,keep-sfx-gf-nogc,21,every:4,0,1,8,670805,0,2574,0,0,0,0,191656,21824954,2017,9,0,3043,,,,,,,,,,
+HM-CW-TYPE-12W,keep-sfx-gf-nogc,21,every:4,0,2,12,766633,0,2549,0,0,0,0,287484,32220387,2156,22,0,3065,,,,,,,,,,
+HM-CW-TYPE-12W,keep-sfx-gf-nogc,21,every:4,0,3,16,862461,0,2504,0,0,0,0,383312,42086191,2135,11,0,3076,,,,,,,,,,
+HM-CW-TYPE-12W,keep-sfx-gf-nogc,21,every:4,0,4,20,958298,0,2400,0,0,0,0,479149,51642573,2021,3,0,3079,,,,,,,,,,
