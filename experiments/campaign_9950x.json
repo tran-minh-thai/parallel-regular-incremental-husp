@@ -3,44 +3,224 @@
   "out": "results/9950x",
   "branch": "campaign-9950x",
   "status_project": "07_RegIncHUSPM_Parallel",
-  "jvm": ["-Xmx32g", "-Xss4m"],
+  "jvm": [
+    "-Xmx32g",
+    "-Xss4m"
+  ],
   "threads": 16,
   "datasets": {
-    "VS-CHAIN96-CW":        {"delta": "0.0005", "B": 17592,  "role": "costly"},
-    "VS-CHAIN101-CW":       {"delta": "0.0005", "B": 13888,  "role": "costly"},
-    "VS-CHAIN152-CW":       {"delta": "0.0005", "B": 14088,  "role": "costly"},
-    "VS-CHAIN46-CW":        {"delta": "0.0005", "B": 12151,  "role": "costly"},
-    "VS-CHAIN360-CW":       {"delta": "0.0005", "B": 10880,  "role": "costly"},
-    "HM-CW-TYPE":           {"delta": "0.001",  "B": 152612, "role": "costly"},
-    "ONLINE-RETAIL-II-H":   {"delta": "0.0002", "B": 68,     "role": "cheap"},
-    "DUNNHUMBY-H":          {"delta": "0.0002", "B": 151,    "role": "cheap"},
-    "DUNNHUMBY-HW":         {"delta": "0.0002", "B": 2430,   "role": "cheap"},
-    "TAFENG-CW":            {"delta": "0.0002", "B": 11083,  "role": "cheap"},
-    "HM-CW-TYPE-12W":       {"delta": "0.001",  "B": 159717, "role": "cheap"},
-    "REES46-MULTI-CW":      {"delta": "0.0002", "B": 217714, "role": "cheap"},
-    "REES46-COSMETICS-CW":  {"delta": "0.0002", "B": 13600,  "role": "cheap"},
-    "FIFA":                 {"delta": "0.04",   "B": 6135,   "role": "speed"},
-    "KOSARAK":              {"delta": "0.015",  "B": 297000, "role": "speed"},
-    "BIBLE":                {"delta": "0.005",  "B": 1091,   "role": "speed"}
+    "VS-CHAIN96-CW": {
+      "delta": "0.0005",
+      "B": 17592,
+      "role": "costly"
+    },
+    "VS-CHAIN101-CW": {
+      "delta": "0.0005",
+      "B": 13888,
+      "role": "costly"
+    },
+    "VS-CHAIN152-CW": {
+      "delta": "0.0005",
+      "B": 14088,
+      "role": "costly"
+    },
+    "VS-CHAIN46-CW": {
+      "delta": "0.0005",
+      "B": 12151,
+      "role": "costly"
+    },
+    "VS-CHAIN360-CW": {
+      "delta": "0.0005",
+      "B": 10880,
+      "role": "costly"
+    },
+    "HM-CW-TYPE": {
+      "delta": "0.001",
+      "B": 152612,
+      "role": "costly"
+    },
+    "ONLINE-RETAIL-II-H": {
+      "delta": "0.0002",
+      "B": 68,
+      "role": "cheap"
+    },
+    "DUNNHUMBY-H": {
+      "delta": "0.0002",
+      "B": 151,
+      "role": "cheap"
+    },
+    "DUNNHUMBY-HW": {
+      "delta": "0.0002",
+      "B": 2430,
+      "role": "cheap"
+    },
+    "TAFENG-CW": {
+      "delta": "0.0002",
+      "B": 11083,
+      "role": "cheap"
+    },
+    "HM-CW-TYPE-12W": {
+      "delta": "0.001",
+      "B": 159717,
+      "role": "cheap"
+    },
+    "REES46-MULTI-CW": {
+      "delta": "0.0002",
+      "B": 217714,
+      "role": "cheap"
+    },
+    "REES46-COSMETICS-CW": {
+      "delta": "0.0002",
+      "B": 13600,
+      "role": "cheap"
+    },
+    "FIFA": {
+      "delta": "0.04",
+      "B": 6135,
+      "role": "speed"
+    },
+    "KOSARAK": {
+      "delta": "0.015",
+      "B": 297000,
+      "role": "speed"
+    },
+    "BIBLE": {
+      "delta": "0.005",
+      "B": 1091,
+      "role": "speed"
+    }
   },
   "schedules": {
-    "S1": {"dold": "0.5", "batches": 21, "every": "every"},
-    "S2": {"dold": "0.9", "batches": 11, "every": "every"},
-    "S3": {"dold": "0.5", "batches": 21, "every": "every:4"}
+    "S1": {
+      "dold": "0.5",
+      "batches": 21,
+      "every": "every"
+    },
+    "S2": {
+      "dold": "0.9",
+      "batches": 11,
+      "every": "every"
+    },
+    "S3": {
+      "dold": "0.5",
+      "batches": 21,
+      "every": "every:4"
+    }
   },
   "experiments": {
-    "E2": {"about": "same query schedule: re-mine at query (F) against cost-capped discovery (BUD3), one JVM per cell, F is the in-run reference",
-           "datasets": ["VS-CHAIN96-CW", "VS-CHAIN101-CW", "VS-CHAIN152-CW", "VS-CHAIN46-CW", "VS-CHAIN360-CW", "HM-CW-TYPE",
-                        "ONLINE-RETAIL-II-H", "DUNNHUMBY-H", "DUNNHUMBY-HW", "TAFENG-CW", "HM-CW-TYPE-12W",
-                        "REES46-MULTI-CW", "REES46-COSMETICS-CW", "FIFA", "KOSARAK"],
-           "schedules": ["S1", "S2", "S3"], "policies": ["remine-nogc", "bud3"], "oracle": "first", "reps": 1, "limit_s": 3600},
-    "E2K": {"about": "always discover from the anchor (K), one run, 30-minute limit; its answers are not compared here (E1 covers exactness)",
-           "datasets": ["VS-CHAIN96-CW", "VS-CHAIN101-CW", "VS-CHAIN152-CW", "VS-CHAIN46-CW", "VS-CHAIN360-CW", "HM-CW-TYPE",
-                        "ONLINE-RETAIL-II-H", "DUNNHUMBY-H", "DUNNHUMBY-HW", "TAFENG-CW", "HM-CW-TYPE-12W",
-                        "REES46-MULTI-CW", "REES46-COSMETICS-CW", "FIFA", "KOSARAK"],
-           "schedules": ["S1", "S2", "S3"], "policies": ["keep-sfx-gf-nogc"], "oracle": "none", "reps": 1, "limit_s": 1800},
-    "E5": {"about": "thread scaling of F and BUD3",
-           "datasets": ["VS-CHAIN96-CW", "FIFA", "BIBLE"], "schedules": ["S1"], "policies": ["remine-nogc", "bud3"],
-           "oracle": "first", "reps": 3, "limit_s": 7200, "threads": [1, 2, 4, 8, 16, 32]}
+    "E2": {
+      "about": "same query schedule: re-mine at query (F) against cost-capped discovery (BUD3), one JVM per cell, F is the in-run reference",
+      "datasets": [
+        "VS-CHAIN96-CW",
+        "VS-CHAIN101-CW",
+        "VS-CHAIN152-CW",
+        "VS-CHAIN46-CW",
+        "VS-CHAIN360-CW",
+        "HM-CW-TYPE",
+        "ONLINE-RETAIL-II-H",
+        "DUNNHUMBY-H",
+        "DUNNHUMBY-HW",
+        "TAFENG-CW",
+        "HM-CW-TYPE-12W",
+        "REES46-MULTI-CW",
+        "REES46-COSMETICS-CW",
+        "FIFA",
+        "KOSARAK"
+      ],
+      "schedules": [
+        "S1",
+        "S2",
+        "S3"
+      ],
+      "policies": [
+        "remine-nogc",
+        "bud3"
+      ],
+      "oracle": "first",
+      "reps": 1,
+      "limit_s": 3600
+    },
+    "E2K": {
+      "about": "always discover from the anchor (K), one run, 30-minute limit; its answers are not compared here (E1 covers exactness)",
+      "datasets": [
+        "VS-CHAIN96-CW",
+        "VS-CHAIN101-CW",
+        "VS-CHAIN152-CW",
+        "VS-CHAIN46-CW",
+        "VS-CHAIN360-CW",
+        "HM-CW-TYPE",
+        "ONLINE-RETAIL-II-H",
+        "DUNNHUMBY-H",
+        "DUNNHUMBY-HW",
+        "TAFENG-CW",
+        "HM-CW-TYPE-12W",
+        "REES46-MULTI-CW",
+        "REES46-COSMETICS-CW",
+        "FIFA",
+        "KOSARAK"
+      ],
+      "schedules": [
+        "S1",
+        "S2",
+        "S3"
+      ],
+      "policies": [
+        "keep-sfx-gf-nogc"
+      ],
+      "oracle": "none",
+      "reps": 1,
+      "limit_s": 1800
+    },
+    "E5": {
+      "about": "thread scaling of F and BUD3",
+      "datasets": [
+        "VS-CHAIN96-CW",
+        "FIFA",
+        "BIBLE"
+      ],
+      "schedules": [
+        "S1"
+      ],
+      "policies": [
+        "remine-nogc",
+        "bud3"
+      ],
+      "oracle": "first",
+      "reps": 3,
+      "limit_s": 7200,
+      "threads": [
+        1,
+        2,
+        4,
+        8,
+        16,
+        32
+      ]
+    },
+    "E2R": {
+      "about": "generated by tools/summarize_campaign.py: E2 cells within the margin of a tie",
+      "pairs": [
+        [
+          "HM-CW-TYPE-12W",
+          "S2"
+        ],
+        [
+          "VS-CHAIN152-CW",
+          "S1"
+        ],
+        [
+          "VS-CHAIN360-CW",
+          "S2"
+        ]
+      ],
+      "policies": [
+        "remine-nogc",
+        "bud3"
+      ],
+      "oracle": "first",
+      "first_rep": 1,
+      "reps": 2,
+      "limit_s": 3600
+    }
   }
 }
