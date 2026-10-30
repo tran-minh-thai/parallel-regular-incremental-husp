@@ -1,0 +1,44 @@
+# java -Xmx32g -Xss4m -Dthreads=8 -Ddold=0.5 -Doracle=first -Dlimit=7200 -Dout=results/9950x -Dcell=E5-S1-remine+bud3-t8-r2 -Dkind=measurement -cp out test.QueryScheduleProbe datasets/BIBLE_seq.txt datasets/BIBLE_eui.txt 0.005 1091 21 every remine-nogc,bud3
+# commit ab0f883938d99277c2816fb82d9b51fb1a833185
+BIBLE N=36369 delta=0.005 B=1091 k=21 dOld=0.5 schedule=every threads=8 fault=0 reference=first policy of this run (NOT independent) -> results\9950x\20261030_155630_BIBLE_E5-S1-remine+bud3-t8-r2
+  remine-nogc q0  after b1  N=19094  oracle=3040   got=3040   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=785ms
+  remine-nogc q1  after b2  N=20003  oracle=2896   got=2896   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=479ms
+  remine-nogc q2  after b3  N=20912  oracle=2642   got=2642   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=482ms
+  remine-nogc q3  after b4  N=21821  oracle=2633   got=2633   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=483ms
+  remine-nogc q4  after b5  N=22730  oracle=2616   got=2616   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=475ms
+  remine-nogc q5  after b6  N=23639  oracle=2696   got=2696   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=508ms
+  remine-nogc q6  after b7  N=24548  oracle=2717   got=2717   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=527ms
+  remine-nogc q7  after b8  N=25457  oracle=2735   got=2735   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=544ms
+  remine-nogc q8  after b9  N=26366  oracle=2748   got=2748   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=573ms
+  remine-nogc q9  after b10 N=27275  oracle=2746   got=2746   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=558ms
+  remine-nogc q10 after b11 N=28184  oracle=2739   got=2739   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=601ms
+  remine-nogc q11 after b12 N=29093  oracle=2622   got=2622   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=569ms
+  remine-nogc q12 after b13 N=30002  oracle=2612   got=2612   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=585ms
+  remine-nogc q13 after b14 N=30911  oracle=2578   got=2578   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=577ms
+  remine-nogc q14 after b15 N=31820  oracle=2335   got=2335   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=562ms
+  remine-nogc q15 after b16 N=32729  oracle=2191   got=2191   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=580ms
+  remine-nogc q16 after b17 N=33638  oracle=2169   got=2169   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=580ms
+  remine-nogc q17 after b18 N=34547  oracle=2149   got=2149   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=588ms
+  remine-nogc q18 after b19 N=35456  oracle=2143   got=2143   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=601ms
+  remine-nogc q19 after b20 N=36369  oracle=2141   got=2141   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=594ms
+  bud3   q0  after b1  N=19094  oracle=3040   got=3040   miss=0 extra=0 uErr=0 pErr=0  ingest=79ms query=474ms  {budget=0 attempt=0 load=0 pre=0 enum=0 rebuild=0 abort=}  [REMINE r=4.5 thr=95442 cand=3040 fresh=0 gapRej=0 mine=474ms rebuild=0ms tracked=3085]
+  bud3   q1  after b2  N=20003  oracle=2896   got=2896   miss=0 extra=0 uErr=0 pErr=0  ingest=4ms query=195ms  {budget=496 attempt=195 load=1 pre=3 enum=84 rebuild=106 abort=}  [DISCOVER r=9.1 thr=6031 cand=826 fresh=216 gapRej=60 mine=87ms rebuild=106ms tracked=3118]
+  bud3   q2  after b3  N=20912  oracle=2642   got=2642   miss=0 extra=0 uErr=0 pErr=0  ingest=7ms query=30ms  {budget=519 attempt=29 load=1 pre=3 enum=17 rebuild=7 abort=}  [DISCOVER r=13.6 thr=9791 cand=1032 fresh=79 gapRej=25 mine=21ms rebuild=7ms tracked=2915]
+  bud3   q3  after b4  N=21821  oracle=2633   got=2633   miss=0 extra=0 uErr=0 pErr=0  ingest=6ms query=149ms  {budget=541 attempt=148 load=1 pre=3 enum=29 rebuild=113 abort=}  [DISCOVER r=18.2 thr=14053 cand=1987 fresh=414 gapRej=15 mine=33ms rebuild=113ms tracked=3022]
+  bud3   q4  after b5  N=22730  oracle=2616   got=2616   miss=0 extra=0 uErr=0 pErr=0  ingest=4ms query=180ms  {budget=564 attempt=180 load=1 pre=2 enum=42 rebuild=134 abort=}  [DISCOVER r=22.7 thr=17944 cand=2101 fresh=392 gapRej=10 mine=45ms rebuild=134ms tracked=3050]
+  bud3   q5  after b6  N=23639  oracle=2696   got=2696   miss=0 extra=0 uErr=0 pErr=0  ingest=13ms query=1138ms  {budget=586 attempt=587 load=1 pre=3 enum=89 rebuild=0 abort=rebuild}  [ABORTED+REMINE r=27.3 thr=115643 cand=2696 fresh=1629 gapRej=0 mine=504ms rebuild=0ms tracked=4311]
+  bud3   q6  after b7  N=24548  oracle=2717   got=2717   miss=0 extra=0 uErr=0 pErr=0  ingest=19ms query=535ms  {budget=0 attempt=0 load=0 pre=0 enum=0 rebuild=0 abort=}  [SKIP+REMINE r=31.8 thr=120367 cand=2717 fresh=0 gapRej=0 mine=535ms rebuild=0ms tracked=3159]
+  bud3   q7  after b8  N=25457  oracle=2735   got=2735   miss=0 extra=0 uErr=0 pErr=0  ingest=6ms query=553ms  {budget=0 attempt=0 load=0 pre=0 enum=0 rebuild=0 abort=}  [SKIP+REMINE r=36.4 thr=125489 cand=2735 fresh=0 gapRej=0 mine=553ms rebuild=0ms tracked=3159]
+  bud3   q8  after b9  N=26366  oracle=2748   got=2748   miss=0 extra=0 uErr=0 pErr=0  ingest=8ms query=582ms  {budget=0 attempt=0 load=0 pre=0 enum=0 rebuild=0 abort=}  [SKIP+REMINE r=40.9 thr=130662 cand=2748 fresh=0 gapRej=0 mine=582ms rebuild=0ms tracked=3159]
+  bud3   q9  after b10 N=27275  oracle=2746   got=2746   miss=0 extra=0 uErr=0 pErr=0  ingest=4ms query=589ms  {budget=0 attempt=0 load=0 pre=0 enum=0 rebuild=0 abort=}  [SKIP+REMINE r=45.5 thr=134713 cand=2746 fresh=0 gapRej=0 mine=589ms rebuild=0ms tracked=3159]
+  bud3   q10 after b11 N=28184  oracle=2739   got=2739   miss=0 extra=0 uErr=0 pErr=0  ingest=8ms query=580ms  {budget=0 attempt=0 load=0 pre=0 enum=0 rebuild=0 abort=}  [SKIP+REMINE r=50.0 thr=139036 cand=2739 fresh=0 gapRej=0 mine=580ms rebuild=0ms tracked=3159]
+  bud3   q11 after b12 N=29093  oracle=2622   got=2622   miss=0 extra=0 uErr=0 pErr=0  ingest=2ms query=1240ms  {budget=599 attempt=599 load=3 pre=3 enum=221 rebuild=0 abort=rebuild}  [ABORTED+REMINE r=54.5 thr=143172 cand=2622 fresh=1815 gapRej=0 mine=602ms rebuild=0ms tracked=3787]
+  bud3   q12 after b13 N=30002  oracle=2612   got=2612   miss=0 extra=0 uErr=0 pErr=0  ingest=4ms query=606ms  {budget=0 attempt=0 load=0 pre=0 enum=0 rebuild=0 abort=}  [SKIP+REMINE r=59.1 thr=147263 cand=2612 fresh=0 gapRej=0 mine=606ms rebuild=0ms tracked=3081]
+  bud3   q13 after b14 N=30911  oracle=2578   got=2578   miss=0 extra=0 uErr=0 pErr=0  ingest=3ms query=607ms  {budget=0 attempt=0 load=0 pre=0 enum=0 rebuild=0 abort=}  [SKIP+REMINE r=63.6 thr=151211 cand=2578 fresh=0 gapRej=0 mine=607ms rebuild=0ms tracked=3078]
+  bud3   q14 after b15 N=31820  oracle=2335   got=2335   miss=0 extra=0 uErr=0 pErr=0  ingest=2ms query=584ms  {budget=0 attempt=0 load=0 pre=0 enum=0 rebuild=0 abort=}  [SKIP+REMINE r=68.2 thr=154820 cand=2335 fresh=0 gapRej=0 mine=584ms rebuild=0ms tracked=2832]
+  bud3   q15 after b16 N=32729  oracle=2191   got=2191   miss=0 extra=0 uErr=0 pErr=0  ingest=3ms query=594ms  {budget=0 attempt=0 load=0 pre=0 enum=0 rebuild=0 abort=}  [SKIP+REMINE r=72.7 thr=159239 cand=2191 fresh=0 gapRej=0 mine=594ms rebuild=0ms tracked=2683]
+  bud3   q16 after b17 N=33638  oracle=2169   got=2169   miss=0 extra=0 uErr=0 pErr=0  ingest=3ms query=567ms  {budget=0 attempt=0 load=0 pre=0 enum=0 rebuild=0 abort=}  [SKIP+REMINE r=77.3 thr=163602 cand=2169 fresh=0 gapRej=0 mine=567ms rebuild=0ms tracked=2673]
+  bud3   q17 after b18 N=34547  oracle=2149   got=2149   miss=0 extra=0 uErr=0 pErr=0  ingest=3ms query=590ms  {budget=0 attempt=0 load=0 pre=0 enum=0 rebuild=0 abort=}  [SKIP+REMINE r=81.8 thr=168017 cand=2149 fresh=0 gapRej=0 mine=590ms rebuild=0ms tracked=2650]
+  bud3   q18 after b19 N=35456  oracle=2143   got=2143   miss=0 extra=0 uErr=0 pErr=0  ingest=6ms query=603ms  {budget=0 attempt=0 load=0 pre=0 enum=0 rebuild=0 abort=}  [SKIP+REMINE r=86.4 thr=173046 cand=2143 fresh=0 gapRej=0 mine=603ms rebuild=0ms tracked=2644]
+  bud3   q19 after b20 N=36369  oracle=2141   got=2141   miss=0 extra=0 uErr=0 pErr=0  ingest=4ms query=596ms  {budget=0 attempt=0 load=0 pre=0 enum=0 rebuild=0 abort=}  [SKIP+REMINE r=90.9 thr=177751 cand=2141 fresh=0 gapRej=0 mine=596ms rebuild=0ms tracked=2644]
+compared queries=20 failing=0
