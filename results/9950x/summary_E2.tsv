@@ -12,7 +12,7 @@ HM-CW-TYPE	cheap (expected costly)	S1	1	86900	31198	0.359	d19/a0/s0/r1	P2 ok; P4
 HM-CW-TYPE	cheap (expected costly)	S2	1	55732	15954	0.286	d9/a0/s0/r1	P2 ok; P4 ok
 HM-CW-TYPE	cheap (expected costly)	S3	1	23677	14949	0.631	d4/a0/s0/r1	P2 ok; P4 ok
 HM-CW-TYPE-12W	cheap (expected cheap)	S1	1	6169	3794	0.615	d17/a1/s1/r1	P2 ok; P4 ok
-HM-CW-TYPE-12W	cheap (expected cheap)	S2	1	4599	4575	0.995	d3/a2/s4/r1	P2 ok; P4 ok
+HM-CW-TYPE-12W	cheap (expected cheap)	S2	3	4523	4601	1.017	d3/a2/s4/r1 d3/a2/s4/r1 d3/a2/s4/r1	P2 ok; P4 ok
 HM-CW-TYPE-12W	cheap (expected cheap)	S3	1	2281	2543	1.115	d2/a1/s1/r1	P2 ok; P4 ok
 KOSARAK	cheap (expected speed)	S1	1	47749	20901	0.438	d19/a0/s0/r1	P2 ok; P4 ok
 KOSARAK	cheap (expected speed)	S2	1	31444	8334	0.265	d9/a0/s0/r1	P2 ok; P4 ok
@@ -32,11 +32,11 @@ TAFENG-CW	cheap (expected cheap)	S3	1	3289	4062	1.235	d2/a1/s1/r1	P2 ok; P4 ok
 VS-CHAIN101-CW	costly (expected costly)	S1	1	304403	119002	0.391	d19/a0/s0/r1	P2 ok; P3 ok
 VS-CHAIN101-CW	costly (expected costly)	S2	1	192468	170799	0.887	d3/a2/s4/r1	P2 ok
 VS-CHAIN101-CW	costly (expected costly)	S3	1	77863	47569	0.611	d4/a0/s0/r1	P2 ok
-VS-CHAIN152-CW	costly (expected costly)	S1	1	1470320	1561273	1.062	d5/a2/s12/r1	P2 ok; P3 FAIL
+VS-CHAIN152-CW	costly (expected costly)	S1	3	1439180	1532328	1.065	d5/a2/s12/r1 d5/a2/s12/r1 d5/a2/s12/r1	P2 ok; P3 FAIL
 VS-CHAIN152-CW	costly (expected costly)	S2	1	1121507	1256355	1.120	d0/a3/s6/r1	P2 ok
 VS-CHAIN152-CW	costly (expected costly)	S3	1	414828	556111	1.341	d0/a2/s2/r1	P2 ok
 VS-CHAIN360-CW	cheap (expected costly)	S1	1	152737	59924	0.392	d19/a0/s0/r1	P2 ok; P4 ok
-VS-CHAIN360-CW	cheap (expected costly)	S2	1	104126	103823	0.997	d3/a2/s4/r1	P2 ok; P4 ok
+VS-CHAIN360-CW	cheap (expected costly)	S2	3	104399	100840	0.966	d3/a2/s4/r1 d3/a2/s4/r1 d3/a2/s4/r1	P2 ok; P4 ok
 VS-CHAIN360-CW	cheap (expected costly)	S3	1	42407	25594	0.604	d4/a0/s0/r1	P2 ok; P4 ok
 VS-CHAIN46-CW	unmeasured (expected costly)	S2	1	3080104	3575120	1.161	d0/a3/s6/r1	P2 ok
 VS-CHAIN46-CW	unmeasured (expected costly)	S3	1	1826475	3090811	1.692	d0/a2/s2/r1	P2 ok
