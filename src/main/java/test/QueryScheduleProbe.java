@@ -47,8 +47,8 @@ import java.util.Map;
  *
  * <p>Output goes to {@code results-probe/<timestamp>_<dataset>/}: {@code run_meta.json} (command,
  * commit, tree state, source and data hashes, environment), {@code exactness.csv} (counts only) and
- * {@code timing_feasibility.csv}. The timings come from the development machine with no warm-up
- * and no repetitions: they decide whether a mechanism is worth building, nothing more.
+ * {@code timing_feasibility.csv}. Without {@code -Dwarmup=true} the first policy of the JVM pays the JIT warm-up
+ * on its first query. Timings from the development machine decide whether a mechanism is worth building, nothing more.
  * Exit status is non-zero when any query disagrees with the oracle or no query could be compared.
  */
 public class QueryScheduleProbe {
@@ -122,6 +122,8 @@ public class QueryScheduleProbe {
                     b, prefix.size(), minUtil, canon.size());
         }
 
+        if (Boolean.getBoolean("warmup")) warmUp(dir, batches.get(0), delta, threads, absB);
+
         int compared = 0, failing = 0;
         try (BufferedWriter ex = new BufferedWriter(new FileWriter(new File(dir, "exactness.csv")));
              BufferedWriter tm = new BufferedWriter(new FileWriter(new File(dir, "timing_feasibility.csv")))) {
@@ -129,7 +131,7 @@ public class QueryScheduleProbe {
                     + "missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,"
                     + "gap_rejected,tracked_after,action,r,kept_on_abort,budget_ms,attempt_ms,attempt_load_ms,"
                     + "attempt_preprocess_ms,attempt_enum_ms,attempt_rebuild_ms,abort_phase,heap_guard_mb,heap_start_mb,"
-                    + "heap_abort_mb,heap_live_after_abort_mb,heap_valve_collections,abort_cause\n");
+                    + "heap_abort_mb,heap_live_after_abort_mb,heap_valve_collections,abort_cause,fhat_us,charge_us,reserve_us,gate\n");
             tm.write("dataset,policy,batches,schedule,fault,query,after_batch,ingest_ms,query_ms,"
                     + "discovery_mine_ms,rebuild_ms,seed_ms\n");
             final long limitS = Long.getLong("limit", 0);         // per-policy time limit, reference excluded
@@ -188,7 +190,8 @@ public class QueryScheduleProbe {
                             p == null ? "" : "" + m.trackedCount(),
                             p == null || !(p.adaptiveQuery || p.costCapped) ? "" : (p.lastQueryAction == 0 ? "discover"
                                     : p.lastQueryAction == 1 ? "remine" : p.lastQueryAction == 2 ? "aborted"
-                                    : p.lastQueryAction == 3 ? "skipped" : p.lastQueryAction == 4 ? "seed" : "none"),
+                                    : p.lastQueryAction == 3 ? "skipped" : p.lastQueryAction == 4 ? "seed"
+                                    : p.lastQueryAction == 5 ? "gated" : "none"),
                             p == null || !(p.adaptiveQuery || p.costCapped) ? "" : String.format(java.util.Locale.ROOT, "%.2f", p.lastQueryR),
                             p == null || !p.costCapped ? "" : "" + p.lastQueryKept,
                             p == null || !p.costCapped ? "" : "" + p.lastBudgetMs,
@@ -203,7 +206,11 @@ public class QueryScheduleProbe {
                             p == null || !p.costCapped ? "" : "" + p.lastHeapAbortMb,
                             p == null || !p.costCapped ? "" : "" + p.lastHeapLiveAfterAbortMb,
                             p == null || !p.costCapped ? "" : "" + p.lastHeapValveCollections,
-                            p == null || !p.costCapped ? "" : p.lastAbortCause) + "\n");
+                            p == null || !p.costCapped ? "" : p.lastAbortCause,
+                            p == null || !p.reserveGate ? "" : "" + p.lastFhatUs,
+                            p == null || !p.reserveGate ? "" : "" + p.lastChargeUs,
+                            p == null || !p.reserveGate ? "" : "" + p.lastReserveUs,
+                            p == null || !p.reserveGate ? "" : (p.lastQueryGated ? "1" : "0")) + "\n");
                     tm.write(String.join(",", tag, policy, "" + batches.size(), schedule, "" + AlgoPRIncHUSP.FAULT,
                             "" + q, "" + b, "" + ingestMs, "" + queryMs,
                             p == null ? "" : "" + p.lastQueryMineMs,
@@ -222,7 +229,8 @@ public class QueryScheduleProbe {
                                     + String.format(java.util.Locale.ROOT, "  [%sthr=%d cand=%d fresh=%d gapRej=%d mine=%dms rebuild=%dms tracked=%d]",
                                     p.adaptiveQuery || p.costCapped ? (p.lastQueryAction == 0 ? "DISCOVER r="
                                             : p.lastQueryAction == 2 ? "ABORTED+REMINE r=" : p.lastQueryAction == 3 ? "SKIP+REMINE r="
-                                            : p.lastQueryAction == 4 ? "FUSED-SEED r=" : "REMINE r=")
+                                            : p.lastQueryAction == 4 ? "FUSED-SEED r=" : p.lastQueryAction == 5 ? "GATED+REMINE r="
+                                            : "REMINE r=")
                                             + String.format(java.util.Locale.ROOT, "%.1f ", p.lastQueryR) : "",
                                     p.lastQueryThreshold, p.lastQueryCandidates, p.lastQueryFresh, p.lastQueryGapRejected,
                                     p.lastQueryMineMs, p.lastQueryRebuildMs, m.trackedCount()));
@@ -243,6 +251,30 @@ public class QueryScheduleProbe {
         }
         System.out.printf("compared queries=%d failing=%d%n", compared, failing);
         if ((compared == 0 && !noReference) || failing > 0) System.exit(1);
+    }
+
+    /**
+     * -Dwarmup=true: before any measured policy, run one full re-mine and one fused seed on the whole old part at ten
+     * times the utility ratio, discard both, and write their times to warmup.txt. The first policy of a JVM otherwise
+     * pays the JIT and class loading of the mining code on its first query, which the policies after it do not. The
+     * higher threshold keeps the same code paths on a subset of the search tree of the first query, so the warm-up
+     * costs at most one first query. (A prefix of the old part instead is not cheaper: under an absolute bound B a
+     * short prefix leaves the regularity prune almost nothing to cut.)
+     */
+    static void warmUp(File dir, List<List<int[]>> old, double delta, int threads, int absB) throws IOException {
+        StringBuilder sb = new StringBuilder("warm-up on the old part (" + old.size() + " sequences) at ratio "
+                + (10 * delta) + ", results discarded\n");
+        for (String policy : new String[]{"remine-nogc", "bud3fs"}) {
+            IncrementalHUSPMiner w = build(policy, threads, absB);
+            long t = System.nanoTime();
+            w.initialBuild(new ArrayList<>(old), 10 * delta, 0.0);
+            w.getHighUtilityPatterns();
+            long ms = (System.nanoTime() - t) / 1_000_000;
+            w.close();
+            sb.append(policy).append(" ms=").append(ms).append('\n');
+            System.out.printf("  warm-up %s on %d sequences at ratio %s: %d ms (discarded)%n", policy, old.size(), 10 * delta, ms);
+        }
+        Files.write(new File(dir, "warmup.txt").toPath(), sb.toString().getBytes("UTF-8"));
     }
 
     static IncrementalHUSPMiner build(String policy, int threads, int absB) {
@@ -269,7 +301,10 @@ public class QueryScheduleProbe {
                 boolean sel = parts.get(0).equals("sel");
                 boolean bud2 = parts.get(0).equals("bud2");          // bud2: bud + keep rebuilt + overhead gate + no GC
                 boolean live = parts.get(0).equals("bud3live");      // bud3live: bud3 with the heap guard judged on the live heap
-                boolean fused = parts.get(0).equals("bud3fs");       // bud3fs: bud3 seeded at the first query (fused seed)
+                boolean reserve = parts.get(0).equals("bud3rs");     // bud3rs: bud3fs with every attempt paid from a reserve
+                boolean fused = parts.get(0).equals("bud3fs") || reserve;  // bud3fs: bud3 seeded at the first query (fused seed)
+                double eps = 0.10;                                   // bud3rs-e<eps>: the reserve's premium per query
+                for (String s : parts) if (s.startsWith("e")) eps = Double.parseDouble(s.substring(1));
                 if (live || fused) parts.set(0, "bud3");
                 boolean bud3 = parts.get(0).equals("bud3");          // bud3: bud + keep rebuilt + window backoff + scaled F_hat
                                                                      //       + heap guard 0.6 + no GC (no overhead gate)
@@ -302,6 +337,8 @@ public class QueryScheduleProbe {
                 p.heapGuardFraction = bud3 ? Double.parseDouble(System.getProperty("heapGuard", "0.6")) : 0;  // tests only override
                 p.heapGuardLive = live;
                 p.fusedSeed = fused;
+                p.reserveGate = reserve;
+                p.reserveEps = eps;
                 p.measureMemoryOnQuery = !parts.contains("nogc");
                 p.selectorKappa = kappa;
                 m = p;
@@ -342,7 +379,7 @@ public class QueryScheduleProbe {
     private static void writeMeta(File dir, String[] args, String seqFile, String euiFile, int threads)
             throws Exception {
         StringBuilder props = new StringBuilder();
-        for (String key : new String[]{"fault", "threads", "dold", "oracle", "limit", "out", "cell", "kind"})
+        for (String key : new String[]{"fault", "threads", "dold", "oracle", "limit", "out", "cell", "kind", "warmup"})
             if (System.getProperty(key) != null) props.append("-D").append(key).append('=').append(System.getProperty(key)).append(' ');
         String src = "src/main/java/";
         StringBuilder sb = new StringBuilder("{\n");
