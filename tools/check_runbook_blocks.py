@@ -2,10 +2,11 @@
 """Run the two measurement-machine blocks of a runbook verbatim under PowerShell, with fake tools, on throw-away
 git repositories, and check what they do.
 
-    python3 tools/check_runbook_blocks.py <runbook.txt> <run-status report.ps1> <scratch dir> [--only main|followup|reserve]
+    python3 tools/check_runbook_blocks.py <runbook.txt> <run-status report.ps1> <scratch dir> [--only main|followup|resume2|reserve]
 
 The main block is the one whose header (within six lines above its "& {") names E2R; the follow-up block is the
-one whose header names E2G; the reserve block is the one whose header names bud3rs. Only machine-specific parts are replaced, and each replacement must
+one whose header names E2G; the pinned resume block is the one whose header names the pinned code "src a7bc247"; the reserve block is the one
+whose header names bud3rs. Only machine-specific parts are replaced, and each replacement must
 match exactly once: the D: paths, the run-status path, the GitHub URLs, and the kernel32 import (a stub type records
 the keep-awake calls). In the git wrapper, backslashes in arguments become slashes, since the fakes run on macOS or
 Linux. java, javac, py and Get-Process are PowerShell functions that record their calls.
@@ -13,7 +14,9 @@ Linux. java, javac, py and Get-Process are PowerShell functions that record thei
 Main block scenarios: the machine's state after a first paste whose commit failed (file staged, no git identity),
 a second paste, a failing E2 run, failing tests, no identity anywhere. Follow-up block scenarios: a normal run, a
 second paste, a java process still running, a merge conflict. Reserve block scenarios: a normal run, a second paste,
-a java process still running, failing tests. Exit status 1 when a check fails. Needs pwsh and git.
+a java process still running, failing tests. Pinned resume block scenarios: a normal run that must not take the newer
+branch, code that differs from the pinned code, a java process still running, tests recorded on other code, a stale
+index lock, an unreachable remote. Exit status 1 when a check fails. Needs pwsh and git.
 """
 import argparse
 import os
@@ -274,6 +277,96 @@ def check_followup(block, report, base, check):
           "followup D: conflicting merge aborted, tree clean, nothing runs")
 
 
+def check_resume2(block, report, base, check):
+    """The machine after the follow-up block was interrupted: follow-up merged, tests passed on that code, one cell done;
+    heap-guard-live has since moved on. The block must run the rest on the same code without merging."""
+    pinned = "a7bc2475473ddbe0eb4441d77665278cedbe18f7 d158eb6c15758dfb3f6721bf6f5b7b14c7042074"
+
+    def fresh(name, merge_newer=False, tested=None, lock=False, offline=False):
+        T = base / name
+        if T.exists():
+            shutil.rmtree(T)
+        T.mkdir(parents=True)
+        seed_repos(T, report, followup=True)
+        c = T / "work" / "parallel-regular-incremental-husp"
+        git("clone", "-q", "-b", "revision-apin", str(T / "remote.git"), str(c))
+        for d in (c, T / "rs"):
+            git("config", "user.name", "Test Operator", cwd=d)
+            git("config", "user.email", "operator@example.org", cwd=d)
+        git("merge", "-q", "--no-edit", "origin/heap-guard-live", cwd=c)
+        key = git("rev-parse", "HEAD:src", cwd=c) + " " + git("rev-parse", "HEAD:tools", cwd=c)
+        (c / "results/9950x").mkdir(parents=True)
+        (c / "results/9950x/cells.tsv").write_text("key\nE2G-raw|x\n")
+        (c / "out").mkdir()
+        (c / "out/tests_ok.txt").write_text((tested or key) + "\n")
+        git("add", "-A", cwd=c)
+        git("commit", "-q", "-m", "campaign results", cwd=c)
+        seed = T / "seed"                                       # the branch moves on after the interruption
+        (seed / "src/main/java/A.java").write_text("class A { int live; int reserve; }\n")
+        git("add", "-A", cwd=seed)
+        git("-c", "user.name=S", "-c", "user.email=s@x", "commit", "-q", "-m", "reserve", cwd=seed)
+        git("push", "-q", str(T / "remote.git"), "heap-guard-live", cwd=seed)
+        git("fetch", "-q", "origin", cwd=c)
+        if merge_newer:
+            git("merge", "-q", "--no-edit", "origin/heap-guard-live", cwd=c)
+        if lock:
+            (c / ".git/index.lock").write_text("")
+        if offline:
+            git("remote", "set-url", "origin", str(T / "missing.git"), cwd=c)
+        return T, c, key
+
+    def subs(T, key):
+        return reserve_subs(T) + [(pinned, key)]
+
+    cfg = "experiments/campaign_9950x_followup.json"
+    T, c, key = fresh("resume2_A")
+    r, calls, log = run_block(T, block, subs(T, key), {})
+    check(not ok_git("merge-base", "--is-ancestor", "origin/heap-guard-live", "HEAD", cwd=c)
+          and git("rev-parse", "HEAD:src", cwd=c) + " " + git("rev-parse", "HEAD:tools", cwd=c) == key,
+          "resume2 A: newer heap-guard-live not merged, code unchanged")
+    camp = [l for l in calls if "tools/campaign.py" in l]
+    check(camp == ["py tools/campaign.py --config %s run --exp E2G-raw --exp E2G-live --exp E2L --exp E2N --exp E2F --interleave" % cfg],
+          "resume2 A: only the follow-up campaign runs %s" % camp)
+    check(not any("run_tests.py" in l or "build_all" in l for l in calls) and sum(l.startswith("javac") for l in calls) == 1,
+          "resume2 A: no tests, no dataset build, one compile")
+    files = remote_files(T, "refs/heads/campaign-9950x")
+    check({"results/9950x/summary_E2G.txt", "results/9950x/summary_followup.txt", "results/9950x/summary_E2F.txt",
+           "results/9950x/summary_E2L_E2N_E2G-raw.tsv", "results/9950x/summary_E2F.tsv"} <= files,
+          "resume2 A: the three summaries on campaign-9950x")
+    check(any("resume summary: exit 1" in l for l in log) and any("resume finished" in l for l in log)
+          and not any("STOPPED" in l for l in log), "resume2 A: failing summary checks reported, block finished")
+    check(AWAKE_OK in r.stdout, "resume2 A: keep-awake set then released")
+    check(git("status", "--porcelain", "--untracked-files=no", cwd=c, check=False) == "", "resume2 A: tracked tree clean")
+    n = git("rev-list", "--count", "HEAD", cwd=c)
+    r, calls, log = run_block(T, block, subs(T, key), {})
+    check(any("resume finished" in l for l in log) and git("rev-list", "--count", "HEAD", cwd=c) == n,
+          "resume2 B: second paste finishes without a new commit")
+    T, c, key = fresh("resume2_C", merge_newer=True)
+    r, calls, log = run_block(T, block, subs(T, key), {})
+    check(any("STOPPED at resume2 setup" in l for l in log) and any("FAILED" in l and key in l for l in log) and not calls,
+          "resume2 C: code other than the pinned code stops before anything runs")
+    T, c, key = fresh("resume2_D")
+    r, calls, log = run_block(T, block, subs(T, key), {"FAKE_JAVA": "1"})
+    check(any("STOPPED at resume2 setup" in l for l in log) and not calls and AWAKE_OK in r.stdout,
+          "resume2 D: running java stops it, keep-awake released")
+    T, c, key = fresh("resume2_E", tested="key of other code")
+    r, calls, log = run_block(T, block, subs(T, key), {})
+    check(any("STOPPED at resume2 setup" in l for l in log) and any("tests_ok.txt" in l for l in log) and not calls,
+          "resume2 E: tests recorded on other code stop it")
+    T, c, key = fresh("resume2_F", lock=True)
+    r, calls, log = run_block(T, block, subs(T, key), {})
+    check(not (c / ".git/index.lock").exists() and any("resume finished" in l for l in log)
+          and "results/9950x/summary_E2G.txt" in git("ls-tree", "-r", "--name-only", "HEAD", cwd=c).split(),
+          "resume2 F: stale index lock removed, block finished and committed")
+    T, c, key = fresh("resume2_G", offline=True)
+    r, calls, log = run_block(T, block, subs(T, key), {})
+    check(any("resume finished" in l for l in log) and any("resume summary: exit" in l for l in log)
+          and len([l for l in calls if "tools/campaign.py" in l]) == 1
+          and "results/9950x/summary_E2G.txt" in git("ls-tree", "-r", "--name-only", "HEAD", cwd=c).split()
+          and "WARNING" in (T / "out.txt").read_text() and "campaign-9950x" in (T / "out.txt").read_text(),
+          "resume2 G: unreachable remote only warns; summaries committed locally, block finished")
+
+
 def check_reserve_block(block, report, base, check):
     def fresh(name):
         T = base / name
@@ -337,7 +430,7 @@ def main(argv=None):
     ap.add_argument("runbook")
     ap.add_argument("report")
     ap.add_argument("scratch")
-    ap.add_argument("--only", choices=("main", "followup", "reserve"))
+    ap.add_argument("--only", choices=("main", "followup", "resume2", "reserve"))
     args = ap.parse_args(argv)
     lines = Path(args.runbook).read_text(encoding="utf-8").splitlines()
     base = Path(args.scratch).resolve()
@@ -351,6 +444,8 @@ def main(argv=None):
         check_main(find_block(lines, "E2R"), Path(args.report), base, check)
     if args.only in (None, "followup"):
         check_followup(find_block(lines, "E2G"), Path(args.report), base, check)
+    if args.only in (None, "resume2"):
+        check_resume2(find_block(lines, "src a7bc247"), Path(args.report), base, check)
     if args.only in (None, "reserve"):
         check_reserve_block(find_block(lines, "bud3rs"), Path(args.report), base, check)
     bad = [w for ok, w in results if not ok]
