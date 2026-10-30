@@ -1,0 +1,18 @@
+dataset	aborts_bud3	aborts_bud3live	live_guard_collections	F_ms(raw run)	bud3_ms	F_ms(live run)	bud3live_ms	bud3/F	bud3live/F	P2 bud3live
+VS-CHAIN96-CW	3	3	51	249335	307123	247313	339441	1.232	1.373	ok
+VS-CHAIN101-CW	2	2	6	160059	146138	162514	165362	0.913	1.018	ok
+VS-CHAIN152-CW	3	3	1349	1091501	1315794	1086546	1495426	1.205	1.376	ok
+VS-CHAIN46-CW	3	3	1946	2969803	3592144	2961012	4391018	1.210	1.483	ok
+VS-CHAIN360-CW	2	2	4	104260	92318	104004	104491	0.885	1.005	ok
+HM-CW-TYPE	0	0	0	56683	16112	56494	15939	0.284	0.282	ok
+pairs compared: 6
+G1 FAIL: 13 bud3 aborts, 10 caused by the heap guard, 10 with the heap below the guard after one collection
+G2 ok: 60 bud3live queries compared with F, 0 disagreeing
+G3 FAIL: 0 of 5 datasets where bud3 aborted
+G4 ok: 1 of 1 datasets without a collection within 10%
+  FAILED: G3 VS-CHAIN96-CW: aborts 3 -> 3, total 307123 -> 339441 ms, P2 ok
+  FAILED: G3 VS-CHAIN101-CW: aborts 2 -> 2, total 146138 -> 165362 ms, P2 ok
+  FAILED: G3 VS-CHAIN152-CW: aborts 3 -> 3, total 1315794 -> 1495426 ms, P2 ok
+  FAILED: G3 VS-CHAIN46-CW: aborts 3 -> 3, total 3592144 -> 4391018 ms, P2 ok
+  FAILED: G3 VS-CHAIN360-CW: aborts 2 -> 2, total 92318 -> 104491 ms, P2 ok
+  FAILED: G1

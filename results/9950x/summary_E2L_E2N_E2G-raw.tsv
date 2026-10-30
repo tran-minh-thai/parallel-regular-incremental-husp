@@ -1,0 +1,14 @@
+dataset	role	schedule	runs	F_ms	BUD3_ms	BUD3_over_F	bud3_actions	checks
+HM-CW-TYPE	unmeasured (expected costly)	S2	1	56683	16112	0.284	d9/a0/s0/r1	P2 ok
+VS-CHAIN101-CW	unmeasured (expected costly)	S2	1	160059	146138	0.913	d3/a2/s4/r1	P2 ok
+VS-CHAIN152-CW	unmeasured (expected costly)	S2	1	1091501	1315794	1.205	d0/a3/s6/r1	P2 ok
+VS-CHAIN152-CW-NOACC	costly (expected costly)	S1	1	203660	74796	0.367	d19/a0/s0/r1	P2 ok; P3 ok
+VS-CHAIN152-CW-NOACC	costly (expected costly)	S2	1	130089	64493	0.496	d7/a1/s1/r1	P2 ok
+VS-CHAIN152-CW-NOACC	costly (expected costly)	S3	1	55562	32060	0.577	d4/a0/s0/r1	P2 ok
+VS-CHAIN360-CW	unmeasured (expected costly)	S2	1	104260	92318	0.885	d3/a2/s4/r1	P2 ok
+VS-CHAIN46-CW	costly (expected costly)	S1	1	7209412	8950697	1.242	d0/a4/s15/r1	P2 ok; P3 FAIL
+VS-CHAIN46-CW	costly (expected costly)	S2	1	2969803	3592144	1.210	d0/a3/s6/r1	P2 ok
+VS-CHAIN46-CW-NOACC	costly (expected costly)	S1	1	241950	113780	0.470	d17/a1/s1/r1	P2 ok; P3 ok
+VS-CHAIN46-CW-NOACC	costly (expected costly)	S2	1	166176	143341	0.863	d3/a2/s4/r1	P2 ok
+VS-CHAIN46-CW-NOACC	costly (expected costly)	S3	1	67088	38608	0.575	d4/a0/s0/r1	P2 ok
+VS-CHAIN96-CW	unmeasured (expected costly)	S2	1	249335	307123	1.232	d0/a3/s6/r1	P2 ok
