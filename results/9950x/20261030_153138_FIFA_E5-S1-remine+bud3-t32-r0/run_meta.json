@@ -1,0 +1,18 @@
+{
+  "kind": "measurement",
+  "cell": "E5-S1-remine+bud3-t32-r0",
+  "command": "java -Dthreads=32 -Ddold=0.5 -Doracle=first -Dlimit=7200 -Dout=results/9950x -Dcell=E5-S1-remine+bud3-t32-r0 -Dkind=measurement test.QueryScheduleProbe datasets/FIFA_seq.txt datasets/FIFA_eui.txt 0.04 6135 21 every remine-nogc,bud3",
+  "git_commit": "6eb37b32002d8e41e9870a7120e7aaca754dc7d7",
+  "tree": "clean",
+  "sha256_AlgoPRIncHUSP": "c9b46cad018abf5410b1c77a26f07d926afee84c40e0a5f1c9729bad8a5c4979",
+  "sha256_AlgoParRemine": "d0be829fcd600b10e8fd7de3407d8177f6dbab97214ed67c2c7c6ff4149b8989",
+  "sha256_AlgoRHUSPMinerParallel": "0c3c074697874933519117c20468a5060395a6f1519f607389b2537899d0c72c",
+  "sha256_QueryScheduleProbe": "60dee3392359d0e3409096d3e1cdb2ac2edfa59078266973c80a7dc961a822f1",
+  "sha256_seq": "39abf6507d035466017a3726d1a93b3fcc2ae2783e1a1046634614c9d2dad13a",
+  "sha256_eui": "a1d1548817fd1c3002712bb23734a92388914aa0cdb769faf517ecf6d102f5a0",
+  "java": "25.0.5+8-LTS Eclipse Adoptium",
+  "os": "Windows 11 10.0 amd64",
+  "threads": "32",
+  "max_heap_mb": "32768",
+  "started": "2026-10-30T15:31:39+07:00"
+}
