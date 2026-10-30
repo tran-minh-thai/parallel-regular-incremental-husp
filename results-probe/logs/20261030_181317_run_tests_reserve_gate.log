@@ -1,0 +1,62 @@
+# python3 tools/run_tests.py --only <name>, for each name below (branch heap-guard-live, commit a5f4de4, tree clean)
+# java:  java.runtime.version = 25.0.4.1+1-LTS  java.vendor = Eclipse Adoptium 
+# arm64 Apple M5
+# subset: the entries this commit adds, and the existing bud3 entries whose code path it restructured; not the full suite
+## --only "self-test: reserve"
+self-test: reserve check                                               ok
+1/1 tests as expected
+## --only "reserve:"
+reserve: probe on SIGN, then the reserve check                         FAILED  probe compared 30 failing 0; reserve check 28 queries, 0 problems; 8 aborts, 0 refusals, expected pass (33 s)
+0/1 tests as expected
+  FAILED: reserve: probe on SIGN, then the reserve check: probe compared 30 failing 0; reserve check 28 queries, 0 problems; 8 aborts, 0 refusals, expected pass (33 s)
+## --only "defect 11"
+defect 11: an aborted attempt is not charged to the reserve            ok  probe compared 30 failing 0; reserve check 28 queries, 8 problems; 8 aborts, 0 refusals, expected fail (33 s)
+1/1 tests as expected
+## --only "clean: reserve gate"
+clean: reserve gate (bud3rs), premium 0.1, 0 and 1e9                   ok  compared 4739 (non-empty 4662), failing 0, aborts in mining 101, expected zero (275 s)
+1/1 tests as expected
+## --only "defect 10"
+defect 10: a refused attempt answers from the stale set                ok  compared 1354 (non-empty 1332), failing 398, aborts in mining 99, expected some (55 s)
+1/1 tests as expected
+## --only "defect 5:"
+defect 5: aborted discovery skips the fallback re-mine                 ok  compared 2708 (non-empty 2664), failing 404, aborts in mining 142, expected some (117 s)
+1/1 tests as expected
+## --only "defect 7:"
+defect 7: backoff answers from the stale set                           ok  compared 2708 (non-empty 2664), failing 447, aborts in mining 143, expected some (118 s)
+1/1 tests as expected
+## --only "defect 9:"
+defect 9: fused seed loses the batches before the first query          ok  compared 2708 (non-empty 2664), failing 2684, aborts in mining 153, expected some (118 s)
+1/1 tests as expected
+## --only "clean: seed fused"
+clean: seed fused into the first query (bud3fs)                        ok  compared 3385 (non-empty 3330), failing 0, aborts in mining 166, expected zero (232 s)
+1/1 tests as expected
+## --only "clean: heap guard breached"
+clean: heap guard breached at every attempt, bud3 and bud3live         ok  compared 2031 (non-empty 1998), failing 0, aborts in mining 490, expected zero+aborts (176 s)
+1/1 tests as expected
+# finished 2026-10-30 18:32:43
+
+# ---- rerun on commit 2614e4c (tree clean), 2026-10-30 18:33:12: the reserve end-to-end entry failed above because it reached no refusal (8 aborts, 0 refusals); its policy now has a zero premium
+## --only "self-test"
+self-test: machine_info                                                ok
+self-test: campaign runner                                             ok
+self-test: heap guard summary                                          ok
+self-test: reserve check                                               ok
+4/4 tests as expected
+## --only "reserve:"
+reserve: probe on SIGN, then the reserve check                         ok  probe compared 30 failing 0; reserve check 28 queries, 0 problems; 5 aborts, 13 refusals, expected pass (29 s)
+1/1 tests as expected
+## --only "defect 11"
+defect 11: an aborted attempt is not charged to the reserve            ok  probe compared 30 failing 0; reserve check 28 queries, 9 problems; 8 aborts, 0 refusals, expected fail (29 s)
+1/1 tests as expected
+## python3 tools/summarize_reserve.py --self-test
+clean fixture                                           ok  exit 0
+defect: one bud3rs query disagrees with F (D1)          ok  exit 1
+defect: bud3rs above the D3 bound                       ok  exit 1
+defect: logged reserve off the rule (D2)                ok  exit 1
+defect: no gain where D4 predicts one                   ok  exit 1
+vacuous: empty ledger is not a pass                     ok  exit 1
+self-test: 6/6 cases as expected
+## python3 tools/check_runbook_blocks.py ../run.txt <run-status report.ps1> <scratch> (all three blocks)
+40/40 checks passed
+## four faults injected into copies of the reserve block (no repeats run, long pairs first, failing tests do not stop, summary not committed): each copy 12/13, caught
+# finished 2026-10-30 18:35:14
