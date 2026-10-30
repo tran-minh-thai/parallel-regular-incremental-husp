@@ -1,0 +1,18 @@
+{
+  "kind": "measurement",
+  "cell": "E5-S1-remine+bud3-t8-r0",
+  "command": "java -Dthreads=8 -Ddold=0.5 -Doracle=first -Dlimit=7200 -Dout=results/9950x -Dcell=E5-S1-remine+bud3-t8-r0 -Dkind=measurement test.QueryScheduleProbe datasets/BIBLE_seq.txt datasets/BIBLE_eui.txt 0.005 1091 21 every remine-nogc,bud3",
+  "git_commit": "a3c72aa228e337c881d1b165b27415a8d09f26ce",
+  "tree": "clean",
+  "sha256_AlgoPRIncHUSP": "c9b46cad018abf5410b1c77a26f07d926afee84c40e0a5f1c9729bad8a5c4979",
+  "sha256_AlgoParRemine": "d0be829fcd600b10e8fd7de3407d8177f6dbab97214ed67c2c7c6ff4149b8989",
+  "sha256_AlgoRHUSPMinerParallel": "0c3c074697874933519117c20468a5060395a6f1519f607389b2537899d0c72c",
+  "sha256_QueryScheduleProbe": "60dee3392359d0e3409096d3e1cdb2ac2edfa59078266973c80a7dc961a822f1",
+  "sha256_seq": "8030ba1631d776e2b94592f5be9d6cac775c2613afb23084c80401443b65a51f",
+  "sha256_eui": "d7b2f5e8cc21b2b080a8a366c723f4c34515035b58a84683ab79194ae48a9377",
+  "java": "25.0.5+8-LTS Eclipse Adoptium",
+  "os": "Windows 11 10.0 amd64",
+  "threads": "8",
+  "max_heap_mb": "32768",
+  "started": "2026-10-30T15:55:33+07:00"
+}
