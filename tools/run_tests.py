@@ -62,8 +62,10 @@ STRESS = [
      ["-DheapGuard=0.000000001", "-Dpolicies=keep-sfx,bud3-c1000000000,bud3live-c1000000000"], "zero+aborts"),
 ]
 
-# (name, JVM properties, expected) for the reserve check: test.QueryScheduleProbe on SIGN with bud3rs (c = 0.001 aborts
-# and refuses, c = 1e9 completes every attempt), then tools/check_reserve.py on its log. "pass" = probe exact and the
+# (name, JVM properties, expected) for the reserve check: test.QueryScheduleProbe on SIGN with bud3rs (c = 0.001 and no
+# premium: attempts abort and, once the reserve is spent, are refused; c = 1e9: every attempt completes), then
+# tools/check_reserve.py on its log. With the default premium the reserve refills faster than the tiny budget drains
+# (measured: 8 aborts, 0 refusals), so the refusal path would go unchecked. "pass" = probe exact and the
 # check clean over a non-zero number of queries with at least one abort and one refusal; "fail" = the check reports.
 RESERVE = [
     ("reserve: probe on SIGN, then the reserve check", [], "pass"),
@@ -138,7 +140,7 @@ def main(argv=None):
         with tempfile.TemporaryDirectory() as tmp:
             p, secs = run(["java", "-Xmx2g"] + props + ["-Dthreads=2", "-Dout=" + tmp, "-cp", "out", "test.QueryScheduleProbe",
                                                        "datasets/SIGN_seq.txt", "datasets/SIGN_eui.txt", "0.005", "21", "16",
-                                                       "every", "bud3rs-c0.001,bud3rs-c1000000000"])
+                                                       "every", "bud3rs-c0.001-e0,bud3rs-c1000000000"])
             runs = [d for d in Path(tmp).iterdir() if d.is_dir()]
             m = re.search(r"compared queries=(\d+) failing=(\d+)", p.stdout)
             if p.returncode != 0 or not m or len(runs) != 1:
