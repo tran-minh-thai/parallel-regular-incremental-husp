@@ -16,6 +16,7 @@ import os
 import re
 import subprocess
 import sys
+import tempfile
 import time
 from pathlib import Path
 
@@ -51,10 +52,24 @@ STRESS = [
     ("defect: sketch estimate below the true value", ["-Deucs.build=sketch", "-Deucs.fault=5", "-Dpolicies=keep-sfx," + BUD3], "some"),
     ("clean: seed fused into the first query (bud3fs)", ["-Dpolicies=keep-sfx," + BUD3.replace("bud3", "bud3fs")], "zero"),
     ("defect 9: fused seed loses the batches before the first query", ["-Dfault=9", "-Dpolicies=" + BUD3.replace("bud3", "bud3fs")], "some"),
+    ("clean: reserve gate (bud3rs), premium 0.1, 0 and 1e9",
+     ["-Dpolicies=keep-sfx," + BUD3.replace("bud3", "bud3rs") + ",bud3rs-e0-c1,bud3rs-e1000000000-c1"], "zero"),
+    # c = 0.001 aborts nearly every attempt, so the reserve goes negative and refuses the later ones.
+    ("defect 10: a refused attempt answers from the stale set", ["-Dfault=10", "-Dpolicies=bud3rs-c0.001,bud3rs-c0"], "some"),
     ("clean: heap guard judged on the live heap (bud3live)", ["-Dpolicies=keep-sfx," + BUD3.replace("bud3", "bud3live")], "zero"),
     # A guard of a few bytes is breached at every attempt: bud3 aborts on the raw reading, bud3live collects and then aborts.
     ("clean: heap guard breached at every attempt, bud3 and bud3live",
      ["-DheapGuard=0.000000001", "-Dpolicies=keep-sfx,bud3-c1000000000,bud3live-c1000000000"], "zero+aborts"),
+]
+
+# (name, JVM properties, expected) for the reserve check: test.QueryScheduleProbe on SIGN with bud3rs (c = 0.001 and no
+# premium: attempts abort and, once the reserve is spent, are refused; c = 1e9: every attempt completes), then
+# tools/check_reserve.py on its log. With the default premium the reserve refills faster than the tiny budget drains
+# (measured: 8 aborts, 0 refusals), so the refusal path would go unchecked. "pass" = probe exact and the
+# check clean over a non-zero number of queries with at least one abort and one refusal; "fail" = the check reports.
+RESERVE = [
+    ("reserve: probe on SIGN, then the reserve check", [], "pass"),
+    ("defect 11: an aborted attempt is not charged to the reserve", ["-Dfault=11"], "fail"),
 ]
 
 # (name, JVM properties, expected) for test.HeapValveCheck: "pass" = all four cases tested and correct; "fail" = a case fails.
@@ -89,7 +104,8 @@ def main(argv=None):
 
     for name, cmd in (("self-test: machine_info", [sys.executable, "tools/machine_info.py", "--self-test"]),
                       ("self-test: campaign runner", [sys.executable, "tools/campaign.py", "--self-test"]),
-                      ("self-test: heap guard summary", [sys.executable, "tools/summarize_heap_guard.py", "--self-test"])):
+                      ("self-test: heap guard summary", [sys.executable, "tools/summarize_heap_guard.py", "--self-test"]),
+                      ("self-test: reserve check", [sys.executable, "tools/check_reserve.py", "--self-test"])):
         if args.only and args.only not in name:
             continue
         p, secs = run(cmd)
@@ -115,6 +131,33 @@ def main(argv=None):
             ok = ok and aborts > 0
         detail = "compared %d (non-empty %d), failing %d, aborts in mining %d, expected %s (%.0f s)" % (
             compared, nonempty, failing, aborts, expected, secs)
+        results.append((name, ok, detail))
+        print("%-70s %s  %s" % (name, "ok" if ok else "FAILED", detail), flush=True)
+
+    for name, props, expected in RESERVE:
+        if args.only and args.only not in name:
+            continue
+        with tempfile.TemporaryDirectory() as tmp:
+            p, secs = run(["java", "-Xmx2g"] + props + ["-Dthreads=2", "-Dout=" + tmp, "-cp", "out", "test.QueryScheduleProbe",
+                                                       "datasets/SIGN_seq.txt", "datasets/SIGN_eui.txt", "0.005", "21", "16",
+                                                       "every", "bud3rs-c0.001-e0,bud3rs-c1000000000"])
+            runs = [d for d in Path(tmp).iterdir() if d.is_dir()]
+            m = re.search(r"compared queries=(\d+) failing=(\d+)", p.stdout)
+            if p.returncode != 0 or not m or len(runs) != 1:
+                results.append((name, False, "probe exit %d, %d run directories; %s" % (p.returncode, len(runs), (p.stderr or p.stdout)[-300:])))
+                print("%-70s FAILED (probe)" % name, flush=True)
+                continue
+            c = subprocess.run([sys.executable, "tools/check_reserve.py", str(runs[0])], cwd=str(ROOT), capture_output=True, text=True)
+            log = (runs[0] / "exactness.csv").read_text(encoding="utf-8")
+        mc = re.search(r"reserve check: (\d+) queries checked, (\d+) problems", c.stdout)
+        checked, problems = (int(mc.group(1)), int(mc.group(2))) if mc else (0, -1)
+        aborts, refusals = log.count(",aborted,"), log.count(",gated,")
+        if expected == "pass":
+            ok = c.returncode == 0 and checked > 0 and problems == 0 and aborts > 0 and refusals > 0
+        else:
+            ok = c.returncode != 0 and problems > 0
+        detail = "probe compared %s failing %s; reserve check %d queries, %d problems; %d aborts, %d refusals, expected %s (%.0f s)" % (
+            m.group(1), m.group(2), checked, problems, aborts, refusals, expected, secs)
         results.append((name, ok, detail))
         print("%-70s %s  %s" % (name, "ok" if ok else "FAILED", detail), flush=True)
 

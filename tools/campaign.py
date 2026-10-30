@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Run the measurement campaign described in experiments/campaign_9950x.json, one cell at a time.
 
-A cell is (experiment, dataset, schedule, policies, threads, repetition). Every cell runs in its own JVM
+A cell is (experiment, dataset, schedule, policies, threads, repetition); an experiment may add JVM properties
+("props", e.g. -Dwarmup=true) to the command of its cells. Every cell runs in its own JVM
 (test.QueryScheduleProbe in measurement mode) and, when that JVM has ended, one row is appended to the
 ledger <out>/cells.tsv; the run directory, the ledger and the cell's console log are then committed and
 pushed to the campaign branch, and one line goes to the run-status channel. A cell that already has a
@@ -65,7 +66,8 @@ def cells(cfg, only=None):
                     pol = ",".join(spec["policies"])
                     key = "|".join([exp, ds, sch, pol, "t%d" % th, "r%d" % rep])
                     out.append({"key": key, "experiment": exp, "dataset": ds, "schedule": sch, "policies": pol,
-                                "threads": th, "rep": rep, "oracle": spec["oracle"], "limit_s": spec["limit_s"]})
+                                "threads": th, "rep": rep, "oracle": spec["oracle"], "limit_s": spec["limit_s"],
+                                "props": list(spec.get("props", []))})
     return out
 
 
@@ -93,7 +95,7 @@ def command(cfg, c):
     tmpl = cfg.get("command")
     if tmpl:                                                   # the self-test replaces the JVM by a stub
         return [a.format(cell=cell_id(c), out=cfg["out"], dataset=c["dataset"]) for a in tmpl]
-    return (["java"] + cfg["jvm"] +
+    return (["java"] + cfg["jvm"] + c.get("props", []) +
             ["-Dthreads=%d" % c["threads"], "-Ddold=%s" % s["dold"], "-Doracle=%s" % c["oracle"],
              "-Dlimit=%d" % c["limit_s"], "-Dout=%s" % cfg["out"], "-Dcell=%s" % cell_id(c),
              "-Dkind=measurement", "-cp", "out", "test.QueryScheduleProbe",
@@ -590,6 +592,14 @@ def self_test():
     check([(c["experiment"], c["dataset"]) for c in interleave(cells(two))] == [("X", "A"), ("Y", "A"), ("X", "B"), ("Y", "B")],
           "interleave alternates experiments per dataset")
     check(classify(137, "", True) == "TIMEOUT", "outer kill is TIMEOUT")
+    real = {"datasets": {"A": {"delta": "0.1", "B": 5}}, "threads": 2, "jvm": ["-Xmx1g"], "out": "results/x",
+            "schedules": {"S1": {"dold": "0.5", "batches": 3, "every": "every"}},
+            "experiments": {"W": {"datasets": ["A"], "schedules": ["S1"], "policies": ["p"], "oracle": "first",
+                                  "limit_s": 60, "props": ["-Dwarmup=true"]},
+                            "N": {"datasets": ["A"], "schedules": ["S1"], "policies": ["p"], "oracle": "first", "limit_s": 60}}}
+    cw, cn = cells(real)
+    check("-Dwarmup=true" in command(real, cw) and "-Dwarmup=true" not in command(real, cn),
+          "an experiment's own JVM properties reach its cells only")
 
     # 5. a dataset that does not hash to its manifest refuses the run
     tmp, repo, remote, env = scenario(0)

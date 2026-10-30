@@ -1,0 +1,516 @@
+{
+  "about": "Reserve-gate experiment E2S (pre-registration DANG_KY_TRUOC_DU_TRU, paper repository): per JVM a discarded warm-up, then F, bud3fs and bud3rs (eps 0.10); schedule S1 adds bud3rs with eps 0 and 0.25. Pairs whose E2 F total is under 60 s run three times, the others once plus the repeats tools/summarize_reserve.py generates (E2SR). E2SO reverses the policy order on three cheap pairs. VS-CHAIN46-CW is left out (F alone took 3,080 s and 1,826 s at S2 and S3 in E2, and exceeded 3,600 s at S1). d4_pairs, d4_tie and d5_pairs are the pairs the hypotheses D4 and D5 name, taken from the replay of the reserve on the E2 trajectories.",
+  "out": "results/9950x",
+  "branch": "campaign-9950x",
+  "status_project": "07_RegIncHUSPM_Parallel",
+  "jvm": [
+    "-Xmx32g",
+    "-Xss4m"
+  ],
+  "threads": 16,
+  "schedules": {
+    "S1": {
+      "dold": "0.5",
+      "batches": 21,
+      "every": "every"
+    },
+    "S2": {
+      "dold": "0.9",
+      "batches": 11,
+      "every": "every"
+    },
+    "S3": {
+      "dold": "0.5",
+      "batches": 21,
+      "every": "every:4"
+    }
+  },
+  "datasets": {
+    "VS-CHAIN96-CW": {
+      "delta": "0.0005",
+      "B": 17592,
+      "role": "costly"
+    },
+    "VS-CHAIN101-CW": {
+      "delta": "0.0005",
+      "B": 13888,
+      "role": "costly"
+    },
+    "VS-CHAIN152-CW": {
+      "delta": "0.0005",
+      "B": 14088,
+      "role": "costly"
+    },
+    "VS-CHAIN360-CW": {
+      "delta": "0.0005",
+      "B": 10880,
+      "role": "costly"
+    },
+    "HM-CW-TYPE": {
+      "delta": "0.001",
+      "B": 152612,
+      "role": "costly"
+    },
+    "ONLINE-RETAIL-II-H": {
+      "delta": "0.0002",
+      "B": 68,
+      "role": "cheap"
+    },
+    "DUNNHUMBY-H": {
+      "delta": "0.0002",
+      "B": 151,
+      "role": "cheap"
+    },
+    "DUNNHUMBY-HW": {
+      "delta": "0.0002",
+      "B": 2430,
+      "role": "cheap"
+    },
+    "TAFENG-CW": {
+      "delta": "0.0002",
+      "B": 11083,
+      "role": "cheap"
+    },
+    "HM-CW-TYPE-12W": {
+      "delta": "0.001",
+      "B": 159717,
+      "role": "cheap"
+    },
+    "REES46-MULTI-CW": {
+      "delta": "0.0002",
+      "B": 217714,
+      "role": "cheap"
+    },
+    "REES46-COSMETICS-CW": {
+      "delta": "0.0002",
+      "B": 13600,
+      "role": "cheap"
+    },
+    "FIFA": {
+      "delta": "0.04",
+      "B": 6135,
+      "role": "speed"
+    },
+    "KOSARAK": {
+      "delta": "0.015",
+      "B": 297000,
+      "role": "speed"
+    }
+  },
+  "experiments": {
+    "E2S": {
+      "about": "long pairs, schedules S2 and S3, one run",
+      "pairs": [
+        [
+          "VS-CHAIN96-CW",
+          "S2"
+        ],
+        [
+          "VS-CHAIN96-CW",
+          "S3"
+        ],
+        [
+          "VS-CHAIN101-CW",
+          "S2"
+        ],
+        [
+          "VS-CHAIN101-CW",
+          "S3"
+        ],
+        [
+          "VS-CHAIN152-CW",
+          "S2"
+        ],
+        [
+          "VS-CHAIN152-CW",
+          "S3"
+        ],
+        [
+          "VS-CHAIN360-CW",
+          "S2"
+        ],
+        [
+          "FIFA",
+          "S2"
+        ]
+      ],
+      "policies": [
+        "remine-nogc",
+        "bud3fs",
+        "bud3rs"
+      ],
+      "reps": 1,
+      "oracle": "first",
+      "limit_s": 3600,
+      "props": [
+        "-Dwarmup=true"
+      ]
+    },
+    "E2S-S1": {
+      "about": "long pairs, schedule S1, one run, with the eps sensitivity",
+      "pairs": [
+        [
+          "VS-CHAIN96-CW",
+          "S1"
+        ],
+        [
+          "VS-CHAIN101-CW",
+          "S1"
+        ],
+        [
+          "VS-CHAIN152-CW",
+          "S1"
+        ],
+        [
+          "VS-CHAIN360-CW",
+          "S1"
+        ],
+        [
+          "HM-CW-TYPE",
+          "S1"
+        ],
+        [
+          "FIFA",
+          "S1"
+        ]
+      ],
+      "policies": [
+        "remine-nogc",
+        "bud3fs",
+        "bud3rs",
+        "bud3rs-e0",
+        "bud3rs-e0.25"
+      ],
+      "reps": 1,
+      "oracle": "first",
+      "limit_s": 3600,
+      "props": [
+        "-Dwarmup=true"
+      ]
+    },
+    "E2Sc": {
+      "about": "cheap pairs (E2 F total under 60 s), schedules S2 and S3, three runs",
+      "pairs": [
+        [
+          "VS-CHAIN360-CW",
+          "S3"
+        ],
+        [
+          "HM-CW-TYPE",
+          "S2"
+        ],
+        [
+          "HM-CW-TYPE",
+          "S3"
+        ],
+        [
+          "ONLINE-RETAIL-II-H",
+          "S2"
+        ],
+        [
+          "ONLINE-RETAIL-II-H",
+          "S3"
+        ],
+        [
+          "DUNNHUMBY-H",
+          "S2"
+        ],
+        [
+          "DUNNHUMBY-H",
+          "S3"
+        ],
+        [
+          "DUNNHUMBY-HW",
+          "S2"
+        ],
+        [
+          "DUNNHUMBY-HW",
+          "S3"
+        ],
+        [
+          "TAFENG-CW",
+          "S2"
+        ],
+        [
+          "TAFENG-CW",
+          "S3"
+        ],
+        [
+          "HM-CW-TYPE-12W",
+          "S2"
+        ],
+        [
+          "HM-CW-TYPE-12W",
+          "S3"
+        ],
+        [
+          "REES46-MULTI-CW",
+          "S2"
+        ],
+        [
+          "REES46-MULTI-CW",
+          "S3"
+        ],
+        [
+          "REES46-COSMETICS-CW",
+          "S2"
+        ],
+        [
+          "REES46-COSMETICS-CW",
+          "S3"
+        ],
+        [
+          "FIFA",
+          "S3"
+        ],
+        [
+          "KOSARAK",
+          "S2"
+        ],
+        [
+          "KOSARAK",
+          "S3"
+        ]
+      ],
+      "policies": [
+        "remine-nogc",
+        "bud3fs",
+        "bud3rs"
+      ],
+      "reps": 3,
+      "oracle": "first",
+      "limit_s": 3600,
+      "props": [
+        "-Dwarmup=true"
+      ]
+    },
+    "E2S-S1c": {
+      "about": "cheap pairs, schedule S1, three runs, with the eps sensitivity",
+      "pairs": [
+        [
+          "ONLINE-RETAIL-II-H",
+          "S1"
+        ],
+        [
+          "DUNNHUMBY-H",
+          "S1"
+        ],
+        [
+          "DUNNHUMBY-HW",
+          "S1"
+        ],
+        [
+          "TAFENG-CW",
+          "S1"
+        ],
+        [
+          "HM-CW-TYPE-12W",
+          "S1"
+        ],
+        [
+          "REES46-MULTI-CW",
+          "S1"
+        ],
+        [
+          "REES46-COSMETICS-CW",
+          "S1"
+        ],
+        [
+          "KOSARAK",
+          "S1"
+        ]
+      ],
+      "policies": [
+        "remine-nogc",
+        "bud3fs",
+        "bud3rs",
+        "bud3rs-e0",
+        "bud3rs-e0.25"
+      ],
+      "reps": 3,
+      "oracle": "first",
+      "limit_s": 3600,
+      "props": [
+        "-Dwarmup=true"
+      ]
+    },
+    "E2SO": {
+      "about": "order check: bud3rs, bud3fs, then F after the warm-up",
+      "pairs": [
+        [
+          "ONLINE-RETAIL-II-H",
+          "S1"
+        ],
+        [
+          "TAFENG-CW",
+          "S1"
+        ],
+        [
+          "DUNNHUMBY-H",
+          "S1"
+        ]
+      ],
+      "policies": [
+        "bud3rs",
+        "bud3fs",
+        "remine-nogc"
+      ],
+      "reps": 1,
+      "oracle": "first",
+      "limit_s": 3600,
+      "props": [
+        "-Dwarmup=true"
+      ]
+    }
+  },
+  "d4_pairs": [
+    [
+      "VS-CHAIN96-CW",
+      "S2"
+    ],
+    [
+      "VS-CHAIN152-CW",
+      "S3"
+    ],
+    [
+      "ONLINE-RETAIL-II-H",
+      "S1"
+    ],
+    [
+      "ONLINE-RETAIL-II-H",
+      "S2"
+    ],
+    [
+      "ONLINE-RETAIL-II-H",
+      "S3"
+    ],
+    [
+      "DUNNHUMBY-H",
+      "S1"
+    ],
+    [
+      "DUNNHUMBY-H",
+      "S2"
+    ],
+    [
+      "DUNNHUMBY-H",
+      "S3"
+    ],
+    [
+      "TAFENG-CW",
+      "S1"
+    ],
+    [
+      "TAFENG-CW",
+      "S2"
+    ],
+    [
+      "TAFENG-CW",
+      "S3"
+    ],
+    [
+      "REES46-MULTI-CW",
+      "S1"
+    ],
+    [
+      "REES46-MULTI-CW",
+      "S2"
+    ],
+    [
+      "REES46-MULTI-CW",
+      "S3"
+    ],
+    [
+      "REES46-COSMETICS-CW",
+      "S1"
+    ],
+    [
+      "REES46-COSMETICS-CW",
+      "S2"
+    ],
+    [
+      "REES46-COSMETICS-CW",
+      "S3"
+    ],
+    [
+      "DUNNHUMBY-HW",
+      "S2"
+    ],
+    [
+      "DUNNHUMBY-HW",
+      "S3"
+    ],
+    [
+      "HM-CW-TYPE-12W",
+      "S3"
+    ]
+  ],
+  "d4_tie": [
+    [
+      "VS-CHAIN152-CW",
+      "S2"
+    ]
+  ],
+  "d5_pairs": [
+    [
+      "VS-CHAIN96-CW",
+      "S1"
+    ],
+    [
+      "VS-CHAIN96-CW",
+      "S3"
+    ],
+    [
+      "VS-CHAIN101-CW",
+      "S1"
+    ],
+    [
+      "VS-CHAIN101-CW",
+      "S3"
+    ],
+    [
+      "VS-CHAIN360-CW",
+      "S1"
+    ],
+    [
+      "VS-CHAIN360-CW",
+      "S3"
+    ],
+    [
+      "HM-CW-TYPE",
+      "S1"
+    ],
+    [
+      "HM-CW-TYPE",
+      "S2"
+    ],
+    [
+      "HM-CW-TYPE",
+      "S3"
+    ],
+    [
+      "FIFA",
+      "S1"
+    ],
+    [
+      "FIFA",
+      "S2"
+    ],
+    [
+      "FIFA",
+      "S3"
+    ],
+    [
+      "KOSARAK",
+      "S1"
+    ],
+    [
+      "KOSARAK",
+      "S2"
+    ],
+    [
+      "KOSARAK",
+      "S3"
+    ]
+  ]
+}

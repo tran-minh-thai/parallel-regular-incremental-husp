@@ -1239,7 +1239,8 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
      * also keeps candidates whose rebuild was still in progress; 8: the whole-database inverted index misses
      * the last sequence of each extension; 7: a query skipped by the window backoff
      * answers from the stale maintained set instead of re-mining; 9: the fused seed loses the batches that arrived
-     * before the first query.
+     * before the first query; 10: a query the reserve refuses answers from the stale maintained set instead of
+     * re-mining; 11: an aborted attempt is not charged to the reserve (exact answers; caught by the reserve check).
      */
     public static int FAULT = 0;
 
@@ -1286,6 +1287,20 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
     public boolean heapGuardLive = false;
     /** Seed at the first query, over the whole prefix, instead of at the old part (see fusedSeedAnswer). */
     public boolean fusedSeed = false;
+    /**
+     * Pay every discovery attempt from a reserve (microseconds). The first attempt is advanced its own budget; a later
+     * attempt runs only when the reserve holds its budget, otherwise the whole database is re-mined. A completed attempt
+     * adds F_hat minus its cost, an aborted one subtracts its cost (everything but the fallback re-mine), and every
+     * query after the first adds reserveEps * F_hat. Total cost is then at most the run's own re-mine cost plus
+     * reserveEps * sum F_hat plus one attempt plus the largest overrun of a budget, over the whole schedule.
+     */
+    public boolean reserveGate = false;
+    public double reserveEps = 0.10;
+    private long reserveUs = 0;
+    private boolean reserveOpened = false;
+    /** Per query, read by the probes: F_hat, the charge (attempt cost, completed or aborted), the reserve after the query (us). */
+    public long lastFhatUs, lastChargeUs, lastReserveUs;
+    public boolean lastQueryGated;
     private List<List<int[]>> deferredPrefix = null;
     /**
      * Heap readings of the last cost-capped attempt, in MB (-1 = not taken): the guard, the raw reading
@@ -1430,6 +1445,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
 
     /** Cost-capped discovery with exact fallback; see {@link #costCapped}. */
     private void cappedAnswer() {
+        lastFhatUs = lastChargeUs = 0; lastQueryGated = false; lastReserveUs = reserveUs;
         lastQueryMineMs = lastQueryRebuildMs = lastQueryThreshold = 0;
         lastQueryCandidates = lastQueryFresh = lastQueryGapRejected = 0;
         lastQueryIncrementSeqs = increments.size();
@@ -1442,18 +1458,39 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         lastHeapGuardMb = 0; lastHeapStartMb = lastHeapAbortMb = lastHeapLiveAfterAbortMb = -1;
         lastHeapValveCollections = 0; lastAbortCause = "";
         if (lastRemineNanos < 0) { lastQueryAction = 1; fullRemine(); return; }
-        if (gateByOverhead && budgetFactor * lastRemineNanos < 2.0 * lastOverheadNanos) {
-            lastQueryAction = 3;                                    // not worth trying: re-mine directly
-            fullRemine();
-            return;
-        }
-        if (windowBackoff && increments.size() < backoffUntilWindow) {
-            lastQueryAction = 3;                                    // backing off: the window has not doubled yet
-            if (FAULT != 7) fullRemine();                           // FAULT 7: skip the re-mine, answer from the stale set
-            return;
-        }
         double fhat = scaleFhatByN && lastRemineN > 0
                 ? (double) lastRemineNanos * data.numSequences / lastRemineN : lastRemineNanos;
+        lastFhatUs = (long) (fhat / 1000);
+        try {
+            if (gateByOverhead && budgetFactor * lastRemineNanos < 2.0 * lastOverheadNanos) {
+                lastQueryAction = 3;                                    // not worth trying: re-mine directly
+                fullRemine();
+                return;
+            }
+            if (windowBackoff && increments.size() < backoffUntilWindow) {
+                lastQueryAction = 3;                                    // backing off: the window has not doubled yet
+                if (FAULT != 7) fullRemine();                           // FAULT 7: skip the re-mine, answer from the stale set
+                return;
+            }
+            if (reserveGate) {
+                long budgetUs = (long) (budgetFactor * lastFhatUs);
+                if (!reserveOpened) { reserveUs += budgetUs; reserveOpened = true; }   // the first attempt is advanced
+                if (reserveUs < budgetUs) {
+                    lastQueryAction = 5;                                // the reserve cannot pay this attempt: re-mine
+                    lastQueryGated = true;
+                    if (FAULT != 10) fullRemine();                      // FAULT 10: answer from the stale set
+                    return;
+                }
+            }
+            attemptAndFallBack(fhat);
+        } finally {
+            if (reserveGate) reserveUs += (long) (reserveEps * lastFhatUs);
+            lastReserveUs = reserveUs;
+        }
+    }
+
+    /** One cost-capped attempt from the anchor; on an abort the whole database is re-mined. */
+    private void attemptAndFallBack(double fhat) {
         long attemptStart = System.nanoTime();
         long attemptStartEpoch = System.currentTimeMillis();
         attemptWorkNanos = 0;
@@ -1469,6 +1506,10 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
             lastOverheadNanos = Math.max(0, System.nanoTime() - attemptStart - attemptWorkNanos);
             recordAttempt(attemptStart, attemptStartEpoch);
             lastQueryAction = 0;
+            if (reserveGate) {
+                lastChargeUs = (System.nanoTime() - attemptStart) / 1000;
+                reserveUs += lastFhatUs - lastChargeUs;
+            }
             if (increments.size() >= reanchorFraction * data.numSequences) {
                 resetAnchor(); incrementUtility = 0; backoffUntilWindow = 0;
             }
@@ -1501,6 +1542,10 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
                     + (ex instanceof OutOfMemoryError || ex.getCause() instanceof OutOfMemoryError ? "-oom" : "");
             settleHeapQuick();
             lastHeapLiveAfterAbortMb = usedHeapMb();
+            if (reserveGate) {
+                lastChargeUs = (System.nanoTime() - attemptStart) / 1000;   // everything but the fallback re-mine
+                if (FAULT != 11) reserveUs -= lastChargeUs;              // FAULT 11: the abort is not charged
+            }
             if (FAULT != 5) fullRemine();                           // FAULT 5: answer from the stale maintained set
         } finally {
             discoveryDeadlineNanos = Long.MAX_VALUE;

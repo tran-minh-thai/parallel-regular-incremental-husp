@@ -1,0 +1,18 @@
+{
+  "kind": "probe (development machine, feasibility only)",
+  "cell": "E2S-probe-S1",
+  "command": "java -Dthreads=8 -Ddold=0.5 -Doracle=first -Dcell=E2S-probe-S1 -Dwarmup=true test.QueryScheduleProbe datasets/ONLINE-RETAIL-II-H_seq.txt datasets/ONLINE-RETAIL-II-H_eui.txt 0.0002 68 21 every remine-nogc,bud3fs,bud3rs",
+  "git_commit": "2614e4c1b155a97e0e481752a70be7f34e34b74c",
+  "tree": "clean",
+  "sha256_AlgoPRIncHUSP": "8102523f9ee08a60349ae4bdd8f35ea86b7624cf6113d32369c16bc2de0ac651",
+  "sha256_AlgoParRemine": "1c2d15b22aa6bef9a6bc5f24022edb6b4b564bba984c6cd07f932e6c335364e4",
+  "sha256_AlgoRHUSPMinerParallel": "06c3192bc4d863ca124457f18b05fc4bd3c2698a72dfc97e32aa989e11304ce3",
+  "sha256_QueryScheduleProbe": "804ff226c50baaeb798dc70fe93fb9eea491f3d3c3319ada9c379f4f9aeb9a3d",
+  "sha256_seq": "cf312cdb3baa15dbebc117b5d345c0d3754ecc64dec00599e50fa96500385f83",
+  "sha256_eui": "5863fa3867809c97a311db50cb9422a5a638d0a82d18bb569bcd3aad0f3d687b",
+  "java": "25.0.4.1+1-LTS Eclipse Adoptium",
+  "os": "Mac OS X 27.2 aarch64",
+  "threads": "8",
+  "max_heap_mb": "8192",
+  "started": "2026-10-30T18:35:32+07:00"
+}

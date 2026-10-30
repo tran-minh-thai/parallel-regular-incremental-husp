@@ -1,0 +1,17 @@
+# python3 tools/run_tests.py (branch heap-guard-live, commit 9f48091, tree clean)
+# java:  java.runtime.version = 26.0.1+8-34  java.vendor = Oracle Corporation 
+# arm64 Apple M5
+self-test: machine_info                                                ok
+self-test: campaign runner                                             ok
+self-test: heap guard summary                                          ok
+clean: all policies                                                    ok  compared 10155 (non-empty 9990), failing 0, aborts in mining 1560, expected zero (1831 s)
+clean: dense co-occurrence build                                       ok  compared 3385 (non-empty 3330), failing 0, aborts in mining 222, expected zero (256 s)
+clean: partitioned build                                               ok  compared 3385 (non-empty 3330), failing 0, aborts in mining 207, expected zero (257 s)
+clean: sketch-filtered build                                           ok  compared 3385 (non-empty 3330), failing 0, aborts in mining 242, expected zero (261 s)
+clean: sketch with 16 counters per row                                 ok  compared 3385 (non-empty 3330), failing 0, aborts in mining 224, expected zero (264 s)
+clean: original hash build                                             ok  compared 3385 (non-empty 3330), failing 0, aborts in mining 341, expected zero (260 s)
+defect 1: discovery threshold one unit too high                        ok  compared 677 (non-empty 666), failing 28, aborts in mining 0, expected some (137 s)
+defect 2: anchor reset drops the raw increment                         ok  compared 677 (non-empty 666), failing 260, aborts in mining 0, expected some (138 s)
+defect 3: fresh candidates rebuilt from the increment only             ok  compared 677 (non-empty 666), failing 403, aborts in mining 0, expected some (134 s)
+defect 4: half-built candidates left in the tracked set (measured harmless) ok  compared 2708 (non-empty 2664), failing 0, aborts in mining 189, expected zero (121 s)
+# INTERRUPTED 2026-10-28 11:46:36: stopped by hand before the development machine was shut down; 13 of 28 entries completed (all ok). Not run in this log: defects 5-8, hook-only clean, three build defects, bud3fs clean, defect 9, bud3live clean, guard breached at every attempt, heap valve case and its two defects

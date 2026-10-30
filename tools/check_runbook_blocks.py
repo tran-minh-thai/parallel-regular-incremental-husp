@@ -2,17 +2,18 @@
 """Run the two measurement-machine blocks of a runbook verbatim under PowerShell, with fake tools, on throw-away
 git repositories, and check what they do.
 
-    python3 tools/check_runbook_blocks.py <runbook.txt> <run-status report.ps1> <scratch dir> [--only main|followup]
+    python3 tools/check_runbook_blocks.py <runbook.txt> <run-status report.ps1> <scratch dir> [--only main|followup|reserve]
 
 The main block is the one whose header (within six lines above its "& {") names E2R; the follow-up block is the
-one whose header names E2G. Only machine-specific parts are replaced, and each replacement must
+one whose header names E2G; the reserve block is the one whose header names bud3rs. Only machine-specific parts are replaced, and each replacement must
 match exactly once: the D: paths, the run-status path, the GitHub URLs, and the kernel32 import (a stub type records
 the keep-awake calls). In the git wrapper, backslashes in arguments become slashes, since the fakes run on macOS or
 Linux. java, javac, py and Get-Process are PowerShell functions that record their calls.
 
 Main block scenarios: the machine's state after a first paste whose commit failed (file staged, no git identity),
 a second paste, a failing E2 run, failing tests, no identity anywhere. Follow-up block scenarios: a normal run, a
-second paste, a java process still running, a merge conflict. Exit status 1 when a check fails. Needs pwsh and git.
+second paste, a java process still running, a merge conflict. Reserve block scenarios: a normal run, a second paste,
+a java process still running, failing tests. Exit status 1 when a check fails. Needs pwsh and git.
 """
 import argparse
 import os
@@ -54,6 +55,12 @@ function py {
       $code = 1
     }
     '*summarize_heap_guard.py' { "dataset`taborts_bud3"; "G1 ok: 3 bud3 aborts"; $code = 1 }
+    '*summarize_reserve.py' {
+      New-Item -ItemType Directory -Force results/9950x | Out-Null
+      Set-Content results/9950x/summary_E2S.tsv 'x'
+      if ($rest -contains '--write-repeats') { Set-Content experiments/campaign_9950x_reserve.json '{"experiments": {"E2S": {}, "E2SR": {}}}' }
+      "D1: 0 queries disagreeing"; $code = 1
+    }
   }
   $global:LASTEXITCODE = $code
 }
@@ -79,7 +86,7 @@ def find_block(lines, marker):
     raise SystemExit("no block with %r in its header" % marker)
 
 
-def seed_repos(T, report, followup):
+def seed_repos(T, report, followup, reserve=False):
     seed = T / "seed"
     seed.mkdir()
     files = {"src/main/java/A.java": "class A {}\n", "tools/stream_datasets/manifests/X.json": "{}\n", "tools/t.py": "\n",
@@ -96,6 +103,9 @@ def seed_repos(T, report, followup):
         (seed / "experiments/campaign_9950x_followup.json").write_text('{"experiments": {"E2G-raw": {}}}\n')
         (seed / "src/main/java/A.java").write_text("class A { int live; }\n")
         (seed / "tools/stream_datasets/manifests/Y.json").write_text("{}\n")
+        if reserve:
+            (seed / "experiments/campaign_9950x_reserve.json").write_text('{"experiments": {"E2S": {}}}\n')
+            (seed / "tools/summarize_reserve.py").write_text("\n")
         git("add", "-A", cwd=seed)
         git("-c", "user.name=S", "-c", "user.email=s@x", "commit", "-q", "-m", "follow-up", cwd=seed)
     git("clone", "-q", "--bare", str(seed), str(T / "remote.git"))
@@ -142,6 +152,11 @@ def main_subs(T):
 def followup_subs(T):
     return [('"D:\\work\\parallel-regular-incremental-husp"', '"%s/work/parallel-regular-incremental-husp"' % T),
             ('"D:\\ThuVienDuLieu"', '"%s/lib"' % T), ('"$HOME\\work\\run-status"', '"%s/rs"' % T), (KERNEL32, STUB)]
+
+
+def reserve_subs(T):
+    return [('"D:\\work\\parallel-regular-incremental-husp"', '"%s/work/parallel-regular-incremental-husp"' % T),
+            ('"$HOME\\work\\run-status"', '"%s/rs"' % T), (KERNEL32, STUB)]
 
 
 def remote_files(T, ref):
@@ -259,12 +274,70 @@ def check_followup(block, report, base, check):
           "followup D: conflicting merge aborted, tree clean, nothing runs")
 
 
+def check_reserve_block(block, report, base, check):
+    def fresh(name):
+        T = base / name
+        if T.exists():
+            shutil.rmtree(T)
+        T.mkdir(parents=True)
+        seed_repos(T, report, followup=True, reserve=True)
+        c = T / "work" / "parallel-regular-incremental-husp"
+        git("clone", "-q", "-b", "revision-apin", str(T / "remote.git"), str(c))
+        for d in (c, T / "rs"):
+            git("config", "user.name", "Test Operator", cwd=d)
+            git("config", "user.email", "operator@example.org", cwd=d)
+        (c / "results/9950x").mkdir(parents=True)
+        (c / "results/9950x/cells.tsv").write_text("key\nE2|x\n")
+        (c / "out").mkdir()
+        (c / "out/tests_ok.txt").write_text("key of the code before the merge\n")
+        git("add", "-A", cwd=c)
+        git("commit", "-q", "-m", "campaign results", cwd=c)
+        return T, c
+
+    cfg = "experiments/campaign_9950x_reserve.json"
+    T, c = fresh("reserve_A")
+    r, calls, log = run_block(T, block, reserve_subs(T), {})
+    check(ok_git("merge-base", "--is-ancestor", "origin/heap-guard-live", "HEAD", cwd=c), "reserve A: heap-guard-live merged")
+    check(sum("run_tests.py" in l for l in calls) == 1, "reserve A: tests run once on the merged code")
+    camp = [l for l in calls if "tools/campaign.py" in l]
+    check(camp == ["py tools/campaign.py --config %s run --exp E2S-S1c --exp E2Sc --exp E2SO --interleave" % cfg,
+                   "py tools/campaign.py --config %s run --exp E2S-S1 --exp E2S --interleave" % cfg,
+                   "py tools/campaign.py --config %s run --exp E2SR" % cfg],
+          "reserve A: cheap pairs, long pairs, then the generated repeats %s" % camp)
+    summ = [l for l in calls if "summarize_reserve.py" in l]
+    check(summ == ["py tools/summarize_reserve.py --config %s --write-repeats" % cfg, "py tools/summarize_reserve.py --config %s" % cfg],
+          "reserve A: repeats generated, then the summary %s" % summ)
+    files = remote_files(T, "refs/heads/campaign-9950x")
+    check({cfg, "results/9950x/summary_E2S.txt", "results/9950x/summary_E2S.tsv"} <= files,
+          "reserve A: generated repeats and the summary on campaign-9950x")
+    s = (c / "results/9950x/summary_E2S.txt").read_bytes()
+    check(b"D1:" in s and not s.startswith(b"\xef\xbb\xbf") and b"\x00" not in s, "reserve A: summary is UTF-8 without BOM")
+    check(any("reserve repeats: exit 1" in l for l in log) and any("reserve summary: exit 1" in l for l in log)
+          and any("reserve finished" in l for l in log) and not any("STOPPED" in l for l in log),
+          "reserve A: failing hypotheses reported, block finished")
+    check(AWAKE_OK in r.stdout, "reserve A: keep-awake set then released")
+    check(git("status", "--porcelain", "--untracked-files=no", cwd=c, check=False) == "", "reserve A: tracked tree clean")
+    n = git("rev-list", "--count", "HEAD", cwd=c)
+    r, calls, log = run_block(T, block, reserve_subs(T), {})
+    check(any("reserve tests: passed before" in l for l in log) and not any("run_tests" in l for l in calls),
+          "reserve B: second paste skips the tests")
+    check(git("rev-list", "--count", "HEAD", cwd=c) == n, "reserve B: no new commit")
+    T, c = fresh("reserve_C")
+    r, calls, log = run_block(T, block, reserve_subs(T), {"FAKE_JAVA": "1"})
+    check(any("STOPPED at reserve setup" in l for l in log) and not calls
+          and not ok_git("merge-base", "--is-ancestor", "origin/heap-guard-live", "HEAD", cwd=c), "reserve C: running java stops it")
+    T, c = fresh("reserve_D")
+    r, calls, log = run_block(T, block, reserve_subs(T), {"FAIL_TESTS": "1"})
+    check(any("STOPPED at reserve tests" in l for l in log) and not any("campaign.py" in l or "summarize" in l for l in calls)
+          and AWAKE_OK in r.stdout, "reserve D: failing tests stop before the campaign, keep-awake released")
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("runbook")
     ap.add_argument("report")
     ap.add_argument("scratch")
-    ap.add_argument("--only", choices=("main", "followup"))
+    ap.add_argument("--only", choices=("main", "followup", "reserve"))
     args = ap.parse_args(argv)
     lines = Path(args.runbook).read_text(encoding="utf-8").splitlines()
     base = Path(args.scratch).resolve()
@@ -274,10 +347,12 @@ def main(argv=None):
         results.append((ok, what))
         print(("ok    " if ok else "FAIL  ") + what, flush=True)
 
-    if args.only != "followup":
+    if args.only in (None, "main"):
         check_main(find_block(lines, "E2R"), Path(args.report), base, check)
-    if args.only != "main":
+    if args.only in (None, "followup"):
         check_followup(find_block(lines, "E2G"), Path(args.report), base, check)
+    if args.only in (None, "reserve"):
+        check_reserve_block(find_block(lines, "bud3rs"), Path(args.report), base, check)
     bad = [w for ok, w in results if not ok]
     print("\n%d/%d checks passed" % (len(results) - len(bad), len(results)))
     return 1 if bad else 0
