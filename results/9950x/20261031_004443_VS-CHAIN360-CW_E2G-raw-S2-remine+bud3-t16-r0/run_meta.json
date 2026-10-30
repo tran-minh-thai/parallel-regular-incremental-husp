@@ -1,0 +1,18 @@
+{
+  "kind": "measurement",
+  "cell": "E2G-raw-S2-remine+bud3-t16-r0",
+  "command": "java -Dthreads=16 -Ddold=0.9 -Doracle=first -Dlimit=14400 -Dout=results/9950x -Dcell=E2G-raw-S2-remine+bud3-t16-r0 -Dkind=measurement test.QueryScheduleProbe datasets/VS-CHAIN360-CW_seq.txt datasets/VS-CHAIN360-CW_eui.txt 0.0005 10880 11 every remine-nogc,bud3",
+  "git_commit": "12b4ad4dad66a53bef371144f612581ea92346e5",
+  "tree": "clean",
+  "sha256_AlgoPRIncHUSP": "1adacc938975f9471e9296222e5bffe50df49e36a38c2742bba4d3e3e20e9881",
+  "sha256_AlgoParRemine": "d0be829fcd600b10e8fd7de3407d8177f6dbab97214ed67c2c7c6ff4149b8989",
+  "sha256_AlgoRHUSPMinerParallel": "432ff44aace85c07f0777fe56512e31f2d76f687b822a079e50a19db50d5f4b2",
+  "sha256_QueryScheduleProbe": "b26c089202d85b1d09eac7ead21e56d8d958cba4bd98c7e1af4db6c3eddd6677",
+  "sha256_seq": "e8460084bfde8a2685cc2d75dc6f2eca255c3066812cb314554ab32d1c2495ae",
+  "sha256_eui": "0fc4b5e0a47d5a8475e0861f787306226c5fd776d19e61dd0cc5576a2f12e291",
+  "java": "25.0.5+8-LTS Eclipse Adoptium",
+  "os": "Windows 11 10.0 amd64",
+  "threads": "16",
+  "max_heap_mb": "32768",
+  "started": "2026-10-31T00:44:43+07:00"
+}
