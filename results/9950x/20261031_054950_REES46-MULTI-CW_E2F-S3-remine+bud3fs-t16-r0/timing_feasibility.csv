@@ -1,0 +1,11 @@
+dataset,policy,batches,schedule,fault,query,after_batch,ingest_ms,query_ms,discovery_mine_ms,rebuild_ms,seed_ms
+REES46-MULTI-CW,remine-nogc,21,every:4,0,0,4,0,1543,,,0
+REES46-MULTI-CW,remine-nogc,21,every:4,0,1,8,0,992,,,
+REES46-MULTI-CW,remine-nogc,21,every:4,0,2,12,1,932,,,
+REES46-MULTI-CW,remine-nogc,21,every:4,0,3,16,0,1028,,,
+REES46-MULTI-CW,remine-nogc,21,every:4,0,4,20,0,1101,,,
+REES46-MULTI-CW,bud3fs,21,every:4,0,0,4,0,1311,1311,0,0
+REES46-MULTI-CW,bud3fs,21,every:4,0,1,8,175,2680,973,0,
+REES46-MULTI-CW,bud3fs,21,every:4,0,2,12,9,2287,1002,0,
+REES46-MULTI-CW,bud3fs,21,every:4,0,3,16,9,1087,1086,0,
+REES46-MULTI-CW,bud3fs,21,every:4,0,4,20,8,1178,1178,0,
