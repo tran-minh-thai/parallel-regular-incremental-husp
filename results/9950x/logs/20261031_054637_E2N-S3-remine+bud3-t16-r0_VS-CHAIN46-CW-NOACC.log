@@ -1,0 +1,14 @@
+# java -Xmx32g -Xss4m -Dthreads=16 -Ddold=0.5 -Doracle=first -Dlimit=14400 -Dout=results/9950x -Dcell=E2N-S3-remine+bud3-t16-r0 -Dkind=measurement -cp out test.QueryScheduleProbe datasets/VS-CHAIN46-CW-NOACC_seq.txt datasets/VS-CHAIN46-CW-NOACC_eui.txt 0.0005 12147 21 every:4 remine-nogc,bud3
+# commit 48e7e6b6ed0cd60610bba6f75ff7e721bcb55f52
+VS-CHAIN46-CW-NOACC N=449423 delta=0.0005 B=12147 k=21 dOld=0.5 schedule=every:4 threads=16 fault=0 reference=first policy of this run (NOT independent) -> results\9950x\20261031_054638_VS-CHAIN46-CW-NOACC_E2N-S3-remine+bud3-t16-r0
+  remine-nogc q0  after b4  N=269656 oracle=2011   got=2011   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=9443ms
+  remine-nogc q1  after b8  N=314600 oracle=1986   got=1986   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=10975ms
+  remine-nogc q2  after b12 N=359544 oracle=2039   got=2039   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=13320ms
+  remine-nogc q3  after b16 N=404488 oracle=2050   got=2050   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=15948ms
+  remine-nogc q4  after b20 N=449423 oracle=2039   got=2039   miss=0 extra=0 uErr=0 pErr=0  ingest=0ms query=17402ms
+  bud3   q0  after b4  N=269656 oracle=2011   got=2011   miss=0 extra=0 uErr=0 pErr=0  ingest=254ms query=9165ms  {budget=0 attempt=0 load=0 pre=0 enum=0 rebuild=0 abort= cause= heapMB guard=0 start=-1 abort=-1 afterGC=-1 valveGCs=0}  [REMINE r=22.5 thr=1350505 cand=2011 fresh=0 gapRej=0 mine=9165ms rebuild=0ms tracked=2012]
+  bud3   q1  after b8  N=314600 oracle=1986   got=1986   miss=0 extra=0 uErr=0 pErr=0  ingest=36ms query=3572ms  {budget=10692 attempt=3571 load=24 pre=445 enum=2759 rebuild=341 abort= cause= heapMB guard=19660 start=2775 abort=-1 afterGC=-1 valveGCs=0}  [DISCOVER r=44.9 thr=488829 cand=2285 fresh=764 gapRej=23 mine=3227ms rebuild=341ms tracked=2630]
+  bud3   q2  after b12 N=359544 oracle=2039   got=2039   miss=0 extra=0 uErr=0 pErr=0  ingest=25ms query=4468ms  {budget=12220 attempt=4468 load=37 pre=668 enum=3688 rebuild=73 abort= cause= heapMB guard=19660 start=3577 abort=-1 afterGC=-1 valveGCs=0}  [DISCOVER r=67.4 thr=722518 cand=2436 fresh=332 gapRej=13 mine=4393ms rebuild=73ms tracked=2786]
+  bud3   q3  after b16 N=404488 oracle=2050   got=2050   miss=0 extra=0 uErr=0 pErr=0  ingest=53ms query=5905ms  {budget=13747 attempt=5905 load=54 pre=627 enum=5174 rebuild=48 abort= cause= heapMB guard=19660 start=4268 abort=-1 afterGC=-1 valveGCs=0}  [DISCOVER r=89.9 thr=953306 cand=2398 fresh=181 gapRej=11 mine=5855ms rebuild=48ms tracked=2815]
+  bud3   q4  after b20 N=449423 oracle=2039   got=2039   miss=0 extra=0 uErr=0 pErr=0  ingest=16ms query=7537ms  {budget=15275 attempt=7537 load=70 pre=788 enum=6636 rebuild=41 abort= cause= heapMB guard=19660 start=6529 abort=-1 afterGC=-1 valveGCs=0}  [DISCOVER r=112.4 thr=1174461 cand=2246 fresh=116 gapRej=13 mine=7494ms rebuild=41ms tracked=2843]
+compared queries=5 failing=0

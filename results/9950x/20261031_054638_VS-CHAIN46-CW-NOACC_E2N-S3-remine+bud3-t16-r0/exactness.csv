@@ -1,0 +1,11 @@
+dataset,policy,batches,schedule,fault,query,after_batch,n_seqs,oracle_size,returned,missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,gap_rejected,tracked_after,action,r,kept_on_abort,budget_ms,attempt_ms,attempt_load_ms,attempt_preprocess_ms,attempt_enum_ms,attempt_rebuild_ms,abort_phase,heap_guard_mb,heap_start_mb,heap_abort_mb,heap_live_after_abort_mb,heap_valve_collections,abort_cause
+VS-CHAIN46-CW-NOACC,remine-nogc,21,every:4,0,0,4,269656,2011,2011,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,
+VS-CHAIN46-CW-NOACC,remine-nogc,21,every:4,0,1,8,314600,1986,1986,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,
+VS-CHAIN46-CW-NOACC,remine-nogc,21,every:4,0,2,12,359544,2039,2039,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,
+VS-CHAIN46-CW-NOACC,remine-nogc,21,every:4,0,3,16,404488,2050,2050,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,
+VS-CHAIN46-CW-NOACC,remine-nogc,21,every:4,0,4,20,449423,2039,2039,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,
+VS-CHAIN46-CW-NOACC,bud3,21,every:4,0,0,4,269656,2011,2011,0,0,0,0,44944,1350505,2011,0,0,2012,remine,22.47,0,0,0,0,0,0,0,,0,-1,-1,-1,0,
+VS-CHAIN46-CW-NOACC,bud3,21,every:4,0,1,8,314600,1986,1986,0,0,0,0,89888,488829,2285,764,23,2630,discover,44.94,0,10692,3571,24,445,2759,341,,19660,2775,-1,-1,0,
+VS-CHAIN46-CW-NOACC,bud3,21,every:4,0,2,12,359544,2039,2039,0,0,0,0,134832,722518,2436,332,13,2786,discover,67.42,0,12220,4468,37,668,3688,73,,19660,3577,-1,-1,0,
+VS-CHAIN46-CW-NOACC,bud3,21,every:4,0,3,16,404488,2050,2050,0,0,0,0,179776,953306,2398,181,11,2815,discover,89.89,0,13747,5905,54,627,5174,48,,19660,4268,-1,-1,0,
+VS-CHAIN46-CW-NOACC,bud3,21,every:4,0,4,20,449423,2039,2039,0,0,0,0,224711,1174461,2246,116,13,2843,discover,112.36,0,15275,7537,70,788,6636,41,,19660,6529,-1,-1,0,
