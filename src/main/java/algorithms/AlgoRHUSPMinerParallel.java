@@ -108,10 +108,39 @@ public class AlgoRHUSPMinerParallel {
      */
     public long abortHeapBytes = 0;
 
+    /**
+     * Judge the valve on the live heap instead of the raw reading. totalMemory - freeMemory counts
+     * garbage not yet collected, so a run that starts behind a large dead structure (the previous
+     * full re-mine, say) can breach the valve before it has allocated anything of its own. When set,
+     * a breach makes one worker collect (the others wait on the lock and re-read), and the run aborts
+     * only if the heap is still above the valve after the collection. The collection time is part of
+     * the run's own time, so a deadline still bounds a run that keeps breaching.
+     */
+    public boolean abortHeapLive = false;
+    /** Collections the live valve has forced in this run. */
+    public final java.util.concurrent.atomic.AtomicInteger heapValveCollections = new java.util.concurrent.atomic.AtomicInteger();
+    /** Test hook: 1 = the live valve skips its collection and judges the raw reading; 2 = it never re-reads after collecting. */
+    public static int HEAP_VALVE_FAULT = Integer.getInteger("heapvalve.fault", 0);
+    private static final Object HEAP_VALVE_LOCK = new Object();
+
     /** Thrown from a worker when {@link #abortHeapBytes} is breached; caller tightens and retries. */
     public static final class HeapBudgetExceeded extends RuntimeException {
         private static final long serialVersionUID = 1L;
         HeapBudgetExceeded() { super(null, null, false, false); }
+    }
+
+    /** The heap valve: returns when the heap is within {@link #abortHeapBytes} (or the valve is off), else throws. */
+    public void checkHeapValve() {
+        if (abortHeapBytes <= 0) return;
+        Runtime rt = Runtime.getRuntime();
+        if (rt.totalMemory() - rt.freeMemory() <= abortHeapBytes) return;
+        if (!abortHeapLive || HEAP_VALVE_FAULT == 1) throw new HeapBudgetExceeded();
+        synchronized (HEAP_VALVE_LOCK) {
+            if (rt.totalMemory() - rt.freeMemory() <= abortHeapBytes) return;     // another worker has collected
+            System.gc();
+            heapValveCollections.incrementAndGet();
+            if (HEAP_VALVE_FAULT != 2 && rt.totalMemory() - rt.freeMemory() > abortHeapBytes) throw new HeapBudgetExceeded();
+        }
     }
 
     private static final ThreadMXBean THREAD_MX = ManagementFactory.getThreadMXBean();
@@ -1475,10 +1504,7 @@ public class AlgoRHUSPMinerParallel {
      * locality.
      */
     private void mine(MiningContext ctx, InstanceList projected, int lastItem) {
-        if (abortHeapBytes > 0) {
-            Runtime rt = Runtime.getRuntime();
-            if (rt.totalMemory() - rt.freeMemory() > abortHeapBytes) throw new HeapBudgetExceeded();
-        }
+        if (abortHeapBytes > 0) checkHeapValve();
         if (projected.size == 0) return;
         long[] pr = (lastItem == -1 && ctx.patLen == 0) ? Prof.start() : null;
 

@@ -1,0 +1,9 @@
+# python3 tools/run_tests.py (branch heap-guard-live, uncommitted working tree on top of 95f6991)
+# java:  java.runtime.version = 26.0.1+8-34  java.vendor = Oracle Corporation 
+# arm64 Apple M5
+self-test: machine_info                                                ok
+self-test: campaign runner                                             ok
+clean: all policies                                                    ok  compared 10155 (non-empty 9990), failing 0, aborts in mining 1439, expected zero (1649 s)
+clean: dense co-occurrence build                                       ok  compared 3385 (non-empty 3330), failing 0, aborts in mining 195, expected zero (246 s)
+clean: partitioned build                                               ok  compared 3385 (non-empty 3330), failing 0, aborts in mining 258, expected zero (265 s)
+# STOPPED by hand before the end (Mac shut down); incomplete, not a test result

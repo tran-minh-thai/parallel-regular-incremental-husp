@@ -106,6 +106,10 @@ always exact? Every tool is standard-library Python 3 or Java and runs on Window
 | `python3 tools/machine_info.py --write` | Record the measurement machine in `MEASUREMENT_MACHINE.json` |
 | `python3 tools/campaign.py lock` / `run --exp E2` / `status` | Lock the Java build, run the cells of an experiment one JVM at a time, report progress; an interrupted run continues where it stopped |
 | `python3 tools/summarize_campaign.py [--write-repeats]` | Per dataset and schedule: total cost of re-mining (F) and of cost-capped discovery (BUD3), their ratio, the checks of the pre-registered hypotheses, and the cells close to a tie that need repetitions |
+| `python3 tools/campaign.py --config experiments/campaign_9950x_followup.json run --exp E2G-raw --exp E2G-live --exp E2L --exp E2N --interleave` | The experiments run after the main campaign: BUD3 against BUD3-live on schedule S2 (alternating per dataset), VS-CHAIN46-CW schedule S1 with a limit its re-mine fits in, and the two chains rebuilt without store-type accounts |
+| `python3 tools/summarize_campaign.py --config experiments/campaign_9950x_followup.json --exp E2L --exp E2N --exp E2G-raw` | The same checks as for E2 on those experiments, written to `summary_E2L_E2N_E2G-raw.tsv` |
+| `python3 tools/check_runbook_blocks.py RUNBOOK REPORT_PS1 SCRATCH_DIR` | Run the measurement machine's command blocks verbatim under PowerShell with fake tools on throw-away git repositories, and check what each step does, including interrupted and failing runs |
+| `python3 tools/summarize_heap_guard.py [--pair DATASET RAW_DIR LIVE_DIR]` | Per dataset: BUD3 aborts and their cause, the heap after the collection that follows each abort, the live guard's collections, totals against F, and the checks of the heap guard hypotheses |
 
 The cells (datasets, thresholds, regularity bounds, query schedules, policies, repetitions, time limits) are
 defined in `experiments/campaign_9950x.json`; the raw files, their hashes and the role of every column are
@@ -115,6 +119,13 @@ documented in `tools/build_stream_datasets.py` and the manifests. A single run o
 java -Xmx16g -Ddold=0.5 -Doracle=first -cp out test.QueryScheduleProbe \
      datasets/VS-CHAIN96-CW_seq.txt datasets/VS-CHAIN96-CW_eui.txt 0.0005 17592 21 every remine-nogc,bud3
 ```
+
+BUD3 aborts a discovery when the used heap exceeds 60% of the maximum heap. That reading (`totalMemory -
+freeMemory`) includes garbage not yet collected. The policy `bud3live` differs from `bud3` only there: on a
+breach one worker collects and re-reads, and the discovery is aborted only if the heap is still above the guard.
+Both write, per query, the guard, the heap when the attempt started and when it was aborted, the heap after the
+collection that follows every abort, the collections the live guard forced, and the abort cause (`heap`,
+`deadline`, `oom`).
 
 Results:
 

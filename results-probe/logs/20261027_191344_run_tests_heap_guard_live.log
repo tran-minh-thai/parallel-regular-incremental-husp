@@ -1,0 +1,32 @@
+# python3 tools/run_tests.py (branch heap-guard-live, commit d14cef2, tree clean)
+# java:  java.runtime.version = 26.0.1+8-34  java.vendor = Oracle Corporation 
+# arm64 Apple M5
+self-test: machine_info                                                ok
+self-test: campaign runner                                             ok
+self-test: heap guard summary                                          ok
+clean: all policies                                                    ok  compared 10155 (non-empty 9990), failing 0, aborts in mining 1508, expected zero (1819 s)
+clean: dense co-occurrence build                                       ok  compared 3385 (non-empty 3330), failing 0, aborts in mining 193, expected zero (248 s)
+clean: partitioned build                                               ok  compared 3385 (non-empty 3330), failing 0, aborts in mining 171, expected zero (246 s)
+clean: sketch-filtered build                                           ok  compared 3385 (non-empty 3330), failing 0, aborts in mining 277, expected zero (271 s)
+clean: sketch with 16 counters per row                                 ok  compared 3385 (non-empty 3330), failing 0, aborts in mining 219, expected zero (260 s)
+clean: original hash build                                             ok  compared 3385 (non-empty 3330), failing 0, aborts in mining 229, expected zero (246 s)
+defect 1: discovery threshold one unit too high                        ok  compared 677 (non-empty 666), failing 28, aborts in mining 0, expected some (123 s)
+defect 2: anchor reset drops the raw increment                         ok  compared 677 (non-empty 666), failing 260, aborts in mining 0, expected some (121 s)
+defect 3: fresh candidates rebuilt from the increment only             ok  compared 677 (non-empty 666), failing 403, aborts in mining 0, expected some (121 s)
+defect 4: half-built candidates left in the tracked set (measured harmless) ok  compared 2708 (non-empty 2664), failing 0, aborts in mining 105, expected zero (118 s)
+defect 5: aborted discovery skips the fallback re-mine                 ok  compared 2708 (non-empty 2664), failing 412, aborts in mining 109, expected some (118 s)
+defect 6: aborted discovery keeps candidates mid-rebuild               ok  compared 1354 (non-empty 1332), failing 3, aborts in mining 0, expected some (219 s)
+clean: hook-only aborts, bud and bud2                                  ok  compared 1354 (non-empty 1332), failing 0, aborts in mining 0, expected zero (219 s)
+defect 7: backoff answers from the stale set                           ok  compared 2708 (non-empty 2664), failing 451, aborts in mining 117, expected some (119 s)
+defect 8: whole-database index misses the last sequence                ok  compared 1354 (non-empty 1332), failing 336, aborts in mining 37, expected some (160 s)
+defect: dense build stores s-pairs backward                            ok  compared 3385 (non-empty 3330), failing 424, aborts in mining 103, expected some (248 s)
+defect: partitioned build loses a partition                            ok  compared 3385 (non-empty 3330), failing 2627, aborts in mining 25, expected some (243 s)
+defect: sketch estimate below the true value                           ok  compared 3385 (non-empty 3330), failing 555, aborts in mining 75, expected some (246 s)
+clean: heap guard judged on the live heap (bud3live)                   ok  compared 3385 (non-empty 3330), failing 0, aborts in mining 110, expected zero (247 s)
+clean: heap guard breached at every attempt, bud3 and bud3live         ok  compared 2031 (non-empty 1998), failing 0, aborts in mining 490, expected zero+aborts (192 s)
+heap valve: raw and live modes on garbage and on live data             ok  tested 4 of 4, failing 0, expected pass (0 s)
+defect: live heap valve skips its collection                           ok  tested 4 of 4, failing 2, expected fail (0 s)
+defect: live heap valve never re-reads after collecting                ok  tested 4 of 4, failing 1, expected fail (0 s)
+
+26/26 tests as expected
+exit=0

@@ -42,6 +42,7 @@ RAW = {
 BUILDS = [
     (["VS-CHAIN96-CW", "VS-CHAIN101-CW", "VS-CHAIN152-CW", "VS-CHAIN46-CW", "VS-CHAIN360-CW"],
      ["vs", "{raw:transactions.csv.gz}", "96,101,152,46,360"]),
+    (["VS-CHAIN152-CW-NOACC", "VS-CHAIN46-CW-NOACC"], ["vs", "{raw:transactions.csv.gz}", "152,46", "1000"]),
     (["HM-CW-TYPE"], ["hmtype", "{raw:transactions_train.csv}", "{raw:articles.csv}"]),
     (["HM-CW-TYPE-12W"], ["hmtype", "{raw:transactions_train.csv}", "{raw:articles.csv}", "12"]),
     (["REES46-MULTI-CW"], ["rees46", "{raw:ecommerce-behavior-data-from-multi-category-store.zip}", "REES46-MULTI-CW"]),

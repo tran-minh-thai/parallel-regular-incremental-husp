@@ -10,7 +10,8 @@ continues an interrupted campaign; a cell interrupted mid-run has no row and run
 
     python3 tools/campaign.py plan   [--exp E2]                       # cells and which are pending
     python3 tools/campaign.py lock                                    # record the environment lock
-    python3 tools/campaign.py run    --exp E2 [--hours H] [--dry-run] [--no-git] [--redo]
+    python3 tools/campaign.py run    --exp E2 [--hours H] [--dry-run] [--no-git] [--redo] [--interleave]
+    python3 tools/campaign.py --config experiments/<other>.json run --exp X   # another cell table, same ledger
     python3 tools/campaign.py status [--exp E2]                       # done / pending per experiment
     python3 tools/campaign.py --self-test                             # the runner's own checks
 
@@ -28,6 +29,7 @@ import platform
 import re
 import subprocess
 import sys
+import threading
 import tempfile
 import time
 from pathlib import Path
@@ -65,6 +67,18 @@ def cells(cfg, only=None):
                     out.append({"key": key, "experiment": exp, "dataset": ds, "schedule": sch, "policies": pol,
                                 "threads": th, "rep": rep, "oracle": spec["oracle"], "limit_s": spec["limit_s"]})
     return out
+
+
+def interleave(cs):
+    """Reorder cells so that the cells of different experiments on the same (dataset, schedule, threads, rep)
+    run next to each other, in experiment order, instead of one experiment after the other: a slow drift of
+    the machine then falls on every experiment alike."""
+    order = []
+    for c in cs:
+        g = (c["dataset"], c["schedule"], c["threads"], c["rep"])
+        if g not in order:
+            order.append(g)
+    return sorted(cs, key=lambda c: order.index((c["dataset"], c["schedule"], c["threads"], c["rep"])))
 
 
 def cell_id(c):
@@ -332,15 +346,25 @@ def run_cell(cfg, c, use_git, dry_run=False):
     logdir.mkdir(parents=True, exist_ok=True)
     started = datetime.datetime.now()
     log = logdir / ("%s_%s.log" % (started.strftime("%Y%m%d_%H%M%S"), cell_id(c) + "_" + c["dataset"]))
+    # The outer limit must fire even when the JVM prints nothing (a heap near exhaustion can keep it collecting for
+    # hours with no output), so it is enforced by a timer, not by the read loop, which blocks while the JVM is silent.
     outer = c["limit_s"] * len(c["policies"].split(",")) + 900
-    killed = False
+    outer = float(os.environ.get("CAMPAIGN_OUTER_S", outer))      # test hook: the self-test shortens it
+    killed_flag = []
     with open(log, "w", encoding="utf-8", newline="\n") as lf:
         lf.write("# " + " ".join(cmd) + "\n# commit %s\n" % head_commit())
         lf.flush()
         p = subprocess.Popen(cmd, cwd=str(ROOT), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
                              encoding="utf-8", errors="replace")
         chunks = []
-        t0 = time.monotonic()
+        done = threading.Event()
+
+        def outer_limit():
+            if not done.wait(outer) and p.poll() is None:
+                killed_flag.append(True)
+                p.kill()
+
+        threading.Thread(target=outer_limit, daemon=True).start()
         while True:
             line = p.stdout.readline()
             if line:
@@ -349,10 +373,9 @@ def run_cell(cfg, c, use_git, dry_run=False):
                 lf.flush()
             elif p.poll() is not None:
                 break
-            if time.monotonic() - t0 > outer and p.poll() is None:
-                p.kill()
-                killed = True
         p.wait()
+        done.set()
+    killed = bool(killed_flag)
     ended = datetime.datetime.now()
     output = "".join(chunks)
     status = classify(p.returncode, output, killed)
@@ -388,6 +411,8 @@ def preflight(cfg, todo, require_machine=True):
 
 def cmd_run(cfg, args):
     todo = [c for c in cells(cfg, args.exp) if args.redo or FAULT == 1 or c["key"] not in read_ledger(cfg)]
+    if args.interleave:
+        todo = interleave(todo)
     print("%d cell(s) pending" % len(todo), flush=True)
     if not todo:
         return 0
@@ -542,6 +567,14 @@ def self_test():
     run(repo, env)
     check(killed_rows == 0 and len(ledger_rows(repo)) == 2, "interrupted cell has no row and runs on restart (rows after kill=%d)" % killed_rows)
 
+    # 2b. a JVM that goes silent past the outer limit is killed and recorded as TIMEOUT (it used to hang the campaign)
+    tmp, repo, remote, env = scenario(0)
+    t0 = time.monotonic()
+    r = run(repo, dict(env, STUB_SLEEP="30", CAMPAIGN_OUTER_S="3"))
+    rows = ledger_rows(repo)
+    check(r.returncode == 0 and len(rows) == 2 and all("\tTIMEOUT\t" in x for x in rows) and time.monotonic() - t0 < 30,
+          "silent cell killed at the outer limit and recorded as TIMEOUT (%.0f s)" % (time.monotonic() - t0))
+
     # 3. a push that fails does not stop the campaign
     tmp, repo, remote, env = scenario(0)
     git("remote", "set-url", "origin", str(tmp / "missing.git"), cwd=repo)
@@ -552,6 +585,10 @@ def self_test():
     check(classify(1, "compared queries=3 failing=1", False) == "FAIL", "exit 1 after a comparison is FAIL")
     check(classify(4, "x TIMEOUT after 60 s", False) == "TIMEOUT", "watchdog halt is TIMEOUT")
     check(classify(0, "java.lang.OutOfMemoryError", False) == "OOM", "out of memory is OOM")
+    two = {"datasets": {"A": {}, "B": {}}, "threads": 2, "experiments": {
+        x: {"datasets": ["A", "B"], "schedules": ["S1"], "policies": [x], "oracle": "first", "limit_s": 60} for x in ("X", "Y")}}
+    check([(c["experiment"], c["dataset"]) for c in interleave(cells(two))] == [("X", "A"), ("Y", "A"), ("X", "B"), ("Y", "B")],
+          "interleave alternates experiments per dataset")
     check(classify(137, "", True) == "TIMEOUT", "outer kill is TIMEOUT")
 
     # 5. a dataset that does not hash to its manifest refuses the run
@@ -595,6 +632,7 @@ def main(argv=None):
     global ROOT, CONFIG
     ap = argparse.ArgumentParser()
     ap.add_argument("--root", help=argparse.SUPPRESS)
+    ap.add_argument("--config", help="cell table to read instead of experiments/campaign_9950x.json")
     ap.add_argument("--self-test", action="store_true")
     sub = ap.add_subparsers(dest="cmd")
     for name in ("plan", "status"):
@@ -607,6 +645,7 @@ def main(argv=None):
     s.add_argument("--dry-run", action="store_true")
     s.add_argument("--no-git", action="store_true")
     s.add_argument("--redo", action="store_true")
+    s.add_argument("--interleave", action="store_true")
     s.add_argument("--self-test-mode", action="store_true", help=argparse.SUPPRESS)
     args = ap.parse_args(argv)
     if args.self_test:
@@ -614,6 +653,10 @@ def main(argv=None):
     if args.root:
         ROOT = Path(args.root).resolve()
         CONFIG = ROOT / "experiments" / "campaign_9950x.json"
+    if args.config:
+        CONFIG = Path(args.config)
+        if not CONFIG.is_absolute():
+            CONFIG = ROOT / CONFIG
     cfg = load_config(CONFIG)
     if args.cmd == "plan":
         led = read_ledger(cfg)

@@ -1,0 +1,18 @@
+{
+  "kind": "probe (development machine, feasibility only)",
+  "cell": "seed-diagnosis-S1-bud3",
+  "command": "java -Dthreads=10 -Ddold=0.5 -Doracle=none -Dlimit=3600 -Dout=results-probe/seed-diagnosis -Dcell=seed-diagnosis-S1-bud3 test.QueryScheduleProbe datasets/REES46-MULTI-CW_seq.txt datasets/REES46-MULTI-CW_eui.txt 0.0002 217714 21 final bud3",
+  "git_commit": "b6a8263165c1ef42f2525bd0bb3602a94cbfd193",
+  "tree": "clean",
+  "sha256_AlgoPRIncHUSP": "32915177c63fa395a422c07545ef45d753755f6f0c542b64f607f29609dc4ef9",
+  "sha256_AlgoParRemine": "1c2d15b22aa6bef9a6bc5f24022edb6b4b564bba984c6cd07f932e6c335364e4",
+  "sha256_AlgoRHUSPMinerParallel": "06c3192bc4d863ca124457f18b05fc4bd3c2698a72dfc97e32aa989e11304ce3",
+  "sha256_QueryScheduleProbe": "ddf39e5c94468d51730bbb5ce97d560bde177caa9b46e3980a9cf612f1a2dbb1",
+  "sha256_seq": "84c6c95fd7bb66cf91f8afac6d0aa0b0a77436735ef430014794d45bde12a624",
+  "sha256_eui": "d1c573bfdfef9d7ef324e557562e883d16351c371252c101e40205d45550a1eb",
+  "java": "26.0.1+8-34 Oracle Corporation",
+  "os": "Mac OS X 27.0.1 aarch64",
+  "threads": "10",
+  "max_heap_mb": "24576",
+  "started": "2026-10-28T08:47:59+07:00"
+}

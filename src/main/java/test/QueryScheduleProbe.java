@@ -128,7 +128,8 @@ public class QueryScheduleProbe {
             ex.write("dataset,policy,batches,schedule,fault,query,after_batch,n_seqs,oracle_size,returned,"
                     + "missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,"
                     + "gap_rejected,tracked_after,action,r,kept_on_abort,budget_ms,attempt_ms,attempt_load_ms,"
-                    + "attempt_preprocess_ms,attempt_enum_ms,attempt_rebuild_ms,abort_phase\n");
+                    + "attempt_preprocess_ms,attempt_enum_ms,attempt_rebuild_ms,abort_phase,heap_guard_mb,heap_start_mb,"
+                    + "heap_abort_mb,heap_live_after_abort_mb,heap_valve_collections,abort_cause\n");
             tm.write("dataset,policy,batches,schedule,fault,query,after_batch,ingest_ms,query_ms,"
                     + "discovery_mine_ms,rebuild_ms,seed_ms\n");
             final long limitS = Long.getLong("limit", 0);         // per-policy time limit, reference excluded
@@ -187,7 +188,7 @@ public class QueryScheduleProbe {
                             p == null ? "" : "" + m.trackedCount(),
                             p == null || !(p.adaptiveQuery || p.costCapped) ? "" : (p.lastQueryAction == 0 ? "discover"
                                     : p.lastQueryAction == 1 ? "remine" : p.lastQueryAction == 2 ? "aborted"
-                                    : p.lastQueryAction == 3 ? "skipped" : "none"),
+                                    : p.lastQueryAction == 3 ? "skipped" : p.lastQueryAction == 4 ? "seed" : "none"),
                             p == null || !(p.adaptiveQuery || p.costCapped) ? "" : String.format(java.util.Locale.ROOT, "%.2f", p.lastQueryR),
                             p == null || !p.costCapped ? "" : "" + p.lastQueryKept,
                             p == null || !p.costCapped ? "" : "" + p.lastBudgetMs,
@@ -196,7 +197,13 @@ public class QueryScheduleProbe {
                             p == null || !p.costCapped ? "" : "" + p.lastAttemptPreprocessMs,
                             p == null || !p.costCapped ? "" : "" + p.lastAttemptEnumMs,
                             p == null || !p.costCapped ? "" : "" + p.lastAttemptRebuildMs,
-                            p == null || !p.costCapped ? "" : p.lastAttemptAbortPhase) + "\n");
+                            p == null || !p.costCapped ? "" : p.lastAttemptAbortPhase,
+                            p == null || !p.costCapped ? "" : "" + p.lastHeapGuardMb,
+                            p == null || !p.costCapped ? "" : "" + p.lastHeapStartMb,
+                            p == null || !p.costCapped ? "" : "" + p.lastHeapAbortMb,
+                            p == null || !p.costCapped ? "" : "" + p.lastHeapLiveAfterAbortMb,
+                            p == null || !p.costCapped ? "" : "" + p.lastHeapValveCollections,
+                            p == null || !p.costCapped ? "" : p.lastAbortCause) + "\n");
                     tm.write(String.join(",", tag, policy, "" + batches.size(), schedule, "" + AlgoPRIncHUSP.FAULT,
                             "" + q, "" + b, "" + ingestMs, "" + queryMs,
                             p == null ? "" : "" + p.lastQueryMineMs,
@@ -206,12 +213,16 @@ public class QueryScheduleProbe {
                                     + "uErr=%d pErr=%d  ingest=%dms query=%dms%s%n",
                             policy, q, b, n, oracle.get(b).size(), res.size(), d[0], d[1], d[2], d[3],
                             ingestMs, queryMs, p == null ? ""
-                                    : (p.costCapped ? String.format(java.util.Locale.ROOT, "  {budget=%d attempt=%d load=%d pre=%d enum=%d rebuild=%d abort=%s}",
+                                    : (p.costCapped ? String.format(java.util.Locale.ROOT, "  {budget=%d attempt=%d load=%d pre=%d enum=%d rebuild=%d abort=%s"
+                                    + " cause=%s heapMB guard=%d start=%d abort=%d afterGC=%d valveGCs=%d}",
                                     p.lastBudgetMs, p.lastAttemptMs, p.lastAttemptLoadMs, p.lastAttemptPreprocessMs,
-                                    p.lastAttemptEnumMs, p.lastAttemptRebuildMs, p.lastAttemptAbortPhase) : "")
+                                    p.lastAttemptEnumMs, p.lastAttemptRebuildMs, p.lastAttemptAbortPhase, p.lastAbortCause,
+                                    p.lastHeapGuardMb, p.lastHeapStartMb, p.lastHeapAbortMb, p.lastHeapLiveAfterAbortMb,
+                                    p.lastHeapValveCollections) : "")
                                     + String.format(java.util.Locale.ROOT, "  [%sthr=%d cand=%d fresh=%d gapRej=%d mine=%dms rebuild=%dms tracked=%d]",
                                     p.adaptiveQuery || p.costCapped ? (p.lastQueryAction == 0 ? "DISCOVER r="
-                                            : p.lastQueryAction == 2 ? "ABORTED+REMINE r=" : p.lastQueryAction == 3 ? "SKIP+REMINE r=" : "REMINE r=")
+                                            : p.lastQueryAction == 2 ? "ABORTED+REMINE r=" : p.lastQueryAction == 3 ? "SKIP+REMINE r="
+                                            : p.lastQueryAction == 4 ? "FUSED-SEED r=" : "REMINE r=")
                                             + String.format(java.util.Locale.ROOT, "%.1f ", p.lastQueryR) : "",
                                     p.lastQueryThreshold, p.lastQueryCandidates, p.lastQueryFresh, p.lastQueryGapRejected,
                                     p.lastQueryMineMs, p.lastQueryRebuildMs, m.trackedCount()));
@@ -257,6 +268,9 @@ public class QueryScheduleProbe {
                 List<String> parts = new ArrayList<>(java.util.Arrays.asList(policy.split("-")));
                 boolean sel = parts.get(0).equals("sel");
                 boolean bud2 = parts.get(0).equals("bud2");          // bud2: bud + keep rebuilt + overhead gate + no GC
+                boolean live = parts.get(0).equals("bud3live");      // bud3live: bud3 with the heap guard judged on the live heap
+                boolean fused = parts.get(0).equals("bud3fs");       // bud3fs: bud3 seeded at the first query (fused seed)
+                if (live || fused) parts.set(0, "bud3");
                 boolean bud3 = parts.get(0).equals("bud3");          // bud3: bud + keep rebuilt + window backoff + scaled F_hat
                                                                      //       + heap guard 0.6 + no GC (no overhead gate)
                 if (bud2 || bud3) { parts.set(0, "bud"); parts.add("nogc"); }
@@ -285,7 +299,9 @@ public class QueryScheduleProbe {
                 p.gateByOverhead = bud2;
                 p.windowBackoff = bud3;
                 p.scaleFhatByN = bud3;
-                p.heapGuardFraction = bud3 ? 0.6 : 0;
+                p.heapGuardFraction = bud3 ? Double.parseDouble(System.getProperty("heapGuard", "0.6")) : 0;  // tests only override
+                p.heapGuardLive = live;
+                p.fusedSeed = fused;
                 p.measureMemoryOnQuery = !parts.contains("nogc");
                 p.selectorKappa = kappa;
                 m = p;

@@ -1,0 +1,259 @@
+{
+  "about": "Experiments run after the main campaign, same ledger and environment lock: E2G (bud3 against bud3live, the heap guard judged on the live heap, schedule S2), E2L (VS-CHAIN46-CW schedule S1 with a per-policy limit its re-mine fits in), E2N (two datasets rebuilt without store-type accounts), E2F (bud3 with the seed fused into the first query)",
+  "out": "results/9950x",
+  "branch": "campaign-9950x",
+  "status_project": "07_RegIncHUSPM_Parallel",
+  "jvm": [
+    "-Xmx32g",
+    "-Xss4m"
+  ],
+  "threads": 16,
+  "datasets": {
+    "VS-CHAIN96-CW": {
+      "delta": "0.0005",
+      "B": 17592,
+      "role": "costly"
+    },
+    "VS-CHAIN101-CW": {
+      "delta": "0.0005",
+      "B": 13888,
+      "role": "costly"
+    },
+    "VS-CHAIN152-CW": {
+      "delta": "0.0005",
+      "B": 14088,
+      "role": "costly"
+    },
+    "VS-CHAIN46-CW": {
+      "delta": "0.0005",
+      "B": 12151,
+      "role": "costly"
+    },
+    "VS-CHAIN360-CW": {
+      "delta": "0.0005",
+      "B": 10880,
+      "role": "costly"
+    },
+    "HM-CW-TYPE": {
+      "delta": "0.001",
+      "B": 152612,
+      "role": "costly"
+    },
+    "ONLINE-RETAIL-II-H": {
+      "delta": "0.0002",
+      "B": 68,
+      "role": "cheap"
+    },
+    "DUNNHUMBY-H": {
+      "delta": "0.0002",
+      "B": 151,
+      "role": "cheap"
+    },
+    "DUNNHUMBY-HW": {
+      "delta": "0.0002",
+      "B": 2430,
+      "role": "cheap"
+    },
+    "TAFENG-CW": {
+      "delta": "0.0002",
+      "B": 11083,
+      "role": "cheap"
+    },
+    "HM-CW-TYPE-12W": {
+      "delta": "0.001",
+      "B": 159717,
+      "role": "cheap"
+    },
+    "REES46-MULTI-CW": {
+      "delta": "0.0002",
+      "B": 217714,
+      "role": "cheap"
+    },
+    "REES46-COSMETICS-CW": {
+      "delta": "0.0002",
+      "B": 13600,
+      "role": "cheap"
+    },
+    "FIFA": {
+      "delta": "0.04",
+      "B": 6135,
+      "role": "speed"
+    },
+    "KOSARAK": {
+      "delta": "0.015",
+      "B": 297000,
+      "role": "speed"
+    },
+    "BIBLE": {
+      "delta": "0.005",
+      "B": 1091,
+      "role": "speed"
+    },
+    "VS-CHAIN152-CW-NOACC": {
+      "delta": "0.0005",
+      "B": 14088,
+      "role": "costly"
+    },
+    "VS-CHAIN46-CW-NOACC": {
+      "delta": "0.0005",
+      "B": 12147,
+      "role": "costly"
+    }
+  },
+  "schedules": {
+    "S1": {
+      "dold": "0.5",
+      "batches": 21,
+      "every": "every"
+    },
+    "S2": {
+      "dold": "0.9",
+      "batches": 11,
+      "every": "every"
+    },
+    "S3": {
+      "dold": "0.5",
+      "batches": 21,
+      "every": "every:4"
+    }
+  },
+  "experiments": {
+    "E2G-raw": {
+      "about": "schedule S2, F then bud3 in one JVM; compared with the other E2G experiment on the same dataset",
+      "datasets": [
+        "VS-CHAIN96-CW",
+        "VS-CHAIN101-CW",
+        "VS-CHAIN152-CW",
+        "VS-CHAIN46-CW",
+        "VS-CHAIN360-CW",
+        "HM-CW-TYPE"
+      ],
+      "schedules": [
+        "S2"
+      ],
+      "policies": [
+        "remine-nogc",
+        "bud3"
+      ],
+      "oracle": "first",
+      "reps": 1,
+      "limit_s": 14400
+    },
+    "E2G-live": {
+      "about": "schedule S2, F then bud3live in one JVM; compared with the other E2G experiment on the same dataset",
+      "datasets": [
+        "VS-CHAIN96-CW",
+        "VS-CHAIN101-CW",
+        "VS-CHAIN152-CW",
+        "VS-CHAIN46-CW",
+        "VS-CHAIN360-CW",
+        "HM-CW-TYPE"
+      ],
+      "schedules": [
+        "S2"
+      ],
+      "policies": [
+        "remine-nogc",
+        "bud3live"
+      ],
+      "oracle": "first",
+      "reps": 1,
+      "limit_s": 14400
+    },
+    "E2L": {
+      "about": "VS-CHAIN46-CW, schedule S1, F then BUD3 in one JVM, with a per-policy limit the re-mine fits in (its S2 cell is E2G-raw)",
+      "pairs": [
+        [
+          "VS-CHAIN46-CW",
+          "S1"
+        ]
+      ],
+      "policies": [
+        "remine-nogc",
+        "bud3"
+      ],
+      "oracle": "first",
+      "reps": 1,
+      "limit_s": 14400
+    },
+    "E2N": {
+      "about": "the two chains rebuilt without store-type accounts (a customer with a week of more than 1000 distinct items is removed), F then BUD3 in one JVM, as E2",
+      "datasets": [
+        "VS-CHAIN152-CW-NOACC",
+        "VS-CHAIN46-CW-NOACC"
+      ],
+      "schedules": [
+        "S1",
+        "S2",
+        "S3"
+      ],
+      "policies": [
+        "remine-nogc",
+        "bud3"
+      ],
+      "oracle": "first",
+      "reps": 1,
+      "limit_s": 14400
+    },
+    "E2F": {
+      "about": "F then bud3fs (the seed fused into the first query) in one JVM, compared by ratio with the E2 cell of the same dataset and schedule",
+      "pairs": [
+        [
+          "REES46-MULTI-CW",
+          "S1"
+        ],
+        [
+          "REES46-MULTI-CW",
+          "S2"
+        ],
+        [
+          "REES46-MULTI-CW",
+          "S3"
+        ],
+        [
+          "VS-CHAIN96-CW",
+          "S1"
+        ],
+        [
+          "VS-CHAIN101-CW",
+          "S1"
+        ],
+        [
+          "HM-CW-TYPE",
+          "S1"
+        ],
+        [
+          "ONLINE-RETAIL-II-H",
+          "S1"
+        ],
+        [
+          "DUNNHUMBY-H",
+          "S1"
+        ],
+        [
+          "TAFENG-CW",
+          "S1"
+        ],
+        [
+          "REES46-COSMETICS-CW",
+          "S1"
+        ],
+        [
+          "FIFA",
+          "S1"
+        ],
+        [
+          "KOSARAK",
+          "S1"
+        ]
+      ],
+      "policies": [
+        "remine-nogc",
+        "bud3fs"
+      ],
+      "oracle": "first",
+      "reps": 1,
+      "limit_s": 14400
+    }
+  }
+}

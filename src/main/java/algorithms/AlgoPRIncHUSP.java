@@ -347,6 +347,18 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
     // =====================================================================
     @Override
     public void initialBuild(List<List<int[]>> dOld, double minUtilRatio, double maxRegRatio) {
+        if (fusedSeed && !initialized && deferredPrefix == null) {
+            // Fused seed: nothing is mined here. The seed runs at the first query, over the whole prefix,
+            // and doubles as that query's full mine (see fusedSeedAnswer).
+            this.minUtilRatio = minUtilRatio; this.maxRegRatio = maxRegRatio;
+            deferredPrefix = new ArrayList<>(dOld);
+            reconciled = false;
+            return;
+        }
+        seedNow(dOld, minUtilRatio, maxRegRatio);
+    }
+
+    private void seedNow(List<List<int[]>> dOld, double minUtilRatio, double maxRegRatio) {
         this.minUtilRatio = minUtilRatio; this.maxRegRatio = maxRegRatio;
         if (!seedWithEngine05) {          // DEUCS only serves the in-house enumeration
             deucs.incUpdate(dOld);
@@ -587,6 +599,11 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
     @Override
     public long processBatch(List<List<int[]>> deltaD) {
         long t0 = System.currentTimeMillis();
+        if (deferredPrefix != null) {                  // fused seed pending: the batch joins the prefix to be seeded
+            if (FAULT != 9) deferredPrefix.addAll(deltaD);   // FAULT 9: the fused seed loses the batches before the first query
+            reconciled = false;
+            return System.currentTimeMillis() - t0;
+        }
         if (!initialized) { initialBuild(deltaD, minUtilRatio, maxRegRatio); return System.currentTimeMillis() - t0; }
 
         if (discoverExact) { increments.addAll(deltaD); reconciled = false; }   // ΔD kept raw; new data ⇒ must re-reconcile
@@ -1221,7 +1238,8 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
      * are evicted at the next classification); 5: an aborted discovery skips the fallback re-mine; 6: an aborted discovery
      * also keeps candidates whose rebuild was still in progress; 8: the whole-database inverted index misses
      * the last sequence of each extension; 7: a query skipped by the window backoff
-     * answers from the stale maintained set instead of re-mining.
+     * answers from the stale maintained set instead of re-mining; 9: the fused seed loses the batches that arrived
+     * before the first query.
      */
     public static int FAULT = 0;
 
@@ -1264,6 +1282,20 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
     public boolean scaleFhatByN = false;
     /** Abort discovery once the used heap exceeds this fraction of the maximum heap (0 = off). */
     public double heapGuardFraction = 0;
+    /** Judge the heap guard on the live heap: on a breach collect once, abort only if still above (see the engine's valve). */
+    public boolean heapGuardLive = false;
+    /** Seed at the first query, over the whole prefix, instead of at the old part (see fusedSeedAnswer). */
+    public boolean fusedSeed = false;
+    private List<List<int[]>> deferredPrefix = null;
+    /**
+     * Heap readings of the last cost-capped attempt, in MB (-1 = not taken): the guard, the raw reading
+     * when the attempt started and when it was aborted, and the reading after the collection that follows
+     * every abort; the collections the live guard forced; and the abort cause ("heap", "deadline", "oom"
+     * or ""). Read by the probes; they change no decision.
+     */
+    public long lastHeapGuardMb, lastHeapStartMb = -1, lastHeapAbortMb = -1, lastHeapLiveAfterAbortMb = -1;
+    public int lastHeapValveCollections;
+    public String lastAbortCause = "";
     private int lastRemineN = 0;
     private int backoffUntilWindow = 0;
     private long lastOverheadNanos = 0;
@@ -1301,7 +1333,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
     public double selectorKappa = 50.0;
     public double reanchorFraction = 0.5;
     public int lastQueryAction;                 // 0 = discovery, 1 = full re-mine, 2 = discovery aborted then
-                                                // full re-mine, -1 = nothing to do
+                                                // full re-mine, 3 = skipped (re-mine), 4 = fused seed, -1 = nothing to do
     public double lastQueryR;
     private final List<List<int[]>> allRaw = new ArrayList<>();   // references, for the full re-mine
     private long incrementUtility = 0;                             // U(W) since the anchor
@@ -1312,7 +1344,12 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
 
     /** Querying the result triggers the reconciliation when {@link #discoverExact} is on (exact on demand). */
     @Override public Map<String, long[]> getHighUtilityPatterns() {
-        if (discoverExact && !reconciled && costCapped) {
+        if (deferredPrefix != null) {
+            long t0 = System.currentTimeMillis();
+            fusedSeedAnswer();
+            discMs += System.currentTimeMillis() - t0;
+            reconciled = true;
+        } else if (discoverExact && !reconciled && costCapped) {
             long t0 = System.currentTimeMillis();
             cappedAnswer();
             discMs += System.currentTimeMillis() - t0;
@@ -1330,6 +1367,33 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
             reconciled = true;
         }
         return highUtility;
+    }
+
+    /**
+     * Fused seed: seed the whole prefix now, at its own threshold, and answer the first query from it. With
+     * buffer factor 1 the seed threshold is minUtil, and the seed keeps every pattern of utility at least that
+     * whose floor is within the bound, so classify() reads the exact answer off the tracked set. Seeding at this
+     * prefix sets the same invariant as seeding at the old part would if the old part were this prefix, so later
+     * queries run as under bud3. The seed's time is the cost reference F for the budget of later queries: in seed
+     * mode with the floor prune the search is the full re-mine's search plus nodes that die before having children.
+     */
+    private void fusedSeedAnswer() {
+        List<List<int[]>> prefix = deferredPrefix;
+        deferredPrefix = null;
+        lastQueryCandidates = lastQueryFresh = lastQueryGapRejected = 0;
+        lastQueryIncrementSeqs = 0; lastQueryR = 0; lastQueryKept = 0; lastQueryRebuildMs = 0;
+        lastAttemptMs = lastAttemptLoadMs = lastAttemptPreprocessMs = lastAttemptEnumMs = lastAttemptRebuildMs = lastBudgetMs = 0;
+        lastAttemptAbortPhase = "";
+        lastHeapGuardMb = 0; lastHeapStartMb = lastHeapAbortMb = lastHeapLiveAfterAbortMb = -1;
+        lastHeapValveCollections = 0; lastAbortCause = "";
+        long t = System.nanoTime();
+        seedNow(prefix, minUtilRatio, maxRegRatio);
+        lastRemineNanos = System.nanoTime() - t;
+        lastRemineN = data.numSequences;
+        lastQueryMineMs = lastRemineNanos / 1_000_000;
+        lastQueryThreshold = minUtil;
+        lastQueryCandidates = pats.length;
+        lastQueryAction = 4;
     }
 
     /** Query-time reconciliation (2-part split): mine ALL increments at θ_disc = minUtil − θ₀. */
@@ -1375,6 +1439,8 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         lastQueryKept = 0;
         lastAttemptMs = lastAttemptLoadMs = lastAttemptPreprocessMs = lastAttemptEnumMs = lastAttemptRebuildMs = lastBudgetMs = 0;
         lastAttemptAbortPhase = "";
+        lastHeapGuardMb = 0; lastHeapStartMb = lastHeapAbortMb = lastHeapLiveAfterAbortMb = -1;
+        lastHeapValveCollections = 0; lastAbortCause = "";
         if (lastRemineNanos < 0) { lastQueryAction = 1; fullRemine(); return; }
         if (gateByOverhead && budgetFactor * lastRemineNanos < 2.0 * lastOverheadNanos) {
             lastQueryAction = 3;                                    // not worth trying: re-mine directly
@@ -1395,6 +1461,8 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         lastAttemptMs = lastAttemptLoadMs = lastAttemptPreprocessMs = lastAttemptEnumMs = lastAttemptRebuildMs = 0;
         lastAttemptAbortPhase = "";
         lastBudgetMs = (long) (budgetFactor * fhat) / 1_000_000;
+        lastHeapGuardMb = (long) (heapGuardFraction * Runtime.getRuntime().maxMemory()) >> 20;
+        lastHeapStartMb = usedHeapMb();
         discoveryDeadlineNanos = attemptStart + (long) (budgetFactor * fhat);
         try {
             reconcile();
@@ -1406,6 +1474,8 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
             }
         } catch (RuntimeException | OutOfMemoryError ex) {
             if (ex instanceof RuntimeException && !isDiscoveryAbort(ex)) throw (RuntimeException) ex;
+            lastHeapAbortMb = usedHeapMb();
+            lastAbortCause = abortCause(ex);
             if (pendingFresh == null) ABORTS_IN_MINING.incrementAndGet();
             if (pendingFresh != null && (FAULT == 4 || FAULT == 6 || keepRebuiltOnAbort)) {
                 // keepRebuiltOnAbort: only fully rebuilt candidates (exact state). FAULT 4 keeps every candidate,
@@ -1430,6 +1500,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
             lastAttemptAbortPhase = (pendingFresh == null ? "mining" : "rebuild")
                     + (ex instanceof OutOfMemoryError || ex.getCause() instanceof OutOfMemoryError ? "-oom" : "");
             settleHeapQuick();
+            lastHeapLiveAfterAbortMb = usedHeapMb();
             if (FAULT != 5) fullRemine();                           // FAULT 5: answer from the stale maintained set
         } finally {
             discoveryDeadlineNanos = Long.MAX_VALUE;
@@ -1449,6 +1520,22 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
             long end = e.endTimestamp > 0 ? e.endTimestamp : System.currentTimeMillis();
             lastAttemptEnumMs = Math.max(0, end - e.startTimestamp - e.preprocessMs);
         }
+        if (e != null) lastHeapValveCollections = e.heapValveCollections.get();
+    }
+
+    private static long usedHeapMb() {
+        Runtime rt = Runtime.getRuntime();
+        return (rt.totalMemory() - rt.freeMemory()) >> 20;
+    }
+
+    /** Why a discovery was aborted: the heap guard, the time budget, or an out-of-memory error. */
+    private static String abortCause(Throwable e) {
+        for (Throwable c = e; c != null; c = c.getCause()) {
+            if (c instanceof AlgoRHUSPMinerParallel.HeapBudgetExceeded) return "heap";
+            if (c instanceof OutOfMemoryError) return "oom";
+            if (c instanceof BudgetExceeded || (c.getMessage() != null && c.getMessage().contains("TIMEOUT_INTERRUPT"))) return "deadline";
+        }
+        return "other";
     }
 
     private static boolean isDiscoveryAbort(Throwable e) {
@@ -1558,6 +1645,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
             e.measureMemory = measureMemoryOnQuery;
             if (heapGuardFraction > 0 && discoveryDeadlineNanos != Long.MAX_VALUE)
                 e.abortHeapBytes = (long) (heapGuardFraction * Runtime.getRuntime().maxMemory());
+            e.abortHeapLive = heapGuardLive;
             lastDiscoveryEngine = e;
             e.windowMode = true;                               // a mid-stream part: neither leading nor
                                                                // trailing gap is a real gap of α in D
