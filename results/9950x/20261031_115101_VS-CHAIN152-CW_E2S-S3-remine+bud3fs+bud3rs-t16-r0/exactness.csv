@@ -1,0 +1,16 @@
+dataset,policy,batches,schedule,fault,query,after_batch,n_seqs,oracle_size,returned,missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,gap_rejected,tracked_after,action,r,kept_on_abort,budget_ms,attempt_ms,attempt_load_ms,attempt_preprocess_ms,attempt_enum_ms,attempt_rebuild_ms,abort_phase,heap_guard_mb,heap_start_mb,heap_abort_mb,heap_live_after_abort_mb,heap_valve_collections,abort_cause,fhat_us,charge_us,reserve_us,gate
+VS-CHAIN152-CW,remine-nogc,21,every:4,0,0,4,312743,1356,1356,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,
+VS-CHAIN152-CW,remine-nogc,21,every:4,0,1,8,364867,1331,1331,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,
+VS-CHAIN152-CW,remine-nogc,21,every:4,0,2,12,416991,1366,1366,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,
+VS-CHAIN152-CW,remine-nogc,21,every:4,0,3,16,469115,1371,1371,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,
+VS-CHAIN152-CW,remine-nogc,21,every:4,0,4,20,521237,1311,1311,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,
+VS-CHAIN152-CW,bud3fs,21,every:4,0,0,4,312743,1356,1356,0,0,0,0,0,1624097,1356,0,0,1356,seed,0.00,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,,,,
+VS-CHAIN152-CW,bud3fs,21,every:4,0,1,8,364867,1331,1331,0,0,0,0,52124,1935489,1331,0,0,1333,aborted,26.06,0,9653,9655,19,1678,7958,0,mining,19660,3264,1585,511,0,deadline,,,,
+VS-CHAIN152-CW,bud3fs,21,every:4,0,2,12,416991,1366,1366,0,0,0,0,104248,2243761,1366,0,0,1313,aborted,52.12,0,89620,89621,26,2968,86627,0,mining,19660,3649,1765,759,0,deadline,,,,
+VS-CHAIN152-CW,bud3fs,21,every:4,0,3,16,469115,1371,1371,0,0,0,0,156372,2542840,1371,0,0,1312,skipped,78.19,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,,,,
+VS-CHAIN152-CW,bud3fs,21,every:4,0,4,20,521237,1311,1311,0,0,0,0,208494,2839233,1311,0,0,1245,skipped,104.25,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,,,,
+VS-CHAIN152-CW,bud3rs,21,every:4,0,0,4,312743,1356,1356,0,0,0,0,0,1624097,1356,0,0,1356,seed,0.00,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,0,0,0,0
+VS-CHAIN152-CW,bud3rs,21,every:4,0,1,8,364867,1331,1331,0,0,0,0,52124,1935489,1331,0,0,1333,aborted,26.06,0,9441,9442,17,1682,7743,0,mining,19660,6121,7184,511,0,deadline,9441118,9491321,893908,0
+VS-CHAIN152-CW,bud3rs,21,every:4,0,2,12,416991,1366,1366,0,0,0,0,104248,2243761,1366,0,0,1313,gated,52.12,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,89044193,0,9798327,1
+VS-CHAIN152-CW,bud3rs,21,every:4,0,3,16,469115,1371,1371,0,0,0,0,156372,2542840,1371,0,0,1312,gated,78.19,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,118193398,0,21617666,1
+VS-CHAIN152-CW,bud3rs,21,every:4,0,4,20,521237,1311,1311,0,0,0,0,208494,2839233,1311,0,0,1245,gated,104.25,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,122625337,0,33880199,1
