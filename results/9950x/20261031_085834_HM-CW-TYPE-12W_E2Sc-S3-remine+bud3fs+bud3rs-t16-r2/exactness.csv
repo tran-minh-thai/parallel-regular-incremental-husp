@@ -1,0 +1,16 @@
+dataset,policy,batches,schedule,fault,query,after_batch,n_seqs,oracle_size,returned,missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,gap_rejected,tracked_after,action,r,kept_on_abort,budget_ms,attempt_ms,attempt_load_ms,attempt_preprocess_ms,attempt_enum_ms,attempt_rebuild_ms,abort_phase,heap_guard_mb,heap_start_mb,heap_abort_mb,heap_live_after_abort_mb,heap_valve_collections,abort_cause,fhat_us,charge_us,reserve_us,gate
+HM-CW-TYPE-12W,remine-nogc,21,every:4,0,0,4,574977,2727,2727,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,
+HM-CW-TYPE-12W,remine-nogc,21,every:4,0,1,8,670805,2574,2574,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,
+HM-CW-TYPE-12W,remine-nogc,21,every:4,0,2,12,766633,2549,2549,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,
+HM-CW-TYPE-12W,remine-nogc,21,every:4,0,3,16,862461,2504,2504,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,
+HM-CW-TYPE-12W,remine-nogc,21,every:4,0,4,20,958298,2400,2400,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,
+HM-CW-TYPE-12W,bud3fs,21,every:4,0,0,4,574977,2727,2727,0,0,0,0,0,66917761,2727,0,0,2727,seed,0.00,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,,,,
+HM-CW-TYPE-12W,bud3fs,21,every:4,0,1,8,670805,2574,2574,0,0,0,0,95828,10714375,1855,65,0,2792,discover,95.83,0,593,383,7,2,237,136,,19660,697,-1,-1,0,,,,,
+HM-CW-TYPE-12W,bud3fs,21,every:4,0,2,12,766633,2549,2549,0,0,0,0,191656,21109808,2148,64,0,2856,discover,191.66,0,678,96,13,2,49,31,,19660,867,-1,-1,0,,,,,
+HM-CW-TYPE-12W,bud3fs,21,every:4,0,3,16,862461,2504,2504,0,0,0,0,287484,30975612,2124,19,0,2875,discover,287.48,0,762,115,21,3,77,13,,19660,1048,-1,-1,0,,,,,
+HM-CW-TYPE-12W,bud3fs,21,every:4,0,4,20,958298,2400,2400,0,0,0,0,383321,40531994,1996,2,0,2877,discover,383.32,0,847,145,25,4,108,8,,19660,764,-1,-1,0,,,,,
+HM-CW-TYPE-12W,bud3rs,21,every:4,0,0,4,574977,2727,2727,0,0,0,0,0,66917761,2727,0,0,2727,seed,0.00,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,0,0,0,0
+HM-CW-TYPE-12W,bud3rs,21,every:4,0,1,8,670805,2574,2574,0,0,0,0,95828,10714375,1855,65,0,2792,discover,95.83,0,565,91,6,2,23,58,,19660,730,-1,-1,0,,565391,91227,1096094,0
+HM-CW-TYPE-12W,bud3rs,21,every:4,0,2,12,766633,2549,2549,0,0,0,0,191656,21109808,2148,64,0,2856,discover,191.66,0,646,95,13,6,48,27,,19660,962,-1,-1,0,,646161,95275,1711596,0
+HM-CW-TYPE-12W,bud3rs,21,every:4,0,3,16,862461,2504,2504,0,0,0,0,287484,30975612,2124,19,0,2875,discover,287.48,0,726,111,18,3,78,11,,19660,544,-1,-1,0,,726930,111539,2399680,0
+HM-CW-TYPE-12W,bud3rs,21,every:4,0,4,20,958298,2400,2400,0,0,0,0,383321,40531994,1996,2,0,2877,discover,383.32,0,807,143,25,3,109,6,,19660,926,-1,-1,0,,807707,143714,3144443,0
