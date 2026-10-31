@@ -1,0 +1,18 @@
+{
+  "kind": "measurement",
+  "cell": "E2Sc-S3-remine+bud3fs+bud3rs-t16-r1",
+  "command": "java -Dthreads=16 -Ddold=0.5 -Doracle=first -Dlimit=3600 -Dout=results/9950x -Dcell=E2Sc-S3-remine+bud3fs+bud3rs-t16-r1 -Dkind=measurement -Dwarmup=true test.QueryScheduleProbe datasets/HM-CW-TYPE_seq.txt datasets/HM-CW-TYPE_eui.txt 0.001 152612 21 every:4 remine-nogc,bud3fs,bud3rs",
+  "git_commit": "970edf529a6c2d703771b9355c740798e81d565a",
+  "tree": "clean",
+  "sha256_AlgoPRIncHUSP": "1bb89b51322d71f8e793bb7b95a4e22cca594b4a84a57d2b2913370015187cb2",
+  "sha256_AlgoParRemine": "d0be829fcd600b10e8fd7de3407d8177f6dbab97214ed67c2c7c6ff4149b8989",
+  "sha256_AlgoRHUSPMinerParallel": "432ff44aace85c07f0777fe56512e31f2d76f687b822a079e50a19db50d5f4b2",
+  "sha256_QueryScheduleProbe": "0c1d5505c6f31ccdac8a36588277b3ab5bf2d720f7434e061094c005bc94fea8",
+  "sha256_seq": "e504f28677b0444c551533f4c121f4e1bf98e08470f43fb28c671bd0f1ed0a41",
+  "sha256_eui": "f22cbe9938050d6a57439ae49367d5ba59e7d1ef7ff6963ef912c087274a8284",
+  "java": "25.0.5+8-LTS Eclipse Adoptium",
+  "os": "Windows 11 10.0 amd64",
+  "threads": "16",
+  "max_heap_mb": "32768",
+  "started": "2026-10-31T08:11:30+07:00"
+}
