@@ -1,0 +1,16 @@
+dataset,policy,batches,schedule,fault,query,after_batch,n_seqs,oracle_size,returned,missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,gap_rejected,tracked_after,action,r,kept_on_abort,budget_ms,attempt_ms,attempt_load_ms,attempt_preprocess_ms,attempt_enum_ms,attempt_rebuild_ms,abort_phase,heap_guard_mb,heap_start_mb,heap_abort_mb,heap_live_after_abort_mb,heap_valve_collections,abort_cause,fhat_us,charge_us,reserve_us,gate
+DUNNHUMBY-HW,remine-nogc,21,every:4,0,0,4,74332,532,532,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,
+DUNNHUMBY-HW,remine-nogc,21,every:4,0,1,8,86720,508,508,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,
+DUNNHUMBY-HW,remine-nogc,21,every:4,0,2,12,99108,480,480,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,
+DUNNHUMBY-HW,remine-nogc,21,every:4,0,3,16,111496,459,459,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,
+DUNNHUMBY-HW,remine-nogc,21,every:4,0,4,20,123887,445,445,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,
+DUNNHUMBY-HW,bud3fs,21,every:4,0,0,4,74332,532,532,0,0,0,0,0,95049,532,0,0,532,seed,0.00,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,,,,
+DUNNHUMBY-HW,bud3fs,21,every:4,0,1,8,86720,508,508,0,0,0,0,12388,111330,508,3562,0,550,aborted,2.48,40,662,665,4,191,315,0,rebuild,19660,639,313,163,0,deadline,,,,
+DUNNHUMBY-HW,bud3fs,21,every:4,0,2,12,99108,480,480,0,0,0,0,24776,32179,832,399,286,522,discover,4.96,0,395,335,8,96,170,61,,19660,181,-1,-1,0,,,,,
+DUNNHUMBY-HW,bud3fs,21,every:4,0,3,16,111496,459,459,0,0,0,0,37164,49108,681,246,169,503,discover,7.43,0,445,262,12,29,207,14,,19660,797,-1,-1,0,,,,,
+DUNNHUMBY-HW,bud3fs,21,every:4,0,4,20,123887,445,445,0,0,0,0,49555,66101,639,201,137,497,discover,9.91,0,494,297,13,25,245,12,,19660,621,-1,-1,0,,,,,
+DUNNHUMBY-HW,bud3rs,21,every:4,0,0,4,74332,532,532,0,0,0,0,0,95049,532,0,0,532,seed,0.00,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,0,0,0,0
+DUNNHUMBY-HW,bud3rs,21,every:4,0,1,8,86720,508,508,0,0,0,0,12388,16282,4003,3562,3390,564,discover,2.48,0,589,250,5,24,166,52,,19660,664,-1,-1,0,,589869,250284,988440,0
+DUNNHUMBY-HW,bud3rs,21,every:4,0,2,12,99108,480,480,0,0,0,0,24776,32179,832,383,286,544,discover,4.96,0,674,240,6,46,175,13,,19660,508,-1,-1,0,,674132,240542,1489443,0
+DUNNHUMBY-HW,bud3rs,21,every:4,0,3,16,111496,459,459,0,0,0,0,37164,49108,681,244,169,521,discover,7.43,0,758,259,12,29,205,11,,19660,756,-1,-1,0,,758395,259054,2064623,0
+DUNNHUMBY-HW,bud3rs,21,every:4,0,4,20,123887,445,445,0,0,0,0,49555,66101,639,199,137,513,discover,9.91,0,842,292,14,22,242,13,,19660,421,-1,-1,0,,842678,292096,2699472,0
