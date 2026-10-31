@@ -1,0 +1,16 @@
+dataset,policy,batches,schedule,fault,query,after_batch,n_seqs,oracle_size,returned,missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,gap_rejected,tracked_after,action,r,kept_on_abort,budget_ms,attempt_ms,attempt_load_ms,attempt_preprocess_ms,attempt_enum_ms,attempt_rebuild_ms,abort_phase,heap_guard_mb,heap_start_mb,heap_abort_mb,heap_live_after_abort_mb,heap_valve_collections,abort_cause,fhat_us,charge_us,reserve_us,gate
+ONLINE-RETAIL-II-H,remine-nogc,21,every:4,0,0,4,3473,312,312,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,
+ONLINE-RETAIL-II-H,remine-nogc,21,every:4,0,1,8,4053,245,245,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,
+ONLINE-RETAIL-II-H,remine-nogc,21,every:4,0,2,12,4633,201,201,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,
+ONLINE-RETAIL-II-H,remine-nogc,21,every:4,0,3,16,5213,178,178,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,
+ONLINE-RETAIL-II-H,remine-nogc,21,every:4,0,4,20,5786,164,164,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,
+ONLINE-RETAIL-II-H,bud3fs,21,every:4,0,0,4,3473,312,312,0,0,0,0,0,234502,312,0,0,312,seed,0.00,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,,,,
+ONLINE-RETAIL-II-H,bud3fs,21,every:4,0,1,8,4053,245,245,0,0,0,0,580,265457,245,0,0,245,aborted,0.12,0,241,242,2,17,224,0,mining,19660,140,226,54,0,deadline,,,,
+ONLINE-RETAIL-II-H,bud3fs,21,every:4,0,2,12,4633,201,201,0,0,0,0,1160,299328,201,0,0,201,aborted,0.23,0,122,123,1,13,109,0,mining,19660,236,283,55,0,deadline,,,,
+ONLINE-RETAIL-II-H,bud3fs,21,every:4,0,3,16,5213,178,178,0,0,0,0,1740,341236,178,0,0,178,skipped,0.35,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,,,,
+ONLINE-RETAIL-II-H,bud3fs,21,every:4,0,4,20,5786,164,164,0,0,0,0,2313,401150,164,0,0,165,skipped,0.46,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,,,,
+ONLINE-RETAIL-II-H,bud3rs,21,every:4,0,0,4,3473,312,312,0,0,0,0,0,234502,312,0,0,312,seed,0.00,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,0,0,0,0
+ONLINE-RETAIL-II-H,bud3rs,21,every:4,0,1,8,4053,245,245,0,0,0,0,580,265457,245,0,0,245,aborted,0.12,0,239,239,1,14,224,0,mining,19660,92,617,54,0,deadline,239016,266156,-3239,0
+ONLINE-RETAIL-II-H,bud3rs,21,every:4,0,2,12,4633,201,201,0,0,0,0,1160,299328,201,0,0,201,gated,0.23,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,47148,0,1475,1
+ONLINE-RETAIL-II-H,bud3rs,21,every:4,0,3,16,5213,178,178,0,0,0,0,1740,341236,178,0,0,178,gated,0.35,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,43283,0,5803,1
+ONLINE-RETAIL-II-H,bud3rs,21,every:4,0,4,20,5786,164,164,0,0,0,0,2313,401150,164,0,0,165,gated,0.46,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,45340,0,10337,1
