@@ -1,0 +1,16 @@
+dataset,policy,batches,schedule,fault,query,after_batch,ingest_ms,query_ms,discovery_mine_ms,rebuild_ms,seed_ms
+DUNNHUMBY-HW,remine-nogc,21,every:4,0,0,4,0,370,,,0
+DUNNHUMBY-HW,remine-nogc,21,every:4,0,1,8,0,393,,,
+DUNNHUMBY-HW,remine-nogc,21,every:4,0,2,12,0,400,,,
+DUNNHUMBY-HW,remine-nogc,21,every:4,0,3,16,0,471,,,
+DUNNHUMBY-HW,remine-nogc,21,every:4,0,4,20,0,466,,,
+DUNNHUMBY-HW,bud3fs,21,every:4,0,0,4,0,546,546,0,0
+DUNNHUMBY-HW,bud3fs,21,every:4,0,1,8,70,1064,385,0,
+DUNNHUMBY-HW,bud3fs,21,every:4,0,2,12,7,280,225,53,
+DUNNHUMBY-HW,bud3fs,21,every:4,0,3,16,8,277,256,20,
+DUNNHUMBY-HW,bud3fs,21,every:4,0,4,20,4,319,304,14,
+DUNNHUMBY-HW,bud3rs,21,every:4,0,0,4,0,630,630,0,0
+DUNNHUMBY-HW,bud3rs,21,every:4,0,1,8,5,305,243,58,
+DUNNHUMBY-HW,bud3rs,21,every:4,0,2,12,4,231,217,12,
+DUNNHUMBY-HW,bud3rs,21,every:4,0,3,16,7,276,263,12,
+DUNNHUMBY-HW,bud3rs,21,every:4,0,4,20,4,311,298,13,
