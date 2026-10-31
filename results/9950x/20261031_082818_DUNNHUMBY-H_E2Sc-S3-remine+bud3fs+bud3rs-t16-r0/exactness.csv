@@ -1,0 +1,16 @@
+dataset,policy,batches,schedule,fault,query,after_batch,n_seqs,oracle_size,returned,missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,gap_rejected,tracked_after,action,r,kept_on_abort,budget_ms,attempt_ms,attempt_load_ms,attempt_preprocess_ms,attempt_enum_ms,attempt_rebuild_ms,abort_phase,heap_guard_mb,heap_start_mb,heap_abort_mb,heap_live_after_abort_mb,heap_valve_collections,abort_cause,fhat_us,charge_us,reserve_us,gate
+DUNNHUMBY-H,remine-nogc,21,every:4,0,0,4,9144,162,162,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,
+DUNNHUMBY-H,remine-nogc,21,every:4,0,1,8,10668,160,160,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,
+DUNNHUMBY-H,remine-nogc,21,every:4,0,2,12,12192,158,158,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,
+DUNNHUMBY-H,remine-nogc,21,every:4,0,3,16,13716,153,153,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,
+DUNNHUMBY-H,remine-nogc,21,every:4,0,4,20,15240,150,150,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,
+DUNNHUMBY-H,bud3fs,21,every:4,0,0,4,9144,162,162,0,0,0,0,0,90072,162,0,0,162,seed,0.00,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,,,,
+DUNNHUMBY-H,bud3fs,21,every:4,0,1,8,10668,160,160,0,0,0,0,1524,107370,160,0,0,161,aborted,0.30,0,258,259,3,30,227,0,mining,19660,415,389,127,0,deadline,,,,
+DUNNHUMBY-H,bud3fs,21,every:4,0,2,12,12192,158,158,0,0,0,0,3048,124095,158,0,0,158,aborted,0.61,0,233,233,4,15,214,0,mining,19660,455,1449,131,0,deadline,,,,
+DUNNHUMBY-H,bud3fs,21,every:4,0,3,16,13716,153,153,0,0,0,0,4572,142110,153,0,0,154,skipped,0.91,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,,,,
+DUNNHUMBY-H,bud3fs,21,every:4,0,4,20,15240,150,150,0,0,0,0,6096,161149,150,0,0,150,aborted,1.22,0,110,111,12,14,85,0,mining,19660,542,895,207,0,deadline,,,,
+DUNNHUMBY-H,bud3rs,21,every:4,0,0,4,9144,162,162,0,0,0,0,0,90072,162,0,0,162,seed,0.00,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,0,0,0,0
+DUNNHUMBY-H,bud3rs,21,every:4,0,1,8,10668,160,160,0,0,0,0,1524,107370,160,0,0,161,aborted,0.30,0,251,251,2,19,231,0,mining,19660,404,1032,125,0,deadline,251628,282627,-5837,0
+DUNNHUMBY-H,bud3rs,21,every:4,0,2,12,12192,158,158,0,0,0,0,3048,124095,158,0,0,158,gated,0.61,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,88379,0,3000,1
+DUNNHUMBY-H,bud3rs,21,every:4,0,3,16,13716,153,153,0,0,0,0,4572,142110,153,0,0,154,gated,0.91,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,80138,0,11013,1
+DUNNHUMBY-H,bud3rs,21,every:4,0,4,20,15240,150,150,0,0,0,0,6096,161149,150,0,0,150,gated,1.22,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,92377,0,20250,1
