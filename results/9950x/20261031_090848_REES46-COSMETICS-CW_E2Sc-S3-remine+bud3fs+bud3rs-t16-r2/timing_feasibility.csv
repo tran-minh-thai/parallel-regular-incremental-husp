@@ -1,0 +1,16 @@
+dataset,policy,batches,schedule,fault,query,after_batch,ingest_ms,query_ms,discovery_mine_ms,rebuild_ms,seed_ms
+REES46-COSMETICS-CW,remine-nogc,21,every:4,0,0,4,0,802,,,0
+REES46-COSMETICS-CW,remine-nogc,21,every:4,0,1,8,0,786,,,
+REES46-COSMETICS-CW,remine-nogc,21,every:4,0,2,12,0,807,,,
+REES46-COSMETICS-CW,remine-nogc,21,every:4,0,3,16,0,925,,,
+REES46-COSMETICS-CW,remine-nogc,21,every:4,0,4,20,0,953,,,
+REES46-COSMETICS-CW,bud3fs,21,every:4,0,0,4,0,937,937,0,0
+REES46-COSMETICS-CW,bud3fs,21,every:4,0,1,8,111,2095,868,0,
+REES46-COSMETICS-CW,bud3fs,21,every:4,0,2,12,28,1854,828,0,
+REES46-COSMETICS-CW,bud3fs,21,every:4,0,3,16,6,899,899,0,
+REES46-COSMETICS-CW,bud3fs,21,every:4,0,4,20,4,968,968,0,
+REES46-COSMETICS-CW,bud3rs,21,every:4,0,0,4,0,1007,1007,0,0
+REES46-COSMETICS-CW,bud3rs,21,every:4,0,1,8,3,2042,738,0,
+REES46-COSMETICS-CW,bud3rs,21,every:4,0,2,12,0,827,827,0,
+REES46-COSMETICS-CW,bud3rs,21,every:4,0,3,16,3,909,909,0,
+REES46-COSMETICS-CW,bud3rs,21,every:4,0,4,20,0,958,958,0,
