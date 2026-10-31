@@ -1,0 +1,3 @@
+warm-up on the old part (325452 sequences) at ratio 0.005, results discarded
+remine-nogc ms=1860
+bud3fs ms=1740
