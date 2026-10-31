@@ -1,0 +1,16 @@
+dataset,policy,batches,schedule,fault,query,after_batch,n_seqs,oracle_size,returned,missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,gap_rejected,tracked_after,action,r,kept_on_abort,budget_ms,attempt_ms,attempt_load_ms,attempt_preprocess_ms,attempt_enum_ms,attempt_rebuild_ms,abort_phase,heap_guard_mb,heap_start_mb,heap_abort_mb,heap_live_after_abort_mb,heap_valve_collections,abort_cause,fhat_us,charge_us,reserve_us,gate
+REES46-MULTI-CW,remine-nogc,21,every:4,0,0,4,587827,2533,2533,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,
+REES46-MULTI-CW,remine-nogc,21,every:4,0,1,8,685799,2211,2211,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,
+REES46-MULTI-CW,remine-nogc,21,every:4,0,2,12,783771,2096,2096,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,
+REES46-MULTI-CW,remine-nogc,21,every:4,0,3,16,881743,2011,2011,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,
+REES46-MULTI-CW,remine-nogc,21,every:4,0,4,20,979709,1945,1945,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,
+REES46-MULTI-CW,bud3fs,21,every:4,0,0,4,587827,2533,2533,0,0,0,0,0,6048872,2533,0,0,2533,seed,0.00,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,,,,
+REES46-MULTI-CW,bud3fs,21,every:4,0,1,8,685799,2211,2211,0,0,0,0,97972,7104376,2211,0,0,2431,aborted,19.59,0,1332,1358,8,21,1329,0,mining,19660,998,5485,1502,0,deadline,,,,
+REES46-MULTI-CW,bud3fs,21,every:4,0,2,12,783771,2096,2096,0,0,0,0,195944,8167379,2096,0,0,2332,aborted,39.19,0,1017,1216,11,36,1170,0,mining,19660,2014,3107,1571,0,deadline,,,,
+REES46-MULTI-CW,bud3fs,21,every:4,0,3,16,881743,2011,2011,0,0,0,0,293916,9145744,2011,0,0,2222,skipped,58.78,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,,,,
+REES46-MULTI-CW,bud3fs,21,every:4,0,4,20,979709,1945,1945,0,0,0,0,391882,10103048,1945,0,0,2152,skipped,78.38,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,,,,
+REES46-MULTI-CW,bud3rs,21,every:4,0,0,4,587827,2533,2533,0,0,0,0,0,6048872,2533,0,0,2533,seed,0.00,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,0,0,0,0
+REES46-MULTI-CW,bud3rs,21,every:4,0,1,8,685799,2211,2211,0,0,0,0,97972,7104376,2211,0,0,2431,aborted,19.59,0,1226,1258,5,12,1241,0,mining,19660,1769,1767,1440,0,deadline,1226571,1374711,-25483,0
+REES46-MULTI-CW,bud3rs,21,every:4,0,2,12,783771,2096,2096,0,0,0,0,195944,8167379,2096,0,0,2332,gated,39.19,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,955669,0,70083,1
+REES46-MULTI-CW,bud3rs,21,every:4,0,3,16,881743,2011,2011,0,0,0,0,293916,9145744,2011,0,0,2222,gated,58.78,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,1000236,0,170106,1
+REES46-MULTI-CW,bud3rs,21,every:4,0,4,20,979709,1945,1945,0,0,0,0,391882,10103048,1945,0,0,2152,gated,78.38,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,1062288,0,276334,1
