@@ -1,0 +1,16 @@
+dataset,policy,batches,schedule,fault,query,after_batch,ingest_ms,query_ms,discovery_mine_ms,rebuild_ms,seed_ms
+FIFA,remine-nogc,21,every:4,0,0,4,0,6826,,,0
+FIFA,remine-nogc,21,every:4,0,1,8,0,7982,,,
+FIFA,remine-nogc,21,every:4,0,2,12,0,8610,,,
+FIFA,remine-nogc,21,every:4,0,3,16,0,9883,,,
+FIFA,remine-nogc,21,every:4,0,4,20,0,10650,,,
+FIFA,bud3fs,21,every:4,0,0,4,0,6921,6921,0,0
+FIFA,bud3fs,21,every:4,0,1,8,123,1173,1008,163,
+FIFA,bud3fs,21,every:4,0,2,12,5,1611,1607,3,
+FIFA,bud3fs,21,every:4,0,3,16,5,2553,2549,3,
+FIFA,bud3fs,21,every:4,0,4,20,5,3480,3475,4,
+FIFA,bud3rs,21,every:4,0,0,4,0,7079,7079,0,0
+FIFA,bud3rs,21,every:4,0,1,8,8,879,860,18,
+FIFA,bud3rs,21,every:4,0,2,12,4,1599,1595,3,
+FIFA,bud3rs,21,every:4,0,3,16,4,2562,2558,3,
+FIFA,bud3rs,21,every:4,0,4,20,5,3341,3337,4,
