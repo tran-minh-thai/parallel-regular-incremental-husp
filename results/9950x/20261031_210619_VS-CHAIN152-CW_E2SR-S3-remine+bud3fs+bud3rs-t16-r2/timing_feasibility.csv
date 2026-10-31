@@ -1,0 +1,16 @@
+dataset,policy,batches,schedule,fault,query,after_batch,ingest_ms,query_ms,discovery_mine_ms,rebuild_ms,seed_ms
+VS-CHAIN152-CW,remine-nogc,21,every:4,0,0,4,0,7896,,,0
+VS-CHAIN152-CW,remine-nogc,21,every:4,0,1,8,0,75833,,,
+VS-CHAIN152-CW,remine-nogc,21,every:4,0,2,12,0,102543,,,
+VS-CHAIN152-CW,remine-nogc,21,every:4,0,3,16,0,110243,,,
+VS-CHAIN152-CW,remine-nogc,21,every:4,0,4,20,0,104256,,,
+VS-CHAIN152-CW,bud3fs,21,every:4,0,0,4,0,8062,8061,0,0
+VS-CHAIN152-CW,bud3fs,21,every:4,0,1,8,255,86277,76826,0,
+VS-CHAIN152-CW,bud3fs,21,every:4,0,2,12,61,189724,101879,0,
+VS-CHAIN152-CW,bud3fs,21,every:4,0,3,16,30,112174,112174,0,
+VS-CHAIN152-CW,bud3fs,21,every:4,0,4,20,23,103895,103895,0,
+VS-CHAIN152-CW,bud3rs,21,every:4,0,0,4,0,8199,8199,0,0
+VS-CHAIN152-CW,bud3rs,21,every:4,0,1,8,27,87876,78266,0,
+VS-CHAIN152-CW,bud3rs,21,every:4,0,2,12,44,103671,103671,0,
+VS-CHAIN152-CW,bud3rs,21,every:4,0,3,16,30,109736,109736,0,
+VS-CHAIN152-CW,bud3rs,21,every:4,0,4,20,24,103032,103031,0,
