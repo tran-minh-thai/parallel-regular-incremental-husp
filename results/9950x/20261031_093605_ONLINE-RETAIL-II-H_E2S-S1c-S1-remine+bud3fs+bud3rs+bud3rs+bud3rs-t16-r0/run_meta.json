@@ -1,0 +1,18 @@
+{
+  "kind": "measurement",
+  "cell": "E2S-S1c-S1-remine+bud3fs+bud3rs+bud3rs+bud3rs-t16-r0",
+  "command": "java -Dthreads=16 -Ddold=0.5 -Doracle=first -Dlimit=3600 -Dout=results/9950x -Dcell=E2S-S1c-S1-remine+bud3fs+bud3rs+bud3rs+bud3rs-t16-r0 -Dkind=measurement -Dwarmup=true test.QueryScheduleProbe datasets/ONLINE-RETAIL-II-H_seq.txt datasets/ONLINE-RETAIL-II-H_eui.txt 0.0002 68 21 every remine-nogc,bud3fs,bud3rs,bud3rs-e0,bud3rs-e0.25",
+  "git_commit": "f37f92c5d3e3acb4363d0be8b5ec4c80c6257cbd",
+  "tree": "clean",
+  "sha256_AlgoPRIncHUSP": "1bb89b51322d71f8e793bb7b95a4e22cca594b4a84a57d2b2913370015187cb2",
+  "sha256_AlgoParRemine": "d0be829fcd600b10e8fd7de3407d8177f6dbab97214ed67c2c7c6ff4149b8989",
+  "sha256_AlgoRHUSPMinerParallel": "432ff44aace85c07f0777fe56512e31f2d76f687b822a079e50a19db50d5f4b2",
+  "sha256_QueryScheduleProbe": "0c1d5505c6f31ccdac8a36588277b3ab5bf2d720f7434e061094c005bc94fea8",
+  "sha256_seq": "cf312cdb3baa15dbebc117b5d345c0d3754ecc64dec00599e50fa96500385f83",
+  "sha256_eui": "5863fa3867809c97a311db50cb9422a5a638d0a82d18bb569bcd3aad0f3d687b",
+  "java": "25.0.5+8-LTS Eclipse Adoptium",
+  "os": "Windows 11 10.0 amd64",
+  "threads": "16",
+  "max_heap_mb": "32768",
+  "started": "2026-10-31T09:36:05+07:00"
+}
