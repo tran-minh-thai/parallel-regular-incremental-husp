@@ -1,0 +1,16 @@
+dataset,policy,batches,schedule,fault,query,after_batch,ingest_ms,query_ms,discovery_mine_ms,rebuild_ms,seed_ms
+ONLINE-RETAIL-II-H,remine-nogc,21,every:4,0,0,4,0,57,,,0
+ONLINE-RETAIL-II-H,remine-nogc,21,every:4,0,1,8,0,50,,,
+ONLINE-RETAIL-II-H,remine-nogc,21,every:4,0,2,12,0,43,,,
+ONLINE-RETAIL-II-H,remine-nogc,21,every:4,0,3,16,0,46,,,
+ONLINE-RETAIL-II-H,remine-nogc,21,every:4,0,4,20,0,43,,,
+ONLINE-RETAIL-II-H,bud3fs,21,every:4,0,0,4,0,209,209,0,0
+ONLINE-RETAIL-II-H,bud3fs,21,every:4,0,1,8,62,370,98,0,
+ONLINE-RETAIL-II-H,bud3fs,21,every:4,0,2,12,15,178,38,0,
+ONLINE-RETAIL-II-H,bud3fs,21,every:4,0,3,16,0,38,38,0,
+ONLINE-RETAIL-II-H,bud3fs,21,every:4,0,4,20,0,38,38,0,
+ONLINE-RETAIL-II-H,bud3rs,21,every:4,0,0,4,0,197,197,0,0
+ONLINE-RETAIL-II-H,bud3rs,21,every:4,0,1,8,1,307,49,0,
+ONLINE-RETAIL-II-H,bud3rs,21,every:4,0,2,12,0,38,38,0,
+ONLINE-RETAIL-II-H,bud3rs,21,every:4,0,3,16,0,40,40,0,
+ONLINE-RETAIL-II-H,bud3rs,21,every:4,0,4,20,0,40,40,0,
