@@ -1,0 +1,16 @@
+dataset,policy,batches,schedule,fault,query,after_batch,n_seqs,oracle_size,returned,missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,gap_rejected,tracked_after,action,r,kept_on_abort,budget_ms,attempt_ms,attempt_load_ms,attempt_preprocess_ms,attempt_enum_ms,attempt_rebuild_ms,abort_phase,heap_guard_mb,heap_start_mb,heap_abort_mb,heap_live_after_abort_mb,heap_valve_collections,abort_cause,fhat_us,charge_us,reserve_us,gate
+KOSARAK,remine-nogc,21,every:4,0,0,4,594001,27,27,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,
+KOSARAK,remine-nogc,21,every:4,0,1,8,693001,27,27,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,
+KOSARAK,remine-nogc,21,every:4,0,2,12,792001,27,27,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,
+KOSARAK,remine-nogc,21,every:4,0,3,16,891001,27,27,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,
+KOSARAK,remine-nogc,21,every:4,0,4,20,990002,27,27,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,
+KOSARAK,bud3fs,21,every:4,0,0,4,594001,27,27,0,0,0,0,0,3476033,27,0,0,27,seed,0.00,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,,,,
+KOSARAK,bud3fs,21,every:4,0,1,8,693001,27,27,0,0,0,0,99000,576477,22,0,0,27,discover,1485.00,0,2576,472,14,163,295,0,,19660,1337,-1,-1,0,,,,,
+KOSARAK,bud3fs,21,every:4,0,2,12,792001,27,27,0,0,0,0,198000,1165430,22,0,0,27,discover,2970.00,0,2944,771,27,329,415,0,,19660,2725,-1,-1,0,,,,,
+KOSARAK,bud3fs,21,every:4,0,3,16,891001,27,27,0,0,0,0,297000,1737860,24,0,0,27,discover,4455.00,0,3312,1015,41,402,573,0,,19660,1171,-1,-1,0,,,,,
+KOSARAK,bud3fs,21,every:4,0,4,20,990002,27,27,0,0,0,0,396001,2312798,25,0,0,27,discover,5940.02,0,3680,1271,53,451,767,0,,19660,2061,-1,-1,0,,,,,
+KOSARAK,bud3rs,21,every:4,0,0,4,594001,27,27,0,0,0,0,0,3476033,27,0,0,27,seed,0.00,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,0,0,0,0
+KOSARAK,bud3rs,21,every:4,0,1,8,693001,27,27,0,0,0,0,99000,576477,22,0,0,27,discover,1485.00,0,2337,387,13,205,169,0,,19660,1654,-1,-1,0,,2337840,387455,4522009,0
+KOSARAK,bud3rs,21,every:4,0,2,12,792001,27,27,0,0,0,0,198000,1165430,22,0,0,27,discover,2970.00,0,2671,870,27,385,457,0,,19660,1831,-1,-1,0,,2671817,870455,6590552,0
+KOSARAK,bud3rs,21,every:4,0,3,16,891001,27,27,0,0,0,0,297000,1737860,24,0,0,27,discover,4455.00,0,3005,1026,48,378,601,0,,19660,3388,-1,-1,0,,3005793,1026784,8870140,0
+KOSARAK,bud3rs,21,every:4,0,4,20,990002,27,27,0,0,0,0,396001,2312798,25,0,0,27,discover,5940.02,0,3339,1282,65,465,752,0,,19660,5853,-1,-1,0,,3339773,1282210,11261680,0
