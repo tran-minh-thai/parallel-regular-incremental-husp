@@ -1,0 +1,62 @@
+dataset  schedule  runs  F_ms  bud3fs_over_F  bud3rs_over_F  bud3rs_over_bud3fs  cv_bud3rs_over_F  other_eps_over_F  checks
+DUNNHUMBY-H  S1  3  1552  1.758  1.343  0.765  0.021  bud3rs-e0=1.282 bud3rs-e0.25=1.409  D3 ok; D4 ok
+DUNNHUMBY-H  S2  3  913  2.372  1.590  0.670  0.077    D3 ok; D4 ok
+DUNNHUMBY-H  S3  3  419  3.675  2.041  0.556  0.065    D3 ok; D4 ok
+DUNNHUMBY-HW  S1  3  7939  0.923  1.030  1.118  0.031  bud3rs-e0=1.088 bud3rs-e0.25=0.850  D3 ok
+DUNNHUMBY-HW  S2  3  4501  1.356  1.216  0.897  0.049    D3 ok; D4 FAIL
+DUNNHUMBY-HW  S3  3  2033  1.283  0.809  0.631  0.042    D3 ok; D4 ok
+FIFA  S1  3  169182  0.267  0.267  1.001  0.013    D3 ok; D5 ok
+FIFA  S2  3  106723  0.135  0.133  0.986  0.016    D3 ok; D5 ok
+FIFA  S3  3  44352  0.356  0.351  0.984  0.025    D3 ok; D5 ok
+HM-CW-TYPE  S1  3  87319  0.302  0.294  0.976  0.015    D3 ok; D5 ok
+HM-CW-TYPE  S2  3  56450  0.193  0.180  0.933  0.008    D3 ok; D5 ok
+HM-CW-TYPE  S3  3  23323  0.458  0.433  0.945  0.022    D3 ok; D5 ok
+HM-CW-TYPE-12W  S1  3  6084  0.611  1.151  1.883  0.024  bud3rs-e0=1.152 bud3rs-e0.25=0.781  D3 ok
+HM-CW-TYPE-12W  S2  3  4015  1.257  1.388  1.104  0.008    D3 ok
+HM-CW-TYPE-12W  S3  3  1704  0.868  0.564  0.648  0.012    D3 ok; D4 ok
+KOSARAK  S1  3  47388  0.383  0.379  0.990  0.024  bud3rs-e0=0.383 bud3rs-e0.25=0.377  D3 ok; D5 ok
+KOSARAK  S2  3  31694  0.409  1.193  2.916  0.012    D3 ok; D5 FAIL
+KOSARAK  S3  3  12884  0.461  0.448  0.971  0.023    D3 ok; D5 ok
+ONLINE-RETAIL-II-H  S1  3  880  2.065  1.640  0.794  0.059  bud3rs-e0=1.450 bud3rs-e0.25=1.680  D3 ok; D4 ok
+ONLINE-RETAIL-II-H  S2  3  467  3.181  2.037  0.640  0.026    D3 ok; D4 ok
+ONLINE-RETAIL-II-H  S3  3  234  4.022  2.700  0.671  0.042    D3 ok; D4 ok
+REES46-COSMETICS-CW  S1  3  15533  1.247  1.008  0.808  0.029  bud3rs-e0=1.126 bud3rs-e0.25=1.003  D3 ok; D4 ok
+REES46-COSMETICS-CW  S2  3  9203  1.577  1.270  0.805  0.076    D3 ok; D4 FAIL
+REES46-COSMETICS-CW  S3  3  4474  1.567  1.279  0.816  0.135    D3 ok; D4 FAIL
+REES46-MULTI-CW  S1  3  19002  1.175  1.145  0.974  0.060  bud3rs-e0=1.072 bud3rs-e0.25=1.176  D3 ok; D4 FAIL
+REES46-MULTI-CW  S2  3  10722  1.454  1.080  0.743  0.049    D3 ok; D4 ok
+REES46-MULTI-CW  S3  3  5015  1.566  1.236  0.790  0.039    D3 ok; D4 ok
+TAFENG-CW  S1  3  10851  1.169  0.974  0.834  0.038  bud3rs-e0=1.026 bud3rs-e0.25=0.970  D3 ok; D4 FAIL
+TAFENG-CW  S2  3  6264  1.468  1.124  0.766  0.019    D3 ok; D4 ok
+TAFENG-CW  S3  3  2955  1.572  1.334  0.848  0.049    D3 ok; D4 ok
+VS-CHAIN101-CW  S1  1  244372  0.447  0.686  1.534  nan  bud3rs-e0=1.041 bud3rs-e0.25=0.782  D3 ok; D5 FAIL
+VS-CHAIN101-CW  S2  3  159298  0.975  1.029  1.055  0.049    D3 ok
+VS-CHAIN101-CW  S3  3  66089  0.378  0.363  0.959  0.006    D3 ok; D5 ok
+VS-CHAIN152-CW  S1  3  1421238  1.082  1.041  0.962  0.010    D3 ok
+VS-CHAIN152-CW  S2  3  1094670  1.098  1.095  0.998  0.051    D3 ok; D4 tie ok
+VS-CHAIN152-CW  S3  3  401391  1.252  1.031  0.823  0.004    D3 ok; D4 ok
+VS-CHAIN360-CW  S1  3  156226  0.412  0.905  2.196  0.073    D3 ok; D5 FAIL
+VS-CHAIN360-CW  S2  1  103415  0.983  1.118  1.138  nan    D3 ok
+VS-CHAIN360-CW  S3  3  41813  0.417  0.414  0.993  0.013    D3 ok; D5 ok
+VS-CHAIN96-CW  S1  1  362779  0.356  0.765  2.150  nan  bud3rs-e0=1.049 bud3rs-e0.25=0.460  D3 ok; D5 FAIL
+VS-CHAIN96-CW  S2  3  249604  1.131  1.119  0.990  0.076    D3 ok; D4 FAIL
+VS-CHAIN96-CW  S3  3  97892  0.362  0.355  0.983  0.015    D3 ok; D5 ok
+DUNNHUMBY-H  S1  order check  1583  1.563  1.593        reversed order
+ONLINE-RETAIL-II-H  S1  order check  828  2.106  2.031        reversed order
+TAFENG-CW  S1  order check  10118  1.194  1.058        reversed order
+D1: 4060 queries of bud3fs and bud3rs compared with F of the same run, 0 disagreeing
+D2: 2447 bud3rs queries checked against the reserve rule
+D3: 42 of 42 pairs as predicted
+D4: 15 of 21 pairs as predicted
+D5: 11 of 15 pairs as predicted
+pairs needing repeats: 0 []
+FAILED D4 DUNNHUMBY-HW S2: bud3rs/F 1.216, bud3fs/F 1.356, margin 0.146
+FAILED D5 KOSARAK S2: bud3rs/F 1.193 > bud3fs/F 0.409 + 0.05
+FAILED D4 REES46-COSMETICS-CW S2: bud3rs/F 1.270, bud3fs/F 1.577, margin 0.227
+FAILED D4 REES46-COSMETICS-CW S3: bud3rs/F 1.279, bud3fs/F 1.567, margin 0.404
+FAILED D4 REES46-MULTI-CW S1: bud3rs/F 1.145, bud3fs/F 1.175, margin 0.179
+FAILED D4 TAFENG-CW S1: bud3rs/F 0.974, bud3fs/F 1.169, margin 0.207
+FAILED D5 VS-CHAIN101-CW S1: bud3rs/F 0.686 > bud3fs/F 0.447 + 0.05
+FAILED D5 VS-CHAIN360-CW S1: bud3rs/F 0.905 > bud3fs/F 0.412 + 0.05
+FAILED D5 VS-CHAIN96-CW S1: bud3rs/F 0.765 > bud3fs/F 0.356 + 0.05
+FAILED D4 VS-CHAIN96-CW S2: bud3rs/F 1.119, bud3fs/F 1.131, margin 0.229
