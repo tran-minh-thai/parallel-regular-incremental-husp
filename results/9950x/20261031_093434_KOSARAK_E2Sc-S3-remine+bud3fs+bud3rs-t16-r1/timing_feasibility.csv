@@ -1,0 +1,16 @@
+dataset,policy,batches,schedule,fault,query,after_batch,ingest_ms,query_ms,discovery_mine_ms,rebuild_ms,seed_ms
+KOSARAK,remine-nogc,21,every:4,0,0,4,0,2035,,,0
+KOSARAK,remine-nogc,21,every:4,0,1,8,0,2051,,,
+KOSARAK,remine-nogc,21,every:4,0,2,12,0,2639,,,
+KOSARAK,remine-nogc,21,every:4,0,3,16,0,2734,,,
+KOSARAK,remine-nogc,21,every:4,0,4,20,0,2973,,,
+KOSARAK,bud3fs,21,every:4,0,0,4,0,1966,1966,0,0
+KOSARAK,bud3fs,21,every:4,0,1,8,102,462,461,0,
+KOSARAK,bud3fs,21,every:4,0,2,12,17,825,824,0,
+KOSARAK,bud3fs,21,every:4,0,3,16,17,1038,1038,0,
+KOSARAK,bud3fs,21,every:4,0,4,20,16,1246,1246,0,
+KOSARAK,bud3rs,21,every:4,0,0,4,0,2087,2087,0,0
+KOSARAK,bud3rs,21,every:4,0,1,8,16,386,386,0,
+KOSARAK,bud3rs,21,every:4,0,2,12,17,850,849,0,
+KOSARAK,bud3rs,21,every:4,0,3,16,18,1035,1035,0,
+KOSARAK,bud3rs,21,every:4,0,4,20,14,1260,1260,0,
