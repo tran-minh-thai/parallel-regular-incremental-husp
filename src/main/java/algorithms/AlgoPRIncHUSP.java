@@ -1240,7 +1240,10 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
      * the last sequence of each extension; 7: a query skipped by the window backoff
      * answers from the stale maintained set instead of re-mining; 9: the fused seed loses the batches that arrived
      * before the first query; 10: a query the reserve refuses answers from the stale maintained set instead of
-     * re-mining; 11: an aborted attempt is not charged to the reserve (exact answers; caught by the reserve check).
+     * re-mining; 11: an aborted attempt is not charged to the reserve (exact answers; caught by the reserve check);
+     * 12: with reserveCapBudget, the budget ignores the reserve (full budget whenever the reserve reaches the floor);
+     * 13: with reserveCapBudget, the logged budget is capped but the deadline keeps the full budget (both caught by
+     * the reserve check).
      */
     public static int FAULT = 0;
 
@@ -1296,6 +1299,15 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
      */
     public boolean reserveGate = false;
     public double reserveEps = 0.10;
+    /**
+     * With the reserve: give an attempt the budget min(c * F_hat, reserve) instead of refusing it whenever the reserve
+     * holds less than c * F_hat. An attempt runs when that budget is positive and at least min(2 * overhead of the last
+     * attempt, c * F_hat), the rule of gateByOverhead. No attempt can then spend more than the reserve plus its overrun,
+     * so the bound of the reserve holds unchanged, and the gate refuses only while the reserve is below the floor.
+     */
+    public boolean reserveCapBudget = false;
+    /** Per query, read by the probes: the budget the attempt got and the floor it had to reach (us; 0 = no attempt). */
+    public long lastAttemptBudgetUs, lastFloorUs;
     private long reserveUs = 0;
     private boolean reserveOpened = false;
     /** Per query, read by the probes: F_hat, the charge (attempt cost, completed or aborted), the reserve after the query (us). */
@@ -1446,6 +1458,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
     /** Cost-capped discovery with exact fallback; see {@link #costCapped}. */
     private void cappedAnswer() {
         lastFhatUs = lastChargeUs = 0; lastQueryGated = false; lastReserveUs = reserveUs;
+        lastAttemptBudgetUs = lastFloorUs = 0;
         lastQueryMineMs = lastQueryRebuildMs = lastQueryThreshold = 0;
         lastQueryCandidates = lastQueryFresh = lastQueryGapRejected = 0;
         lastQueryIncrementSeqs = increments.size();
@@ -1475,32 +1488,47 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
             if (reserveGate) {
                 long budgetUs = (long) (budgetFactor * lastFhatUs);
                 if (!reserveOpened) { reserveUs += budgetUs; reserveOpened = true; }   // the first attempt is advanced
-                if (reserveUs < budgetUs) {
+                long fullUs = budgetUs;
+                boolean pay;
+                if (reserveCapBudget) {
+                    lastFloorUs = 2 * lastOverheadNanos / 1000;
+                    if (FAULT != 12) budgetUs = Math.min(fullUs, reserveUs);  // FAULT 12: the budget ignores the reserve
+                    long need = Math.min(lastFloorUs, fullUs);
+                    pay = FAULT == 12 ? reserveUs > 0 && reserveUs >= need : budgetUs > 0 && budgetUs >= need;
+                } else {
+                    pay = reserveUs >= budgetUs;
+                }
+                if (!pay) {
                     lastQueryAction = 5;                                // the reserve cannot pay this attempt: re-mine
                     lastQueryGated = true;
                     if (FAULT != 10) fullRemine();                      // FAULT 10: answer from the stale set
                     return;
                 }
+                lastAttemptBudgetUs = budgetUs;
+                if (reserveCapBudget) {                                 // FAULT 13: the deadline keeps the full budget
+                    attemptAndFallBack(1000.0 * (FAULT == 13 ? fullUs : budgetUs));
+                    return;
+                }
             }
-            attemptAndFallBack(fhat);
+            attemptAndFallBack(budgetFactor * fhat);
         } finally {
             if (reserveGate) reserveUs += (long) (reserveEps * lastFhatUs);
             lastReserveUs = reserveUs;
         }
     }
 
-    /** One cost-capped attempt from the anchor; on an abort the whole database is re-mined. */
-    private void attemptAndFallBack(double fhat) {
+    /** One cost-capped attempt from the anchor, given budgetNanos; on an abort the whole database is re-mined. */
+    private void attemptAndFallBack(double budgetNanos) {
         long attemptStart = System.nanoTime();
         long attemptStartEpoch = System.currentTimeMillis();
         attemptWorkNanos = 0;
         lastDiscoveryEngine = null;
         lastAttemptMs = lastAttemptLoadMs = lastAttemptPreprocessMs = lastAttemptEnumMs = lastAttemptRebuildMs = 0;
         lastAttemptAbortPhase = "";
-        lastBudgetMs = (long) (budgetFactor * fhat) / 1_000_000;
+        lastBudgetMs = (long) budgetNanos / 1_000_000;
         lastHeapGuardMb = (long) (heapGuardFraction * Runtime.getRuntime().maxMemory()) >> 20;
         lastHeapStartMb = usedHeapMb();
-        discoveryDeadlineNanos = attemptStart + (long) (budgetFactor * fhat);
+        discoveryDeadlineNanos = attemptStart + (long) budgetNanos;
         try {
             reconcile();
             lastOverheadNanos = Math.max(0, System.nanoTime() - attemptStart - attemptWorkNanos);

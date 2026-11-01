@@ -2,11 +2,11 @@
 """Run the two measurement-machine blocks of a runbook verbatim under PowerShell, with fake tools, on throw-away
 git repositories, and check what they do.
 
-    python3 tools/check_runbook_blocks.py <runbook.txt> <run-status report.ps1> <scratch dir> [--only main|followup|resume2|reserve]
+    python3 tools/check_runbook_blocks.py <runbook.txt> <run-status report.ps1> <scratch dir> [--only main|followup|resume2|reserve|budget]
 
 The main block is the one whose header (within six lines above its "& {") names E2R; the follow-up block is the
 one whose header names E2G; the pinned resume block is the one whose header names the pinned code "src a7bc247"; the reserve block is the one
-whose header names bud3rs. Only machine-specific parts are replaced, and each replacement must
+whose header names bud3rs; the reserve-budget block is the one whose header names bud3rb. Only machine-specific parts are replaced, and each replacement must
 match exactly once: the D: paths, the run-status path, the GitHub URLs, and the kernel32 import (a stub type records
 the keep-awake calls). In the git wrapper, backslashes in arguments become slashes, since the fakes run on macOS or
 Linux. java, javac, py and Get-Process are PowerShell functions that record their calls.
@@ -14,7 +14,7 @@ Linux. java, javac, py and Get-Process are PowerShell functions that record thei
 Main block scenarios: the machine's state after a first paste whose commit failed (file staged, no git identity),
 a second paste, a failing E2 run, failing tests, no identity anywhere. Follow-up block scenarios: a normal run, a
 second paste, a java process still running, a merge conflict. Reserve block scenarios: a normal run, a second paste,
-a java process still running, failing tests. Pinned resume block scenarios: a normal run that must not take the newer
+a java process still running, failing tests; the reserve-budget block runs the same four. Pinned resume block scenarios: a normal run that must not take the newer
 branch, code that differs from the pinned code, a java process still running, tests recorded on other code, a stale
 index lock, an unreachable remote. Exit status 1 when a check fails. Needs pwsh and git.
 """
@@ -64,6 +64,12 @@ function py {
       if ($rest -contains '--write-repeats') { Set-Content experiments/campaign_9950x_reserve.json '{"experiments": {"E2S": {}, "E2SR": {}}}' }
       "D1: 0 queries disagreeing"; $code = 1
     }
+    '*summarize_budget.py' {
+      New-Item -ItemType Directory -Force results/9950x | Out-Null
+      Set-Content results/9950x/summary_E2B.tsv 'x'
+      if ($rest -contains '--write-repeats') { Set-Content experiments/campaign_9950x_budget.json '{"experiments": {"E2B": {}, "E2BR": {}}}' }
+      "B1: 0 disagreeing"; $code = 1
+    }
   }
   $global:LASTEXITCODE = $code
 }
@@ -89,7 +95,7 @@ def find_block(lines, marker):
     raise SystemExit("no block with %r in its header" % marker)
 
 
-def seed_repos(T, report, followup, reserve=False):
+def seed_repos(T, report, followup, reserve=False, budget=False):
     seed = T / "seed"
     seed.mkdir()
     files = {"src/main/java/A.java": "class A {}\n", "tools/stream_datasets/manifests/X.json": "{}\n", "tools/t.py": "\n",
@@ -109,6 +115,9 @@ def seed_repos(T, report, followup, reserve=False):
         if reserve:
             (seed / "experiments/campaign_9950x_reserve.json").write_text('{"experiments": {"E2S": {}}}\n')
             (seed / "tools/summarize_reserve.py").write_text("\n")
+        if budget:
+            (seed / "experiments/campaign_9950x_budget.json").write_text('{"experiments": {"E2B": {}}}\n')
+            (seed / "tools/summarize_budget.py").write_text("\n")
         git("add", "-A", cwd=seed)
         git("-c", "user.name=S", "-c", "user.email=s@x", "commit", "-q", "-m", "follow-up", cwd=seed)
     git("clone", "-q", "--bare", str(seed), str(T / "remote.git"))
@@ -367,13 +376,23 @@ def check_resume2(block, report, base, check):
           "resume2 G: unreachable remote only warns; summaries committed locally, block finished")
 
 
-def check_reserve_block(block, report, base, check):
+RESERVE_SPEC = {"tag": "reserve", "cfg": "experiments/campaign_9950x_reserve.json", "summarizer": "summarize_reserve.py",
+                "summary": "summary_E2S", "repeats": "E2SR", "first_line": "D1:",
+                "runs": ["run --exp E2S-S1c --exp E2Sc --exp E2SO --interleave", "run --exp E2S-S1 --exp E2S --interleave"]}
+BUDGET_SPEC = {"tag": "budget", "cfg": "experiments/campaign_9950x_budget.json", "summarizer": "summarize_budget.py",
+               "summary": "summary_E2B", "repeats": "E2BR", "first_line": "B1:",
+               "runs": ["run --exp E2B --exp E2B-152 --interleave"]}
+
+
+def check_reserve_block(block, report, base, check, spec=RESERVE_SPEC):
+    tag = spec["tag"]
+
     def fresh(name):
         T = base / name
         if T.exists():
             shutil.rmtree(T)
         T.mkdir(parents=True)
-        seed_repos(T, report, followup=True, reserve=True)
+        seed_repos(T, report, followup=True, reserve=True, budget=(tag == "budget"))
         c = T / "work" / "parallel-regular-incremental-husp"
         git("clone", "-q", "-b", "revision-apin", str(T / "remote.git"), str(c))
         for d in (c, T / "rs"):
@@ -387,42 +406,42 @@ def check_reserve_block(block, report, base, check):
         git("commit", "-q", "-m", "campaign results", cwd=c)
         return T, c
 
-    cfg = "experiments/campaign_9950x_reserve.json"
-    T, c = fresh("reserve_A")
+    cfg, summ_name, sm = spec["cfg"], spec["summarizer"], spec["summary"]
+    T, c = fresh(tag + "_A")
     r, calls, log = run_block(T, block, reserve_subs(T), {})
-    check(ok_git("merge-base", "--is-ancestor", "origin/heap-guard-live", "HEAD", cwd=c), "reserve A: heap-guard-live merged")
-    check(sum("run_tests.py" in l for l in calls) == 1, "reserve A: tests run once on the merged code")
+    check(ok_git("merge-base", "--is-ancestor", "origin/heap-guard-live", "HEAD", cwd=c), "%s A: heap-guard-live merged" % tag)
+    check(sum("run_tests.py" in l for l in calls) == 1, "%s A: tests run once on the merged code" % tag)
     camp = [l for l in calls if "tools/campaign.py" in l]
-    check(camp == ["py tools/campaign.py --config %s run --exp E2S-S1c --exp E2Sc --exp E2SO --interleave" % cfg,
-                   "py tools/campaign.py --config %s run --exp E2S-S1 --exp E2S --interleave" % cfg,
-                   "py tools/campaign.py --config %s run --exp E2SR" % cfg],
-          "reserve A: cheap pairs, long pairs, then the generated repeats %s" % camp)
-    summ = [l for l in calls if "summarize_reserve.py" in l]
-    check(summ == ["py tools/summarize_reserve.py --config %s --write-repeats" % cfg, "py tools/summarize_reserve.py --config %s" % cfg],
-          "reserve A: repeats generated, then the summary %s" % summ)
+    check(camp == ["py tools/campaign.py --config %s %s" % (cfg, x) for x in spec["runs"]]
+          + ["py tools/campaign.py --config %s run --exp %s" % (cfg, spec["repeats"])],
+          "%s A: the campaign, then the generated repeats %s" % (tag, camp))
+    summ = [l for l in calls if summ_name in l]
+    check(summ == ["py tools/%s --config %s --write-repeats" % (summ_name, cfg), "py tools/%s --config %s" % (summ_name, cfg)],
+          "%s A: repeats generated, then the summary %s" % (tag, summ))
     files = remote_files(T, "refs/heads/campaign-9950x")
-    check({cfg, "results/9950x/summary_E2S.txt", "results/9950x/summary_E2S.tsv"} <= files,
-          "reserve A: generated repeats and the summary on campaign-9950x")
-    s = (c / "results/9950x/summary_E2S.txt").read_bytes()
-    check(b"D1:" in s and not s.startswith(b"\xef\xbb\xbf") and b"\x00" not in s, "reserve A: summary is UTF-8 without BOM")
-    check(any("reserve repeats: exit 1" in l for l in log) and any("reserve summary: exit 1" in l for l in log)
-          and any("reserve finished" in l for l in log) and not any("STOPPED" in l for l in log),
-          "reserve A: failing hypotheses reported, block finished")
-    check(AWAKE_OK in r.stdout, "reserve A: keep-awake set then released")
-    check(git("status", "--porcelain", "--untracked-files=no", cwd=c, check=False) == "", "reserve A: tracked tree clean")
+    check({cfg, "results/9950x/%s.txt" % sm, "results/9950x/%s.tsv" % sm} <= files,
+          "%s A: generated repeats and the summary on campaign-9950x" % tag)
+    s = (c / ("results/9950x/%s.txt" % sm)).read_bytes()
+    check(spec["first_line"].encode() in s and not s.startswith(b"\xef\xbb\xbf") and b"\x00" not in s,
+          "%s A: summary is UTF-8 without BOM" % tag)
+    check(any("%s repeats: exit 1" % tag in l for l in log) and any("%s summary: exit 1" % tag in l for l in log)
+          and any("%s finished" % tag in l for l in log) and not any("STOPPED" in l for l in log),
+          "%s A: failing hypotheses reported, block finished" % tag)
+    check(AWAKE_OK in r.stdout, "%s A: keep-awake set then released" % tag)
+    check(git("status", "--porcelain", "--untracked-files=no", cwd=c, check=False) == "", "%s A: tracked tree clean" % tag)
     n = git("rev-list", "--count", "HEAD", cwd=c)
     r, calls, log = run_block(T, block, reserve_subs(T), {})
-    check(any("reserve tests: passed before" in l for l in log) and not any("run_tests" in l for l in calls),
-          "reserve B: second paste skips the tests")
-    check(git("rev-list", "--count", "HEAD", cwd=c) == n, "reserve B: no new commit")
-    T, c = fresh("reserve_C")
+    check(any("%s tests: passed before" % tag in l for l in log) and not any("run_tests" in l for l in calls),
+          "%s B: second paste skips the tests" % tag)
+    check(git("rev-list", "--count", "HEAD", cwd=c) == n, "%s B: no new commit" % tag)
+    T, c = fresh(tag + "_C")
     r, calls, log = run_block(T, block, reserve_subs(T), {"FAKE_JAVA": "1"})
-    check(any("STOPPED at reserve setup" in l for l in log) and not calls
-          and not ok_git("merge-base", "--is-ancestor", "origin/heap-guard-live", "HEAD", cwd=c), "reserve C: running java stops it")
-    T, c = fresh("reserve_D")
+    check(any("STOPPED at %s setup" % tag in l for l in log) and not calls
+          and not ok_git("merge-base", "--is-ancestor", "origin/heap-guard-live", "HEAD", cwd=c), "%s C: running java stops it" % tag)
+    T, c = fresh(tag + "_D")
     r, calls, log = run_block(T, block, reserve_subs(T), {"FAIL_TESTS": "1"})
-    check(any("STOPPED at reserve tests" in l for l in log) and not any("campaign.py" in l or "summarize" in l for l in calls)
-          and AWAKE_OK in r.stdout, "reserve D: failing tests stop before the campaign, keep-awake released")
+    check(any("STOPPED at %s tests" % tag in l for l in log) and not any("campaign.py" in l or "summarize" in l for l in calls)
+          and AWAKE_OK in r.stdout, "%s D: failing tests stop before the campaign, keep-awake released" % tag)
 
 
 def main(argv=None):
@@ -430,7 +449,7 @@ def main(argv=None):
     ap.add_argument("runbook")
     ap.add_argument("report")
     ap.add_argument("scratch")
-    ap.add_argument("--only", choices=("main", "followup", "resume2", "reserve"))
+    ap.add_argument("--only", choices=("main", "followup", "resume2", "reserve", "budget"))
     args = ap.parse_args(argv)
     lines = Path(args.runbook).read_text(encoding="utf-8").splitlines()
     base = Path(args.scratch).resolve()
@@ -448,6 +467,8 @@ def main(argv=None):
         check_resume2(find_block(lines, "src a7bc247"), Path(args.report), base, check)
     if args.only in (None, "reserve"):
         check_reserve_block(find_block(lines, "bud3rs"), Path(args.report), base, check)
+    if args.only in (None, "budget"):
+        check_reserve_block(find_block(lines, "bud3rb"), Path(args.report), base, check, BUDGET_SPEC)
     bad = [w for ok, w in results if not ok]
     print("\n%d/%d checks passed" % (len(results) - len(bad), len(results)))
     return 1 if bad else 0

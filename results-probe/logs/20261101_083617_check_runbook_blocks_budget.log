@@ -1,0 +1,10 @@
+# check_runbook_blocks.py on run.txt (block NGAN SACH THEO QUY, marker bud3rb), pwsh PowerShell 7.6.4, 2026-11-01 08:36
+# tool sha256 182b9f74c3f95624; run.txt sha256 834deff703ef6617; scratch <scratch>
+full run (all blocks): 66/66 checks passed
+budget block alone: 13/13 checks passed
+injections into a copy of the budget block (each must fail at least one check):
+  java check removed: 1 failing check
+  tests step replaced by a no-op: 2 failing checks
+  repeats experiment name changed (E2BR -> E2XR): 1 failing check
+  keep-awake release removed: 2 failing checks
+not tested on Windows PowerShell 5.1
