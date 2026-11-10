@@ -17,6 +17,7 @@ import re
 import subprocess
 import sys
 import tempfile
+import csv
 import time
 from pathlib import Path
 
@@ -56,6 +57,9 @@ STRESS = [
      ["-Dpolicies=keep-sfx," + BUD3.replace("bud3", "bud3rs") + ",bud3rs-e0-c1,bud3rs-e1000000000-c1"], "zero"),
     # c = 0.001 aborts nearly every attempt, so the reserve goes negative and refuses the later ones.
     ("defect 10: a refused attempt answers from the stale set", ["-Dfault=10", "-Dpolicies=bud3rs-c0.001,bud3rs-c0"], "some"),
+    ("clean: reserve budget (bud3rb), premium 0.1, 0 and 1e9",
+     ["-Dpolicies=keep-sfx," + BUD3.replace("bud3", "bud3rb") + ",bud3rb-e0-c1,bud3rb-e1000000000-c1"], "zero"),
+    ("defect 10 under bud3rb: a refused attempt answers from the stale set", ["-Dfault=10", "-Dpolicies=bud3rb-c0.001-e0,bud3rb-c0-e0"], "some"),
     ("clean: heap guard judged on the live heap (bud3live)", ["-Dpolicies=keep-sfx," + BUD3.replace("bud3", "bud3live")], "zero"),
     # A guard of a few bytes is breached at every attempt: bud3 aborts on the raw reading, bud3live collects and then aborts.
     ("clean: heap guard breached at every attempt, bud3 and bud3live",
@@ -67,10 +71,35 @@ STRESS = [
 # tools/check_reserve.py on its log. With the default premium the reserve refills faster than the tiny budget drains
 # (measured: 8 aborts, 0 refusals), so the refusal path would go unchecked. "pass" = probe exact and the
 # check clean over a non-zero number of queries with at least one abort and one refusal; "fail" = the check reports.
+# bud3rb needs a reserve that is positive but below c * F_hat, or its capped budget never differs from bud3rs's (measured:
+# with the bud3rs settings above the bud3rb log is the bud3rs log, and defects 12 and 13 went uncaught). A heap guard of a
+# few bytes aborts every attempt within milliseconds; with c = 0.1 and no premium the first abort leaves a reserve below
+# the next c * F_hat (measured on SIGN: 6.9 ms left, next full budget 23 ms), so the second attempt runs on a capped budget,
+# and the reserve is then negative and refuses the rest. With c = 1 the reserve stays above c * F_hat on SIGN, whose F_hat
+# falls as the JVM warms (measured: 0 capped attempts). "pass" for bud3rb also requires at least one capped attempt.
+RSV = "bud3rs-c0.001-e0,bud3rs-c1000000000"
+RB = "bud3rb-c0.1-e0"
+TINY_GUARD = "-DheapGuard=0.000000001"
 RESERVE = [
-    ("reserve: probe on SIGN, then the reserve check", [], "pass"),
-    ("defect 11: an aborted attempt is not charged to the reserve", ["-Dfault=11"], "fail"),
+    ("reserve: probe on SIGN, then the reserve check", [], RSV, "pass"),
+    ("defect 11: an aborted attempt is not charged to the reserve", ["-Dfault=11"], RSV, "fail"),
+    ("reserve budget (bud3rb): probe on SIGN, then the reserve check", [TINY_GUARD], RB, "pass"),
+    ("defect 12: the bud3rb budget ignores the reserve", [TINY_GUARD, "-Dfault=12"], RB, "fail"),
+    ("defect 13: the bud3rb deadline keeps the full budget", [TINY_GUARD, "-Dfault=13"], RB, "fail"),
 ]
+
+
+def capped_attempts(exactness_csv):
+    """bud3rb attempts whose budget is below floor(c * F_hat), i.e. where the reserve cut the budget."""
+    n = 0
+    for r in csv.DictReader(open(exactness_csv, encoding="utf-8", newline="")):
+        if r["policy"].split("-")[0] == "bud3rb" and r["action"] in ("discover", "aborted"):
+            c = 1.0
+            for part in r["policy"].split("-")[1:]:
+                if part.startswith("c"):
+                    c = float(part[1:])
+            n += int(r["attempt_budget_us"]) < int(c * int(r["fhat_us"]))
+    return n
 
 # (name, JVM properties, expected) for test.HeapValveCheck: "pass" = all four cases tested and correct; "fail" = a case fails.
 HEAP_VALVE = [
@@ -105,7 +134,8 @@ def main(argv=None):
     for name, cmd in (("self-test: machine_info", [sys.executable, "tools/machine_info.py", "--self-test"]),
                       ("self-test: campaign runner", [sys.executable, "tools/campaign.py", "--self-test"]),
                       ("self-test: heap guard summary", [sys.executable, "tools/summarize_heap_guard.py", "--self-test"]),
-                      ("self-test: reserve check", [sys.executable, "tools/check_reserve.py", "--self-test"])):
+                      ("self-test: reserve check", [sys.executable, "tools/check_reserve.py", "--self-test"]),
+                      ("self-test: reserve-budget summary", [sys.executable, "tools/summarize_budget.py", "--self-test"])):
         if args.only and args.only not in name:
             continue
         p, secs = run(cmd)
@@ -134,13 +164,13 @@ def main(argv=None):
         results.append((name, ok, detail))
         print("%-70s %s  %s" % (name, "ok" if ok else "FAILED", detail), flush=True)
 
-    for name, props, expected in RESERVE:
+    for name, props, policies, expected in RESERVE:
         if args.only and args.only not in name:
             continue
         with tempfile.TemporaryDirectory() as tmp:
             p, secs = run(["java", "-Xmx2g"] + props + ["-Dthreads=2", "-Dout=" + tmp, "-cp", "out", "test.QueryScheduleProbe",
                                                        "datasets/SIGN_seq.txt", "datasets/SIGN_eui.txt", "0.005", "21", "16",
-                                                       "every", "bud3rs-c0.001-e0,bud3rs-c1000000000"])
+                                                       "every", policies])
             runs = [d for d in Path(tmp).iterdir() if d.is_dir()]
             m = re.search(r"compared queries=(\d+) failing=(\d+)", p.stdout)
             if p.returncode != 0 or not m or len(runs) != 1:
@@ -149,15 +179,17 @@ def main(argv=None):
                 continue
             c = subprocess.run([sys.executable, "tools/check_reserve.py", str(runs[0])], cwd=str(ROOT), capture_output=True, text=True)
             log = (runs[0] / "exactness.csv").read_text(encoding="utf-8")
+            capped = capped_attempts(runs[0] / "exactness.csv")
         mc = re.search(r"reserve check: (\d+) queries checked, (\d+) problems", c.stdout)
         checked, problems = (int(mc.group(1)), int(mc.group(2))) if mc else (0, -1)
         aborts, refusals = log.count(",aborted,"), log.count(",gated,")
+        rb = policies.startswith("bud3rb")
         if expected == "pass":
-            ok = c.returncode == 0 and checked > 0 and problems == 0 and aborts > 0 and refusals > 0
+            ok = c.returncode == 0 and checked > 0 and problems == 0 and aborts > 0 and refusals > 0 and (capped > 0 or not rb)
         else:
             ok = c.returncode != 0 and problems > 0
-        detail = "probe compared %s failing %s; reserve check %d queries, %d problems; %d aborts, %d refusals, expected %s (%.0f s)" % (
-            m.group(1), m.group(2), checked, problems, aborts, refusals, expected, secs)
+        detail = "probe compared %s failing %s; reserve check %d queries, %d problems; %d aborts, %d refusals, %d capped, expected %s (%.0f s)" % (
+            m.group(1), m.group(2), checked, problems, aborts, refusals, capped, expected, secs)
         results.append((name, ok, detail))
         print("%-70s %s  %s" % (name, "ok" if ok else "FAILED", detail), flush=True)
 

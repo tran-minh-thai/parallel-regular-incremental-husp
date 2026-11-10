@@ -131,7 +131,7 @@ public class QueryScheduleProbe {
                     + "missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,"
                     + "gap_rejected,tracked_after,action,r,kept_on_abort,budget_ms,attempt_ms,attempt_load_ms,"
                     + "attempt_preprocess_ms,attempt_enum_ms,attempt_rebuild_ms,abort_phase,heap_guard_mb,heap_start_mb,"
-                    + "heap_abort_mb,heap_live_after_abort_mb,heap_valve_collections,abort_cause,fhat_us,charge_us,reserve_us,gate\n");
+                    + "heap_abort_mb,heap_live_after_abort_mb,heap_valve_collections,abort_cause,fhat_us,charge_us,reserve_us,gate,attempt_budget_us,floor_us\n");
             tm.write("dataset,policy,batches,schedule,fault,query,after_batch,ingest_ms,query_ms,"
                     + "discovery_mine_ms,rebuild_ms,seed_ms\n");
             final long limitS = Long.getLong("limit", 0);         // per-policy time limit, reference excluded
@@ -210,7 +210,9 @@ public class QueryScheduleProbe {
                             p == null || !p.reserveGate ? "" : "" + p.lastFhatUs,
                             p == null || !p.reserveGate ? "" : "" + p.lastChargeUs,
                             p == null || !p.reserveGate ? "" : "" + p.lastReserveUs,
-                            p == null || !p.reserveGate ? "" : (p.lastQueryGated ? "1" : "0")) + "\n");
+                            p == null || !p.reserveGate ? "" : (p.lastQueryGated ? "1" : "0"),
+                            p == null || !p.reserveGate ? "" : "" + p.lastAttemptBudgetUs,
+                            p == null || !p.reserveCapBudget ? "" : "" + p.lastFloorUs) + "\n");
                     tm.write(String.join(",", tag, policy, "" + batches.size(), schedule, "" + AlgoPRIncHUSP.FAULT,
                             "" + q, "" + b, "" + ingestMs, "" + queryMs,
                             p == null ? "" : "" + p.lastQueryMineMs,
@@ -301,7 +303,8 @@ public class QueryScheduleProbe {
                 boolean sel = parts.get(0).equals("sel");
                 boolean bud2 = parts.get(0).equals("bud2");          // bud2: bud + keep rebuilt + overhead gate + no GC
                 boolean live = parts.get(0).equals("bud3live");      // bud3live: bud3 with the heap guard judged on the live heap
-                boolean reserve = parts.get(0).equals("bud3rs");     // bud3rs: bud3fs with every attempt paid from a reserve
+                boolean capped = parts.get(0).equals("bud3rb");      // bud3rb: bud3rs, budget min(c * F_hat, reserve)
+                boolean reserve = parts.get(0).equals("bud3rs") || capped;  // bud3rs: bud3fs with every attempt paid from a reserve
                 boolean fused = parts.get(0).equals("bud3fs") || reserve;  // bud3fs: bud3 seeded at the first query (fused seed)
                 double eps = 0.10;                                   // bud3rs-e<eps>: the reserve's premium per query
                 for (String s : parts) if (s.startsWith("e")) eps = Double.parseDouble(s.substring(1));
@@ -339,6 +342,7 @@ public class QueryScheduleProbe {
                 p.fusedSeed = fused;
                 p.reserveGate = reserve;
                 p.reserveEps = eps;
+                p.reserveCapBudget = capped;
                 p.measureMemoryOnQuery = !parts.contains("nogc");
                 p.selectorKappa = kappa;
                 m = p;

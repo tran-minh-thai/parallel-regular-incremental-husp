@@ -1,0 +1,18 @@
+# run_tests.py items touched by the reserve-budget change (partial suite, development machine), 2026-11-01 08:36
+# AlgoPRIncHUSP sha256 3cebc076dd5cc6b9, QueryScheduleProbe 102d09b63b3d41dc, run_tests.py deea91218c3576c8; java openjdk version "25.0.4.1" 2026-08-18 LTS
+# a Mac feasibility probe ran at the same time on 8 threads
+clean: reserve gate (bud3rs), premium 0.1, 0 and 1e9                   ok  compared 4739 (non-empty 4662), failing 0, aborts in mining 143, expected zero (313 s)
+defect 10: a refused attempt answers from the stale set                ok  compared 1354 (non-empty 1332), failing 396, aborts in mining 146, expected some (62 s)
+defect 5: aborted discovery skips the fallback re-mine                 ok  compared 2708 (non-empty 2664), failing 409, aborts in mining 225, expected some (133 s)
+defect 7: backoff answers from the stale set                           ok  compared 2708 (non-empty 2664), failing 454, aborts in mining 217, expected some (135 s)
+clean: seed fused into the first query (bud3fs)                        ok  compared 3385 (non-empty 3330), failing 0, aborts in mining 285, expected zero (272 s)
+clean: reserve budget (bud3rb), premium 0.1, 0 and 1e9                 ok  compared 4739 (non-empty 4662), failing 0, aborts in mining 72, expected zero (308 s)
+defect 10 under bud3rb: a refused attempt answers from the stale set   ok  compared 1354 (non-empty 1332), failing 468, aborts in mining 77, expected some (57 s)
+reserve: probe on SIGN, then the reserve check                         ok  probe compared 30 failing 0; reserve check 28 queries, 0 problems; 5 aborts, 13 refusals, 0 capped, expected pass (43 s)
+defect 11: an aborted attempt is not charged to the reserve            ok  probe compared 30 failing 0; reserve check 28 queries, 9 problems; 8 aborts, 0 refusals, 0 capped, expected fail (45 s)
+reserve budget (bud3rb): probe on SIGN, then the reserve check         ok  probe compared 15 failing 0; reserve check 14 queries, 0 problems; 2 aborts, 11 refusals, 1 capped, expected pass (23 s)
+defect 12: the bud3rb budget ignores the reserve                       ok  probe compared 15 failing 0; reserve check 14 queries, 2 problems; 2 aborts, 11 refusals, 0 capped, expected fail (22 s)
+defect 13: the bud3rb deadline keeps the full budget                   ok  probe compared 15 failing 0; reserve check 14 queries, 1 problems; 2 aborts, 11 refusals, 1 capped, expected fail (18 s)
+self-test: campaign runner                                             ok
+self-test: reserve check                                               ok
+self-test: reserve-budget summary                                      ok

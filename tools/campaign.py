@@ -2,7 +2,9 @@
 """Run the measurement campaign described in experiments/campaign_9950x.json, one cell at a time.
 
 A cell is (experiment, dataset, schedule, policies, threads, repetition); an experiment may add JVM properties
-("props", e.g. -Dwarmup=true) to the command of its cells. Every cell runs in its own JVM
+("props", e.g. -Dwarmup=true) to the command of its cells, and may rotate the order of its policies with the
+repetition ("rotate": true; repetition r runs the list turned left by r places, so over len(policies) repetitions
+every policy runs once in every position of the JVM). Every cell runs in its own JVM
 (test.QueryScheduleProbe in measurement mode) and, when that JVM has ended, one row is appended to the
 ledger <out>/cells.tsv; the run directory, the ledger and the cell's console log are then committed and
 pushed to the campaign branch, and one line goes to the run-status channel. A cell that already has a
@@ -63,7 +65,11 @@ def cells(cfg, only=None):
                 raise SystemExit("experiment %s names dataset %s, which the dataset table lacks" % (exp, ds))
             for th in spec.get("threads", [cfg["threads"]]):
                 for rep in range(first, first + spec.get("reps", 1)):
-                    pol = ",".join(spec["policies"])
+                    order = list(spec["policies"])
+                    if spec.get("rotate"):
+                        k = rep % len(order)
+                        order = order[k:] + order[:k]
+                    pol = ",".join(order)
                     key = "|".join([exp, ds, sch, pol, "t%d" % th, "r%d" % rep])
                     out.append({"key": key, "experiment": exp, "dataset": ds, "schedule": sch, "policies": pol,
                                 "threads": th, "rep": rep, "oracle": spec["oracle"], "limit_s": spec["limit_s"],
@@ -600,6 +606,20 @@ def self_test():
     cw, cn = cells(real)
     check("-Dwarmup=true" in command(real, cw) and "-Dwarmup=true" not in command(real, cn),
           "an experiment's own JVM properties reach its cells only")
+    rot = {"datasets": {"A": {}}, "threads": 2, "experiments": {
+        "R": {"datasets": ["A"], "schedules": ["S1"], "policies": ["f", "a", "b", "c"], "oracle": "first", "limit_s": 60,
+              "reps": 4, "rotate": True},
+        "T": {"datasets": ["A"], "schedules": ["S1"], "policies": ["f", "a", "b", "c"], "oracle": "first", "limit_s": 60,
+              "first_rep": 4, "reps": 2, "rotate": True},
+        "U": {"datasets": ["A"], "schedules": ["S1"], "policies": ["f", "a"], "oracle": "first", "limit_s": 60, "reps": 2}}}
+    rc = [c for c in cells(rot) if c["experiment"] == "R"]
+    orders = [c["policies"].split(",") for c in rc]
+    check(len({c["key"] for c in rc}) == 4 and all(sorted(o) == ["a", "b", "c", "f"] for o in orders)
+          and all(sorted(o[i] for o in orders) == ["a", "b", "c", "f"] for i in range(4)),
+          "rotation: four repetitions, every policy once in every position, distinct keys")
+    check([c["policies"] for c in cells(rot) if c["experiment"] == "T"] == ["f,a,b,c", "a,b,c,f"],
+          "rotation continues from the repetition index of generated repeats")
+    check([c["policies"] for c in cells(rot) if c["experiment"] == "U"] == ["f,a", "f,a"], "no rotation unless asked")
 
     # 5. a dataset that does not hash to its manifest refuses the run
     tmp, repo, remote, env = scenario(0)

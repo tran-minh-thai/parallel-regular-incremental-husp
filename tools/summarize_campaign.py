@@ -2,6 +2,7 @@
 """Summarise the main experiment of the measurement campaign and generate the repeats it needs.
 
     python3 tools/summarize_campaign.py [--out results/9950x] [--write-repeats] [--margin 0.10]
+    python3 tools/summarize_campaign.py --self-test
 
 Reads <out>/cells.tsv and, for every recorded cell of E2 and its repeats (E2R), the run directory's
 exactness.csv and timing_feasibility.csv. Per (dataset, schedule) it reports the total cost of F (re-mine at
@@ -86,8 +87,10 @@ def p2_check(f_rows, b_rows):
     fsum = sum(int(t["query_ms"]) for _, t in f_rows)
     bq = sum(int(t["query_ms"]) for _, t in b_rows)
     bound = 1.15 * (fsum + aborts * maxbud) + 50 * len(b_rows)
+    # The third value is P4's additive allowance: aborts times the largest budget, nothing else. An earlier
+    # version returned fsum + aborts * maxbud, and P4 compared BUD3 with F + allowance, so F counted twice.
     return ok_log and bq <= bound, "aborts per epoch %s; query cost %d <= %.0f" % (",".join(parts) or "none", bq, bound), \
-        fsum + aborts * maxbud
+        aborts * maxbud
 
 
 def main(argv=None):
@@ -185,5 +188,23 @@ def main(argv=None):
     return 1 if failures or problems else 0
 
 
+def self_test():
+    """P4's allowance from p2_check: one abort under a 20 ms budget allows 20 ms over F, not F + 20 ms."""
+    def rows(policy_rows):
+        return [({"increment_seqs": str(w), "action": a, "budget_ms": str(b)}, {"query_ms": str(q), "ingest_ms": "0", "seed_ms": "0"})
+                for w, a, b, q in policy_rows]
+    f = rows([(1, "", 0, 50), (2, "", 0, 50)])
+    b = rows([(1, "aborted", 20, 70), (2, "discover", 20, 80)])
+    _, _, allow = p2_check(f, b)
+    checks = [(allow == 20, "allowance is aborts x largest budget (got %s)" % allow),
+              (not (total_ms(b) <= total_ms(f) + allow), "BUD3 150 ms against F 100 ms + 20 ms fails P4"),
+              (total_ms(b) <= total_ms(f) + 50 + allow, "BUD3 150 ms against F 130 ms + 20 ms passes P4")]
+    for ok, name in checks:
+        print("%s %s" % ("ok  " if ok else "FAIL", name))
+    bad = sum(not ok for ok, _ in checks)
+    print("self-test: %d/%d checks passed" % (len(checks) - bad, len(checks)))
+    return 1 if bad else 0
+
+
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(self_test() if "--self-test" in sys.argv else main())

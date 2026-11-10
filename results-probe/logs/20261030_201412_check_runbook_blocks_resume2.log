@@ -1,0 +1,73 @@
+# python3 tools/check_runbook_blocks.py <project>/run.txt <run-status>/report.ps1 <scratch>
+# commit 5770c1e3b0185b0d87fc78369778629d0c000085 (+ uncommitted tools/check_runbook_blocks.py)
+# check_runbook_blocks.py sha256 7e89e4653a1e8cb7b3aa96d691589e620c8daa618bdc5d21bd0a0a02c7ab3615
+# run.txt sha256 96f5c2961064588c62c0dc21e991b202f55afc95a996f24e037f9f11d1d130f3
+# PowerShell 7.6.4
+ok    main A: git identity copied from run-status
+ok    main A: every step ran
+ok    main A: machine file, lock, summary on campaign-9950x
+ok    main A: revision-apin untouched
+ok    main A: campaign order ['E2', 'E2K', 'E2R', 'E5']
+ok    main A: tests once, builder verify and build, fetch
+ok    main A: keep-awake set then released
+ok    main A: repeats committed although the summary checks fail
+ok    main A: tracked tree clean
+ok    main B: second paste skips
+ok    main B: no new commit
+ok    main C: failing E2, later steps run
+ok    main D: failing tests stop before lock and campaign, keep-awake released
+ok    main E: no identity stops at setup
+ok    followup A: heap-guard-live merged
+ok    followup A: filtered datasets built from the library ['py tools/build_all_datasets.py <scratch>/rb-all/followup_A/lib --only VS-CHAIN152-CW-NOACC,VS-CHAIN46-CW-NOACC']
+ok    followup A: rest of the main campaign, then the follow-up ['py tools/campaign.py run --exp E2K', 'py tools/campaign.py run --exp E2R', 'py tools/campaign.py run --exp E5', 'py tools/campaign.py --config experiments/campaign_9950x_followup.json run --exp E2G-raw --exp E2G-live --exp E2L --exp E2N --exp E2F --interleave']
+ok    followup A: repeats generated and committed before E2R
+ok    followup A: tests run once on the merged code
+ok    followup A: merge and the three summaries on campaign-9950x
+ok    followup A: summary is UTF-8 without BOM
+ok    followup A: failing summary checks reported, block finished
+ok    followup A: keep-awake set then released
+ok    followup B: second paste skips data and tests
+ok    followup B: no new commit
+ok    followup C: running java stops it
+ok    followup D: conflicting merge aborted, tree clean, nothing runs
+ok    resume2 A: newer heap-guard-live not merged, code unchanged
+ok    resume2 A: only the follow-up campaign runs ['py tools/campaign.py --config experiments/campaign_9950x_followup.json run --exp E2G-raw --exp E2G-live --exp E2L --exp E2N --exp E2F --interleave']
+ok    resume2 A: no tests, no dataset build, one compile
+ok    resume2 A: the three summaries on campaign-9950x
+ok    resume2 A: failing summary checks reported, block finished
+ok    resume2 A: keep-awake set then released
+ok    resume2 A: tracked tree clean
+ok    resume2 B: second paste finishes without a new commit
+ok    resume2 C: code other than the pinned code stops before anything runs
+ok    resume2 D: running java stops it, keep-awake released
+ok    resume2 E: tests recorded on other code stop it
+ok    resume2 F: stale index lock removed, block finished and committed
+ok    resume2 G: unreachable remote only warns; summaries committed locally, block finished
+ok    reserve A: heap-guard-live merged
+ok    reserve A: tests run once on the merged code
+ok    reserve A: cheap pairs, long pairs, then the generated repeats ['py tools/campaign.py --config experiments/campaign_9950x_reserve.json run --exp E2S-S1c --exp E2Sc --exp E2SO --interleave', 'py tools/campaign.py --config experiments/campaign_9950x_reserve.json run --exp E2S-S1 --exp E2S --interleave', 'py tools/campaign.py --config experiments/campaign_9950x_reserve.json run --exp E2SR']
+ok    reserve A: repeats generated, then the summary ['py tools/summarize_reserve.py --config experiments/campaign_9950x_reserve.json --write-repeats', 'py tools/summarize_reserve.py --config experiments/campaign_9950x_reserve.json']
+ok    reserve A: generated repeats and the summary on campaign-9950x
+ok    reserve A: summary is UTF-8 without BOM
+ok    reserve A: failing hypotheses reported, block finished
+ok    reserve A: keep-awake set then released
+ok    reserve A: tracked tree clean
+ok    reserve B: second paste skips the tests
+ok    reserve B: no new commit
+ok    reserve C: running java stops it
+ok    reserve D: failing tests stop before the campaign, keep-awake released
+
+53/53 checks passed
+
+# ---- rerun after replacing the non-English markers in the checker
+# check_runbook_blocks.py sha256 3072e2c1bbc97709f961ee750b7c8f7b883e134dcc6014261cb07522c7341e3a
+53/53 checks passed
+# ---- fault injection into a copy of the pinned resume block (each must fail its own case)
+merges the newer branch    exit 1, 9 failing: resume2 A | resume2 A | resume2 A | resume2 A | resume2 A | resume2 B | resume2 E | resume2 F | resume2 G
+no pinned-code check       exit 1, 1 failing: resume2 C
+no tests_ok check          exit 1, 1 failing: resume2 E
+stale lock kept            exit 1, 1 failing: resume2 F
+push failure throws        exit 1, 1 failing: resume2 G
+java check removed         exit 1, 1 failing: resume2 D
+# note: the first version of case G missed 'push failure throws' (it only required the block to finish); tightened to require 'resume summary: exit'
+# scratch directory replaced by <scratch> in 1 place(s) before commit
