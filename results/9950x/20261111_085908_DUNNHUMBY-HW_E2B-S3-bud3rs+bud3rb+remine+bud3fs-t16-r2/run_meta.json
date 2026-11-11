@@ -1,0 +1,18 @@
+{
+  "kind": "measurement",
+  "cell": "E2B-S3-bud3rs+bud3rb+remine+bud3fs-t16-r2",
+  "command": "java -Dthreads=16 -Ddold=0.5 -Doracle=first -Dlimit=3600 -Dout=results/9950x -Dcell=E2B-S3-bud3rs+bud3rb+remine+bud3fs-t16-r2 -Dkind=measurement -Dwarmup=true test.QueryScheduleProbe datasets/DUNNHUMBY-HW_seq.txt datasets/DUNNHUMBY-HW_eui.txt 0.0002 2430 21 every:4 bud3rs,bud3rb,remine-nogc,bud3fs",
+  "git_commit": "10e96042963744633cefd67acd440c00bc09eab3",
+  "tree": "clean",
+  "sha256_AlgoPRIncHUSP": "c8cf553164366d995fdb60f6a1ab6759abbf4aa302ababc64ec08115483a21b8",
+  "sha256_AlgoParRemine": "d0be829fcd600b10e8fd7de3407d8177f6dbab97214ed67c2c7c6ff4149b8989",
+  "sha256_AlgoRHUSPMinerParallel": "432ff44aace85c07f0777fe56512e31f2d76f687b822a079e50a19db50d5f4b2",
+  "sha256_QueryScheduleProbe": "d20ec91717ff4696a793795b26409b5f8c796019049b5f3ce1d1ac36a7e2f31f",
+  "sha256_seq": "72956c1d7d7e62f28ffbcc4cebe1778c3483c81f378a4fd3637597de3867c151",
+  "sha256_eui": "2b6ab0bac87e753a8a9d23855a923f7aebd0bf9d7969c35c7924be7df68aa59d",
+  "java": "25.0.5+8-LTS Eclipse Adoptium",
+  "os": "Windows 11 10.0 amd64",
+  "threads": "16",
+  "max_heap_mb": "32768",
+  "started": "2026-11-11T08:59:08+07:00"
+}
