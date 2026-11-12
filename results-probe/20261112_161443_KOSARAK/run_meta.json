@@ -1,0 +1,19 @@
+{
+  "kind": "probe (development machine, feasibility only)",
+  "cell": "",
+  "command": "java -Dthreads=10 -Ddold=0.9 -Doracle=first -Dlimit=3600 -Dwarmup=true -DselectorRate=1e8 test.QueryScheduleProbe <release-v1.1.1>/KOSARAK_seq.txt <release-v1.1.1>/KOSARAK_eui.txt 0.015 297000 11 every remine-nogc,bud3rb,bud3rbx",
+  "git_commit": "ca74aedba8f44279f7ca3902262c49a61d2ae4cc",
+  "tree": "MODIFIED (6 files)",
+  "sha256_AlgoPRIncHUSP": "52297873c71ecdf0a58aa3920ab4eff4184035c90ffa489c39ce5e443192f341",
+  "sha256_AlgoParRemine": "1c2d15b22aa6bef9a6bc5f24022edb6b4b564bba984c6cd07f932e6c335364e4",
+  "sha256_AlgoRHUSPMinerParallel": "06c3192bc4d863ca124457f18b05fc4bd3c2698a72dfc97e32aa989e11304ce3",
+  "sha256_QueryScheduleProbe": "32fdddb86e318f668307dc01d82d20d66fa9976a1655867d2f00844aaab98f42",
+  "sha256_HeavyBound": "4ce7472f151ced6dd7a240184d69c2afba9b8fffb44675c9521fb759f68d1400",
+  "sha256_seq": "5694d65a18c347120891d0549a5ab8599dc17826d970b3c95ef00096ef83019e",
+  "sha256_eui": "176c4036de190047cedc669af4a4450231c77f3fdc4004c7077f56f0cd8a0413",
+  "java": "25.0.4.1+1-LTS Eclipse Adoptium",
+  "os": "Mac OS X 27.2 aarch64",
+  "threads": "10",
+  "max_heap_mb": "16384",
+  "started": "2026-11-12T16:14:43+07:00"
+}

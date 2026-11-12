@@ -131,7 +131,8 @@ public class QueryScheduleProbe {
                     + "missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,"
                     + "gap_rejected,tracked_after,action,r,kept_on_abort,budget_ms,attempt_ms,attempt_load_ms,"
                     + "attempt_preprocess_ms,attempt_enum_ms,attempt_rebuild_ms,abort_phase,heap_guard_mb,heap_start_mb,"
-                    + "heap_abort_mb,heap_live_after_abort_mb,heap_valve_collections,abort_cause,fhat_us,charge_us,reserve_us,gate,attempt_budget_us,floor_us\n");
+                    + "heap_abort_mb,heap_live_after_abort_mb,heap_valve_collections,abort_cause,fhat_us,charge_us,reserve_us,gate,attempt_budget_us,floor_us,"
+                    + "bound_log2,bound_form,selector_us,selector_rate\n");
             tm.write("dataset,policy,batches,schedule,fault,query,after_batch,ingest_ms,query_ms,"
                     + "discovery_mine_ms,rebuild_ms,seed_ms\n");
             final long limitS = Long.getLong("limit", 0);         // per-policy time limit, reference excluded
@@ -191,7 +192,7 @@ public class QueryScheduleProbe {
                             p == null || !(p.adaptiveQuery || p.costCapped) ? "" : (p.lastQueryAction == 0 ? "discover"
                                     : p.lastQueryAction == 1 ? "remine" : p.lastQueryAction == 2 ? "aborted"
                                     : p.lastQueryAction == 3 ? "skipped" : p.lastQueryAction == 4 ? "seed"
-                                    : p.lastQueryAction == 5 ? "gated" : "none"),
+                                    : p.lastQueryAction == 5 ? "gated" : p.lastQueryAction == 6 ? "bounded" : "none"),
                             p == null || !(p.adaptiveQuery || p.costCapped) ? "" : String.format(java.util.Locale.ROOT, "%.2f", p.lastQueryR),
                             p == null || !p.costCapped ? "" : "" + p.lastQueryKept,
                             p == null || !p.costCapped ? "" : "" + p.lastBudgetMs,
@@ -212,7 +213,12 @@ public class QueryScheduleProbe {
                             p == null || !p.reserveGate ? "" : "" + p.lastReserveUs,
                             p == null || !p.reserveGate ? "" : (p.lastQueryGated ? "1" : "0"),
                             p == null || !p.reserveGate ? "" : "" + p.lastAttemptBudgetUs,
-                            p == null || !p.reserveCapBudget ? "" : "" + p.lastFloorUs) + "\n");
+                            p == null || !p.reserveCapBudget ? "" : "" + p.lastFloorUs,
+                            p == null || !p.boundSelector || Double.isNaN(p.lastBoundLog2) ? ""
+                                    : String.format(java.util.Locale.ROOT, "%.9f", p.lastBoundLog2),
+                            p == null || !p.boundSelector || p.lastBoundForm == ' ' ? "" : "" + p.lastBoundForm,
+                            p == null || !p.boundSelector ? "" : "" + p.lastSelectorUs,
+                            p == null || !p.boundSelector ? "" : String.format(java.util.Locale.ROOT, "%.1f", p.selectorRate)) + "\n");
                     tm.write(String.join(",", tag, policy, "" + batches.size(), schedule, "" + AlgoPRIncHUSP.FAULT,
                             "" + q, "" + b, "" + ingestMs, "" + queryMs,
                             p == null ? "" : "" + p.lastQueryMineMs,
@@ -232,6 +238,7 @@ public class QueryScheduleProbe {
                                     p.adaptiveQuery || p.costCapped ? (p.lastQueryAction == 0 ? "DISCOVER r="
                                             : p.lastQueryAction == 2 ? "ABORTED+REMINE r=" : p.lastQueryAction == 3 ? "SKIP+REMINE r="
                                             : p.lastQueryAction == 4 ? "FUSED-SEED r=" : p.lastQueryAction == 5 ? "GATED+REMINE r="
+                                            : p.lastQueryAction == 6 ? "BOUNDED+REMINE r="
                                             : "REMINE r=")
                                             + String.format(java.util.Locale.ROOT, "%.1f ", p.lastQueryR) : "",
                                     p.lastQueryThreshold, p.lastQueryCandidates, p.lastQueryFresh, p.lastQueryGapRejected,
@@ -303,6 +310,8 @@ public class QueryScheduleProbe {
                 boolean sel = parts.get(0).equals("sel");
                 boolean bud2 = parts.get(0).equals("bud2");          // bud2: bud + keep rebuilt + overhead gate + no GC
                 boolean live = parts.get(0).equals("bud3live");      // bud3live: bud3 with the heap guard judged on the live heap
+                boolean selector = parts.get(0).equals("bud3rbx");   // bud3rbx: bud3rb with the heavy-sequence bound selector
+                if (selector) parts.set(0, "bud3rb");
                 boolean capped = parts.get(0).equals("bud3rb");      // bud3rb: bud3rs, budget min(c * F_hat, reserve)
                 boolean reserve = parts.get(0).equals("bud3rs") || capped;  // bud3rs: bud3fs with every attempt paid from a reserve
                 boolean fused = parts.get(0).equals("bud3fs") || reserve;  // bud3fs: bud3 seeded at the first query (fused seed)
@@ -343,6 +352,8 @@ public class QueryScheduleProbe {
                 p.reserveGate = reserve;
                 p.reserveEps = eps;
                 p.reserveCapBudget = capped;
+                p.boundSelector = selector;
+                if (selector) p.selectorRate = selectorRate();
                 p.measureMemoryOnQuery = !parts.contains("nogc");
                 p.selectorKappa = kappa;
                 m = p;
@@ -350,6 +361,28 @@ public class QueryScheduleProbe {
         }
         m.setAbsoluteMaxReg(absB);
         return m;
+    }
+
+    /**
+     * The output rate (patterns per second) of the bound selector: -DselectorRate=<value>, or the first line "rate=<value>"
+     * of -DselectorRateFile=<path> (written by test.SelectorCalibration on the measurement machine). Missing or not
+     * positive: refused, so a selector run never falls back to an unmeasured rate.
+     */
+    static double selectorRate() {
+        String v = System.getProperty("selectorRate");
+        String file = System.getProperty("selectorRateFile");
+        try {
+            if (v == null && file != null)
+                for (String line : java.nio.file.Files.readAllLines(new File(file).toPath()))
+                    if (line.startsWith("rate=")) { v = line.substring(5).trim(); break; }
+        } catch (IOException e) {
+            throw new IllegalArgumentException("bud3rbx: cannot read selectorRateFile " + new File(file).getAbsolutePath() + ": " + e);
+        }
+        if (v == null) throw new IllegalArgumentException("bud3rbx needs -DselectorRate or -DselectorRateFile"
+                + (file == null ? " (neither is set)" : " (no line rate=... in " + new File(file).getAbsolutePath() + ")"));
+        double r = Double.parseDouble(v);
+        if (!(r > 0)) throw new IllegalArgumentException("bud3rbx: selector rate " + v + " is not positive");
+        return r;
     }
 
     /** Batches after which a query is issued: "every", "every:N" (every N-th batch and the last), "final". */
@@ -383,7 +416,8 @@ public class QueryScheduleProbe {
     private static void writeMeta(File dir, String[] args, String seqFile, String euiFile, int threads)
             throws Exception {
         StringBuilder props = new StringBuilder();
-        for (String key : new String[]{"fault", "threads", "dold", "oracle", "limit", "out", "cell", "kind", "warmup"})
+        for (String key : new String[]{"fault", "threads", "dold", "oracle", "limit", "out", "cell", "kind", "warmup",
+                "selectorRate", "selectorRateFile"})
             if (System.getProperty(key) != null) props.append("-D").append(key).append('=').append(System.getProperty(key)).append(' ');
         String src = "src/main/java/";
         StringBuilder sb = new StringBuilder("{\n");
@@ -397,6 +431,9 @@ public class QueryScheduleProbe {
         sb.append(kv("sha256_AlgoParRemine", sha(src + "algorithms/AlgoParRemine.java"))).append(",\n");
         sb.append(kv("sha256_AlgoRHUSPMinerParallel", sha(src + "algorithms/AlgoRHUSPMinerParallel.java"))).append(",\n");
         sb.append(kv("sha256_QueryScheduleProbe", sha(src + "test/QueryScheduleProbe.java"))).append(",\n");
+        sb.append(kv("sha256_HeavyBound", sha(src + "algorithms/HeavyBound.java"))).append(",\n");
+        String rf = System.getProperty("selectorRateFile");
+        if (rf != null && new File(rf).exists()) sb.append(kv("sha256_selectorRateFile", sha(rf))).append(",\n");
         sb.append(kv("sha256_seq", sha(seqFile))).append(",\n");
         sb.append(kv("sha256_eui", sha(euiFile))).append(",\n");
         sb.append(kv("java", System.getProperty("java.runtime.version") + " " + System.getProperty("java.vendor"))).append(",\n");

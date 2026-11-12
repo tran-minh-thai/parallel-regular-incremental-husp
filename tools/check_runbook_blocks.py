@@ -2,11 +2,13 @@
 """Run the two measurement-machine blocks of a runbook verbatim under PowerShell, with fake tools, on throw-away
 git repositories, and check what they do.
 
-    python3 tools/check_runbook_blocks.py <runbook.txt> <run-status report.ps1> <scratch dir> [--only main|followup|resume2|reserve|budget]
+    python3 tools/check_runbook_blocks.py <runbook.txt> <run-status report.ps1> <scratch dir> [--only main|followup|resume2|reserve|budget|selector]
 
 The main block is the one whose header (within six lines above its "& {") names E2R; the follow-up block is the
 one whose header names E2G; the pinned resume block is the one whose header names the pinned code "src a7bc247"; the reserve block is the one
-whose header names bud3rs; the reserve-budget block is the one whose header names bud3rb. Only machine-specific parts are replaced, and each replacement must
+whose header names bud3rs; the reserve-budget block is the one whose header names bud3rb; the bound selector block is the one whose header
+names bud3rbx (it runs the reserve-budget scenarios plus: calibration once before the campaign, kept on a second paste, and a failing
+calibration stops it). Only machine-specific parts are replaced, and each replacement must
 match exactly once: the D: paths, the run-status path, the GitHub URLs, and the kernel32 import (a stub type records
 the keep-awake calls). In the git wrapper, backslashes in arguments become slashes, since the fakes run on macOS or
 Linux. java, javac, py and Get-Process are PowerShell functions that record their calls.
@@ -37,7 +39,17 @@ PRELUDE = r'''
 $realgit = (Get-Command git -CommandType Application | Select-Object -First 1).Source
 function git { $a = @($args | ForEach-Object { if ($_ -is [string] -and -not $_.StartsWith('-') -and $_ -notmatch '^HEAD:') { $_ -replace '\\','/' } else { $_ } }); & $realgit @a }
 function Get-Process { if ($env:FAKE_JAVA -eq '1') { [pscustomobject]@{ Name = 'java' } } }
-function java { "    java.runtime.version = 25.0.5+8-LTS"; "    java.vendor = Eclipse Adoptium" }
+function java {
+  $i = [array]::IndexOf($args, 'test.SelectorCalibration')
+  if ($i -ge 0) {
+    Add-Content $env:CALLS ("java test.SelectorCalibration " + ($args[$i + 1] -replace '\\','/'))
+    New-Item -ItemType Directory -Force results/9950x | Out-Null
+    Set-Content ($args[$i + 1] -replace '\\','/') "rate=1000000.0"
+    $global:LASTEXITCODE = [int]$env:FAIL_CALIBRATION
+    return
+  }
+  "    java.runtime.version = 25.0.5+8-LTS"; "    java.vendor = Eclipse Adoptium"
+}
 function javac { Add-Content $env:CALLS ("javac " + ($args -join ' ')); $global:LASTEXITCODE = 0 }
 function py {
   $tool = ($args[1] -replace '\\','/'); $rest = @($args | Select-Object -Skip 2 | ForEach-Object { $_ -replace '\\','/' })
@@ -70,6 +82,12 @@ function py {
       if ($rest -contains '--write-repeats') { Set-Content experiments/campaign_9950x_budget.json '{"experiments": {"E2B": {}, "E2BR": {}}}' }
       "B1: 0 disagreeing"; $code = 1
     }
+    '*summarize_selector.py' {
+      New-Item -ItemType Directory -Force results/9950x | Out-Null
+      Set-Content results/9950x/summary_E2X.tsv 'x'
+      if ($rest -contains '--write-repeats') { Set-Content experiments/campaign_9950x_selector.json '{"experiments": {"E2X": {}, "E2XR": {}}}' }
+      "X0: 1 completed discoveries"; $code = 1
+    }
   }
   $global:LASTEXITCODE = $code
 }
@@ -95,7 +113,7 @@ def find_block(lines, marker):
     raise SystemExit("no block with %r in its header" % marker)
 
 
-def seed_repos(T, report, followup, reserve=False, budget=False):
+def seed_repos(T, report, followup, reserve=False, budget=False, selector=False):
     seed = T / "seed"
     seed.mkdir()
     files = {"src/main/java/A.java": "class A {}\n", "tools/stream_datasets/manifests/X.json": "{}\n", "tools/t.py": "\n",
@@ -118,6 +136,9 @@ def seed_repos(T, report, followup, reserve=False, budget=False):
         if budget:
             (seed / "experiments/campaign_9950x_budget.json").write_text('{"experiments": {"E2B": {}}}\n')
             (seed / "tools/summarize_budget.py").write_text("\n")
+        if selector:
+            (seed / "experiments/campaign_9950x_selector.json").write_text('{"experiments": {"E2X": {}}}\n')
+            (seed / "tools/summarize_selector.py").write_text("\n")
         git("add", "-A", cwd=seed)
         git("-c", "user.name=S", "-c", "user.email=s@x", "commit", "-q", "-m", "follow-up", cwd=seed)
     git("clone", "-q", "--bare", str(seed), str(T / "remote.git"))
@@ -143,7 +164,7 @@ def run_block(T, block, subs, env_extra):
     calls = T / "calls.txt"
     if calls.exists():
         calls.unlink()
-    env = dict(GENV, CALLS=str(calls), FAIL_TESTS="0", FAIL_EXP="", FAKE_JAVA="0")
+    env = dict(GENV, CALLS=str(calls), FAIL_TESTS="0", FAIL_EXP="", FAKE_JAVA="0", FAIL_CALIBRATION="0")
     env.update(env_extra)
     r = subprocess.run(["pwsh", "-NoProfile", "-File", str(T / "block.ps1")], cwd=str(T), capture_output=True, text=True,
                        env=env, timeout=600)
@@ -382,6 +403,9 @@ RESERVE_SPEC = {"tag": "reserve", "cfg": "experiments/campaign_9950x_reserve.jso
 BUDGET_SPEC = {"tag": "budget", "cfg": "experiments/campaign_9950x_budget.json", "summarizer": "summarize_budget.py",
                "summary": "summary_E2B", "repeats": "E2BR", "first_line": "B1:",
                "runs": ["run --exp E2B --exp E2B-152 --interleave"]}
+SELECTOR_SPEC = {"tag": "selector", "cfg": "experiments/campaign_9950x_selector.json", "summarizer": "summarize_selector.py",
+                 "summary": "summary_E2X", "repeats": "E2XR", "first_line": "X0:", "calibration": "results/9950x/selector_rate.txt",
+                 "runs": ["run --exp E2X --exp E2X-152 --interleave"]}
 
 
 def check_reserve_block(block, report, base, check, spec=RESERVE_SPEC):
@@ -392,7 +416,7 @@ def check_reserve_block(block, report, base, check, spec=RESERVE_SPEC):
         if T.exists():
             shutil.rmtree(T)
         T.mkdir(parents=True)
-        seed_repos(T, report, followup=True, reserve=True, budget=(tag == "budget"))
+        seed_repos(T, report, followup=True, reserve=True, budget=(tag == "budget"), selector=(tag == "selector"))
         c = T / "work" / "parallel-regular-incremental-husp"
         git("clone", "-q", "-b", "revision-apin", str(T / "remote.git"), str(c))
         for d in (c, T / "rs"):
@@ -428,12 +452,25 @@ def check_reserve_block(block, report, base, check, spec=RESERVE_SPEC):
           and any("%s finished" % tag in l for l in log) and not any("STOPPED" in l for l in log),
           "%s A: failing hypotheses reported, block finished" % tag)
     check(AWAKE_OK in r.stdout, "%s A: keep-awake set then released" % tag)
+    cal = spec.get("calibration")
+    if cal:
+        cals = [l for l in calls if "SelectorCalibration" in l]
+        check(cals == ["java test.SelectorCalibration " + cal] and cal in files,
+              "%s A: calibration run once before the campaign and its file on campaign-9950x %s" % (tag, cals))
+        check(calls.index(cals[0]) < calls.index(camp[0]) if cals and camp else False, "%s A: calibration before the first cell" % tag)
     check(git("status", "--porcelain", "--untracked-files=no", cwd=c, check=False) == "", "%s A: tracked tree clean" % tag)
     n = git("rev-list", "--count", "HEAD", cwd=c)
     r, calls, log = run_block(T, block, reserve_subs(T), {})
     check(any("%s tests: passed before" % tag in l for l in log) and not any("run_tests" in l for l in calls),
           "%s B: second paste skips the tests" % tag)
     check(git("rev-list", "--count", "HEAD", cwd=c) == n, "%s B: no new commit" % tag)
+    if cal:
+        check(not any("SelectorCalibration" in l for l in calls) and any("calibration: present" in l for l in log),
+              "%s B: second paste keeps the calibration file" % tag)
+        T, c = fresh(tag + "_E")
+        r, calls, log = run_block(T, block, reserve_subs(T), {"FAIL_CALIBRATION": "1"})
+        check(any("STOPPED at %s calibration" % tag in l for l in log) and not any("campaign.py" in l for l in calls)
+              and AWAKE_OK in r.stdout, "%s E: failing calibration stops before the campaign" % tag)
     T, c = fresh(tag + "_C")
     r, calls, log = run_block(T, block, reserve_subs(T), {"FAKE_JAVA": "1"})
     check(any("STOPPED at %s setup" % tag in l for l in log) and not calls
@@ -449,7 +486,7 @@ def main(argv=None):
     ap.add_argument("runbook")
     ap.add_argument("report")
     ap.add_argument("scratch")
-    ap.add_argument("--only", choices=("main", "followup", "resume2", "reserve", "budget"))
+    ap.add_argument("--only", choices=("main", "followup", "resume2", "reserve", "budget", "selector"))
     args = ap.parse_args(argv)
     lines = Path(args.runbook).read_text(encoding="utf-8").splitlines()
     base = Path(args.scratch).resolve()
@@ -469,6 +506,8 @@ def main(argv=None):
         check_reserve_block(find_block(lines, "bud3rs"), Path(args.report), base, check)
     if args.only in (None, "budget"):
         check_reserve_block(find_block(lines, "bud3rb"), Path(args.report), base, check, BUDGET_SPEC)
+    if args.only in (None, "selector"):
+        check_reserve_block(find_block(lines, "bud3rbx"), Path(args.report), base, check, SELECTOR_SPEC)
     bad = [w for ok, w in results if not ok]
     print("\n%d/%d checks passed" % (len(results) - len(bad), len(results)))
     return 1 if bad else 0

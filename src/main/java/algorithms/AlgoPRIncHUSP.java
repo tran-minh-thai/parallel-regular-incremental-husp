@@ -607,6 +607,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         if (!initialized) { initialBuild(deltaD, minUtilRatio, maxRegRatio); return System.currentTimeMillis() - t0; }
 
         if (discoverExact) { increments.addAll(deltaD); reconciled = false; }   // ΔD kept raw; new data ⇒ must re-reconcile
+        if (boundSelector && discoverExact) noteWindow(deltaD);
         if (adaptiveQuery || costCapped) { allRaw.addAll(deltaD); incrementUtility += AdaptiveBuffer.batchUtility(deltaD); }
         long prevUD = data.totalDbUtility; int prevN = data.numSequences;
         long batchUtil = AdaptiveBuffer.batchUtility(deltaD);
@@ -1243,7 +1244,9 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
      * re-mining; 11: an aborted attempt is not charged to the reserve (exact answers; caught by the reserve check);
      * 12: with reserveCapBudget, the budget ignores the reserve (full budget whenever the reserve reaches the floor);
      * 13: with reserveCapBudget, the logged budget is capped but the deadline keeps the full budget (both caught by
-     * the reserve check).
+     * the reserve check); 14: the bound selector never skips; 16: a skip of the bound selector is charged to the reserve
+     * like an aborted attempt (both exact; caught by the reserve check); 15: {@link HeavyBound} returns 2^d with repeated
+     * items ignored (caught by the brute-force bound check).
      */
     public static int FAULT = 0;
 
@@ -1313,6 +1316,22 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
     /** Per query, read by the probes: F_hat, the charge (attempt cost, completed or aborted), the reserve after the query (us). */
     public long lastFhatUs, lastChargeUs, lastReserveUs;
     public boolean lastQueryGated;
+    /**
+     * bud3rbx: before the reserve gate, skip an attempt whose output lower bound (see {@link HeavyBound}) exceeds what
+     * selectorRate patterns per second can output within c * F_hat; the query is then re-mined (action 6) without
+     * opening, charging or refusing the reserve, and the window backoff is left as it is. The bound only removes attempts
+     * that could not finish within c * F_hat when selectorRate is at least the miner's output rate, and fewer attempts
+     * leave the cost bound of the reserve unchanged.
+     */
+    public boolean boundSelector = false;
+    public double selectorRate = 0;                               // patterns per second, measured once per machine
+    /** Per query, read by the probes: log2 of the bound (NaN: not computed or no form applies), its form, the selector's time. */
+    public double lastBoundLog2 = Double.NaN;
+    public char lastBoundForm = ' ';
+    public long lastSelectorUs;
+    private final List<Long> windowSeqUtil = new ArrayList<>();             // utility of each sequence of increments
+    private final Map<Integer, Integer> windowItemSeqs = new java.util.HashMap<>();    // item -> window sequences that contain it
+    private long selectorBookNanos = 0;                                     // bookkeeping time since the last query
     private List<List<int[]>> deferredPrefix = null;
     /**
      * Heap readings of the last cost-capped attempt, in MB (-1 = not taken): the guard, the raw reading
@@ -1459,6 +1478,8 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
     private void cappedAnswer() {
         lastFhatUs = lastChargeUs = 0; lastQueryGated = false; lastReserveUs = reserveUs;
         lastAttemptBudgetUs = lastFloorUs = 0;
+        lastBoundLog2 = Double.NaN; lastBoundForm = ' ';
+        lastSelectorUs = selectorBookNanos / 1000; selectorBookNanos = 0;
         lastQueryMineMs = lastQueryRebuildMs = lastQueryThreshold = 0;
         lastQueryCandidates = lastQueryFresh = lastQueryGapRejected = 0;
         lastQueryIncrementSeqs = increments.size();
@@ -1483,6 +1504,15 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
             if (windowBackoff && increments.size() < backoffUntilWindow) {
                 lastQueryAction = 3;                                    // backing off: the window has not doubled yet
                 if (FAULT != 7) fullRemine();                           // FAULT 7: skip the re-mine, answer from the stale set
+                return;
+            }
+            if (boundSelector && boundSkips()) {
+                lastQueryAction = 6;                                    // the bound says the attempt cannot finish: re-mine
+                if (FAULT == 16) {                                      // FAULT 16: the skip is charged like an aborted attempt
+                    if (!reserveOpened) { reserveUs += (long) (budgetFactor * lastFhatUs); reserveOpened = true; }
+                    reserveUs -= (long) (budgetFactor * lastFhatUs);
+                }
+                fullRemine();
                 return;
             }
             if (reserveGate) {
@@ -1515,6 +1545,26 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
             if (reserveGate) reserveUs += (long) (reserveEps * lastFhatUs);
             lastReserveUs = reserveUs;
         }
+    }
+
+    /**
+     * The selector's decision: log2 of the bound over the current window against log2(selectorRate * c * F_hat), F_hat in
+     * seconds. No form of the bound applies: no skip. Records the bound, its form and the selector's time.
+     */
+    private boolean boundSkips() {
+        long t = System.nanoTime();
+        long theta = integerDiscoveryThreshold ? minUtil - (long) Math.ceil(seedThreshold0) + 1
+                : (long) Math.ceil(minUtil - seedThreshold0);
+        HeavyBound.Result r = HeavyBound.window(increments, windowSeqUtil, windowItemSeqs, theta, seedMaxReg);
+        boolean skip = false;
+        if (r != null) {
+            lastBoundLog2 = r.log2;
+            lastBoundForm = r.form;
+            double cap = Math.log(selectorRate * budgetFactor * lastFhatUs / 1e6) / Math.log(2);
+            skip = FAULT != 14 && r.log2 > cap;                         // FAULT 14: never skip
+        }
+        lastSelectorUs += (System.nanoTime() - t) / 1000;
+        return skip;
     }
 
     /** One cost-capped attempt from the anchor, given budgetNanos; on an abort the whole database is re-mined. */
@@ -1663,6 +1713,23 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         if (w < pats.length) { pats = java.util.Arrays.copyOf(pats, w); trieRoot = null; }
         seedThreshold0 = minUtil;
         increments.clear();
+        windowSeqUtil.clear();
+        windowItemSeqs.clear();
+    }
+
+    /** Selector bookkeeping for a batch joining the window: per-sequence utility, per-item sequence counts. */
+    private void noteWindow(List<List<int[]>> batch) {
+        long t = System.nanoTime();
+        java.util.HashSet<Integer> seen = new java.util.HashSet<>();
+        for (List<int[]> seq : batch) {
+            long u = 0;
+            seen.clear();
+            for (int[] ev : seq)
+                for (int k = 0; k < ev.length; k += 2) { u += ev[k + 1]; seen.add(ev[k]); }
+            windowSeqUtil.add(u);
+            for (int x : seen) windowItemSeqs.merge(x, 1, Integer::sum);
+        }
+        selectorBookNanos += System.nanoTime() - t;
     }
 
     /**

@@ -1,0 +1,53 @@
+# command: python3 tools/run_tests.py (full suite, default 150 trials); code: working tree on ca74aed + bound selector (uncommitted)
+# java: openjdk version "25.0.4.1" 2026-08-18 LTS
+# started: 2026-11-12T14:08:00+0700
+self-test: machine_info                                                ok
+self-test: campaign runner                                             ok
+self-test: heap guard summary                                          ok
+self-test: reserve check                                               ok
+self-test: reserve-budget summary                                      ok
+self-test: bound selector summary                                      ok
+clean: all policies                                                    ok  compared 10155 (non-empty 9990), failing 0, aborts in mining 1436, bound skips 0, expected zero (1651 s)
+clean: dense co-occurrence build                                       ok  compared 3385 (non-empty 3330), failing 0, aborts in mining 130, bound skips 0, expected zero (232 s)
+clean: partitioned build                                               ok  compared 3385 (non-empty 3330), failing 0, aborts in mining 134, bound skips 0, expected zero (233 s)
+clean: sketch-filtered build                                           ok  compared 3385 (non-empty 3330), failing 0, aborts in mining 146, bound skips 0, expected zero (235 s)
+clean: sketch with 16 counters per row                                 ok  compared 3385 (non-empty 3330), failing 0, aborts in mining 127, bound skips 0, expected zero (244 s)
+clean: original hash build                                             ok  compared 3385 (non-empty 3330), failing 0, aborts in mining 236, bound skips 0, expected zero (236 s)
+defect 1: discovery threshold one unit too high                        ok  compared 677 (non-empty 666), failing 28, aborts in mining 0, bound skips 0, expected some (124 s)
+defect 2: anchor reset drops the raw increment                         ok  compared 677 (non-empty 666), failing 260, aborts in mining 0, bound skips 0, expected some (135 s)
+defect 3: fresh candidates rebuilt from the increment only             ok  compared 677 (non-empty 666), failing 403, aborts in mining 0, bound skips 0, expected some (125 s)
+defect 4: half-built candidates left in the tracked set (measured harmless) ok  compared 2708 (non-empty 2664), failing 0, aborts in mining 136, bound skips 0, expected zero (110 s)
+defect 5: aborted discovery skips the fallback re-mine                 ok  compared 2708 (non-empty 2664), failing 409, aborts in mining 134, bound skips 0, expected some (111 s)
+defect 6: aborted discovery keeps candidates mid-rebuild               ok  compared 1354 (non-empty 1332), failing 3, aborts in mining 0, bound skips 0, expected some (202 s)
+clean: hook-only aborts, bud and bud2                                  ok  compared 1354 (non-empty 1332), failing 0, aborts in mining 0, bound skips 0, expected zero (201 s)
+defect 7: backoff answers from the stale set                           ok  compared 2708 (non-empty 2664), failing 455, aborts in mining 116, bound skips 0, expected some (110 s)
+defect 8: whole-database index misses the last sequence                ok  compared 1354 (non-empty 1332), failing 333, aborts in mining 56, bound skips 0, expected some (155 s)
+defect: dense build stores s-pairs backward                            ok  compared 3385 (non-empty 3330), failing 428, aborts in mining 191, bound skips 0, expected some (253 s)
+defect: partitioned build loses a partition                            ok  compared 3385 (non-empty 3330), failing 2626, aborts in mining 100, bound skips 0, expected some (242 s)
+defect: sketch estimate below the true value                           ok  compared 3385 (non-empty 3330), failing 567, aborts in mining 165, bound skips 0, expected some (249 s)
+clean: seed fused into the first query (bud3fs)                        ok  compared 3385 (non-empty 3330), failing 0, aborts in mining 235, bound skips 0, expected zero (241 s)
+defect 9: fused seed loses the batches before the first query          ok  compared 2708 (non-empty 2664), failing 2684, aborts in mining 200, bound skips 0, expected some (117 s)
+clean: reserve gate (bud3rs), premium 0.1, 0 and 1e9                   ok  compared 4739 (non-empty 4662), failing 0, aborts in mining 92, bound skips 0, expected zero (266 s)
+defect 10: a refused attempt answers from the stale set                ok  compared 1354 (non-empty 1332), failing 398, aborts in mining 92, bound skips 0, expected some (52 s)
+clean: reserve budget (bud3rb), premium 0.1, 0 and 1e9                 ok  compared 4739 (non-empty 4662), failing 0, aborts in mining 42, bound skips 0, expected zero (261 s)
+defect 10 under bud3rb: a refused attempt answers from the stale set   ok  compared 1354 (non-empty 1332), failing 468, aborts in mining 48, bound skips 0, expected some (48 s)
+clean: bound selector (bud3rbx) skipping wherever a bound applies      ok  compared 3385 (non-empty 3330), failing 0, aborts in mining 40, bound skips 408, expected zero+skips (212 s)
+clean: bound selector (bud3rbx) never skipping                         ok  compared 3385 (non-empty 3330), failing 0, aborts in mining 71, bound skips 133, expected zero (229 s)
+clean: heap guard judged on the live heap (bud3live)                   ok  compared 3385 (non-empty 3330), failing 0, aborts in mining 192, bound skips 0, expected zero (247 s)
+clean: heap guard breached at every attempt, bud3 and bud3live         ok  compared 2031 (non-empty 1998), failing 0, aborts in mining 490, bound skips 0, expected zero+aborts (192 s)
+reserve: probe on SIGN, then the reserve check                         ok  probe compared 30 failing 0; reserve check 28 queries, 0 problems; 5 aborts, 13 refusals, 0 capped, 0 bounded, expected pass (30 s)
+defect 11: an aborted attempt is not charged to the reserve            ok  probe compared 30 failing 0; reserve check 28 queries, 9 problems; 8 aborts, 0 refusals, 0 capped, 0 bounded, expected fail (30 s)
+reserve budget (bud3rb): probe on SIGN, then the reserve check         ok  probe compared 15 failing 0; reserve check 14 queries, 0 problems; 2 aborts, 11 refusals, 1 capped, 0 bounded, expected pass (14 s)
+defect 12: the bud3rb budget ignores the reserve                       ok  probe compared 15 failing 0; reserve check 14 queries, 2 problems; 2 aborts, 11 refusals, 0 capped, 0 bounded, expected fail (14 s)
+defect 13: the bud3rb deadline keeps the full budget                   ok  probe compared 15 failing 0; reserve check 14 queries, 1 problems; 2 aborts, 11 refusals, 1 capped, 0 bounded, expected fail (14 s)
+bound selector (bud3rbx): probe on SIGN, then the reserve check        ok  probe compared 15 failing 0; reserve check 14 queries, 0 problems; 1 aborts, 11 refusals, 0 capped, 1 bounded, expected pass (14 s)
+defect 14: the bound selector never skips                              ok  probe compared 15 failing 0; reserve check 14 queries, 1 problems; 2 aborts, 11 refusals, 0 capped, 0 bounded, expected fail (14 s)
+defect 16: a bound skip is charged to the reserve                      ok  probe compared 15 failing 0; reserve check 14 queries, 3 problems; 0 aborts, 13 refusals, 0 capped, 1 bounded, expected fail (14 s)
+heavy-sequence bound: brute force per sequence and discovery engine per window ok  sequences 2935 (violations 0), windows 186 (violations 0, form a 146, form b 40), expected pass (0 s)
+defect 15: the heavy-sequence bound ignores repeated items             ok  sequences 2935 (violations 321), windows 186 (violations 0, form a 146, form b 40), expected fail (0 s)
+heap valve: raw and live modes on garbage and on live data             ok  tested 4 of 4, failing 0, expected pass (0 s)
+defect: live heap valve skips its collection                           ok  tested 4 of 4, failing 2, expected fail (0 s)
+defect: live heap valve never re-reads after collecting                ok  tested 4 of 4, failing 1, expected fail (0 s)
+
+47/47 tests as expected
+# exit 0 at 2026-11-12T16:02:56+0700
