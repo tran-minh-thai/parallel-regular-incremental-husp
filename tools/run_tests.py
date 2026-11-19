@@ -25,7 +25,8 @@ ROOT = Path(__file__).resolve().parents[1]
 BUD3 = "bud3-c0,bud3-c0.001,bud3-c1,bud3-c1000000000"
 
 # (name, JVM properties, expected): "zero" = no failing query; "some" = at least one failing query;
-# "zero+aborts" = no failing query over a run that aborted at least one discovery in mining.
+# "zero+aborts" = no failing query over a run that aborted at least one discovery in mining;
+# "zero+skips" = no failing query over a run where the bound selector skipped at least one attempt.
 STRESS = [
     ("clean: all policies", [], "zero"),
     ("clean: dense co-occurrence build", ["-Deucs.build=dense", "-Dpolicies=keep-sfx," + BUD3], "zero"),
@@ -60,6 +61,12 @@ STRESS = [
     ("clean: reserve budget (bud3rb), premium 0.1, 0 and 1e9",
      ["-Dpolicies=keep-sfx," + BUD3.replace("bud3", "bud3rb") + ",bud3rb-e0-c1,bud3rb-e1000000000-c1"], "zero"),
     ("defect 10 under bud3rb: a refused attempt answers from the stale set", ["-Dfault=10", "-Dpolicies=bud3rb-c0.001-e0,bud3rb-c0-e0"], "some"),
+    # bud3rbx with a rate of 1 pattern per second skips wherever the bound has a form; with 1e300 it never skips. Both
+    # must stay exact: a skip is a re-mine.
+    ("clean: bound selector (bud3rbx) skipping wherever a bound applies",
+     ["-DselectorRate=1", "-Dpolicies=keep-sfx," + BUD3.replace("bud3", "bud3rbx")], "zero+skips"),
+    ("clean: bound selector (bud3rbx) never skipping at a positive budget",
+     ["-DselectorRate=1e300", "-Dpolicies=keep-sfx," + BUD3.replace("bud3-c0,", "").replace("bud3", "bud3rbx")], "zero+noskips"),
     ("clean: heap guard judged on the live heap (bud3live)", ["-Dpolicies=keep-sfx," + BUD3.replace("bud3", "bud3live")], "zero"),
     # A guard of a few bytes is breached at every attempt: bud3 aborts on the raw reading, bud3live collects and then aborts.
     ("clean: heap guard breached at every attempt, bud3 and bud3live",
@@ -79,6 +86,7 @@ STRESS = [
 # falls as the JVM warms (measured: 0 capped attempts). "pass" for bud3rb also requires at least one capped attempt.
 RSV = "bud3rs-c0.001-e0,bud3rs-c1000000000"
 RB = "bud3rb-c0.1-e0"
+RX = "bud3rbx-c0.1-e0"
 TINY_GUARD = "-DheapGuard=0.000000001"
 RESERVE = [
     ("reserve: probe on SIGN, then the reserve check", [], RSV, "pass"),
@@ -86,6 +94,11 @@ RESERVE = [
     ("reserve budget (bud3rb): probe on SIGN, then the reserve check", [TINY_GUARD], RB, "pass"),
     ("defect 12: the bud3rb budget ignores the reserve", [TINY_GUARD, "-Dfault=12"], RB, "fail"),
     ("defect 13: the bud3rb deadline keeps the full budget", [TINY_GUARD, "-Dfault=13"], RB, "fail"),
+    # bud3rbx at a rate of 1 pattern per second: on SIGN the bound has a form only at the first query after the seed
+    # (measured: one skip, then an aborted attempt and refusals), so the run has both a skip and an attempt.
+    ("bound selector (bud3rbx): probe on SIGN, then the reserve check", [TINY_GUARD, "-DselectorRate=1"], RX, "pass"),
+    ("defect 14: the bound selector never skips", [TINY_GUARD, "-DselectorRate=1", "-Dfault=14"], RX, "fail"),
+    ("defect 16: a bound skip is charged to the reserve", [TINY_GUARD, "-DselectorRate=1", "-Dfault=16"], RX, "fail"),
 ]
 
 
@@ -100,6 +113,13 @@ def capped_attempts(exactness_csv):
                     c = float(part[1:])
             n += int(r["attempt_budget_us"]) < int(c * int(r["fhat_us"]))
     return n
+
+# (name, JVM properties, expected) for test.HeavyBoundCheck: "pass" = both parts tested something and nothing violated the
+# bound; "fail" = a violation (fault 15: the bound 2^d ignores repeated items).
+HEAVY_BOUND = [
+    ("heavy-sequence bound: brute force per sequence and discovery engine per window", [], "pass"),
+    ("defect 15: the heavy-sequence bound ignores repeated items", ["-Dfault=15"], "fail"),
+]
 
 # (name, JVM properties, expected) for test.HeapValveCheck: "pass" = all four cases tested and correct; "fail" = a case fails.
 HEAP_VALVE = [
@@ -135,7 +155,8 @@ def main(argv=None):
                       ("self-test: campaign runner", [sys.executable, "tools/campaign.py", "--self-test"]),
                       ("self-test: heap guard summary", [sys.executable, "tools/summarize_heap_guard.py", "--self-test"]),
                       ("self-test: reserve check", [sys.executable, "tools/check_reserve.py", "--self-test"]),
-                      ("self-test: reserve-budget summary", [sys.executable, "tools/summarize_budget.py", "--self-test"])):
+                      ("self-test: reserve-budget summary", [sys.executable, "tools/summarize_budget.py", "--self-test"]),
+                      ("self-test: bound selector summary", [sys.executable, "tools/summarize_selector.py", "--self-test"])):
         if args.only and args.only not in name:
             continue
         p, secs = run(cmd)
@@ -156,11 +177,17 @@ def main(argv=None):
         compared, nonempty, failing = map(int, m.groups())
         ma = re.search(r"aborts-in-mining=(\d+)", p.stdout)
         aborts = int(ma.group(1)) if ma else -1
+        mb = re.search(r"bound-skips=(\d+)", p.stdout)
+        skips = int(mb.group(1)) if mb else -1
         ok = compared > 0 and nonempty > 0 and ((failing > 0) if expected == "some" else (failing == 0))
         if expected == "zero+aborts":
             ok = ok and aborts > 0
-        detail = "compared %d (non-empty %d), failing %d, aborts in mining %d, expected %s (%.0f s)" % (
-            compared, nonempty, failing, aborts, expected, secs)
+        if expected == "zero+noskips":           # c = 0 is excluded: a zero budget makes every bound skip, lawfully
+            ok = ok and skips == 0
+        if expected == "zero+skips":
+            ok = ok and skips > 0
+        detail = "compared %d (non-empty %d), failing %d, aborts in mining %d, bound skips %d, expected %s (%.0f s)" % (
+            compared, nonempty, failing, aborts, skips, expected, secs)
         results.append((name, ok, detail))
         print("%-70s %s  %s" % (name, "ok" if ok else "FAILED", detail), flush=True)
 
@@ -183,13 +210,36 @@ def main(argv=None):
         mc = re.search(r"reserve check: (\d+) queries checked, (\d+) problems", c.stdout)
         checked, problems = (int(mc.group(1)), int(mc.group(2))) if mc else (0, -1)
         aborts, refusals = log.count(",aborted,"), log.count(",gated,")
-        rb = policies.startswith("bud3rb")
+        bounded, discovers = log.count(",bounded,"), log.count(",discover,")
+        rx = policies.startswith("bud3rbx")
+        rb = policies.startswith("bud3rb") and not rx
         if expected == "pass":
             ok = c.returncode == 0 and checked > 0 and problems == 0 and aborts > 0 and refusals > 0 and (capped > 0 or not rb)
+            ok = ok and (not rx or (bounded > 0 and aborts + discovers > 0))
         else:
             ok = c.returncode != 0 and problems > 0
-        detail = "probe compared %s failing %s; reserve check %d queries, %d problems; %d aborts, %d refusals, %d capped, expected %s (%.0f s)" % (
-            m.group(1), m.group(2), checked, problems, aborts, refusals, capped, expected, secs)
+        detail = "probe compared %s failing %s; reserve check %d queries, %d problems; %d aborts, %d refusals, %d capped, %d bounded, expected %s (%.0f s)" % (
+            m.group(1), m.group(2), checked, problems, aborts, refusals, capped, bounded, expected, secs)
+        results.append((name, ok, detail))
+        print("%-70s %s  %s" % (name, "ok" if ok else "FAILED", detail), flush=True)
+
+    for name, props, expected in HEAVY_BOUND:
+        if args.only and args.only not in name:
+            continue
+        p, secs = run(["java", "-Xmx2g"] + props + ["-cp", "out", "test.HeavyBoundCheck"])
+        ms = re.search(r"sequences tested=(\d+) violations=(\d+)", p.stdout)
+        mw = re.search(r"windows tested=(\d+) violations=(\d+) form-a=(\d+) form-b=(\d+)", p.stdout)
+        if not ms or not mw:
+            results.append((name, False, "no summary line; exit %d; %s" % (p.returncode, (p.stderr or p.stdout)[-300:])))
+            print("%-70s FAILED (no summary)" % name, flush=True)
+            continue
+        st, sv = map(int, ms.groups()); wt, wv, fa, fb = map(int, mw.groups())
+        if expected == "pass":
+            ok = p.returncode == 0 and st > 0 and wt > 0 and fa > 0 and fb > 0 and sv == 0 and wv == 0
+        else:
+            ok = sv + wv > 0
+        detail = "sequences %d (violations %d), windows %d (violations %d, form a %d, form b %d), expected %s (%.0f s)" % (
+            st, sv, wt, wv, fa, fb, expected, secs)
         results.append((name, ok, detail))
         print("%-70s %s  %s" % (name, "ok" if ok else "FAILED", detail), flush=True)
 

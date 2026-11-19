@@ -19,6 +19,11 @@ the fixed cost of the previous attempt). Checked there as well: the logged attem
 deadline (budget_ms) is the same budget, every refusal finds reserve < floor(c * F_hat) (bud3rs would refuse too), and
 every run of refusals is no longer than ceil((largest floor + largest overrun so far) / smallest premium of the run).
 
+bud3rbx (bud3rb with the heavy-sequence bound selector) adds the action "bounded": a query the selector re-mined without an
+attempt. It opens, charges and refuses nothing; only the premium is added. Checked there as well: wherever the selector ran
+(every query after the seed except the window backoff's), the action is "bounded" exactly when the logged bound_log2 exceeds
+log2(selector_rate * floor(c * F_hat) / 1e6); a "bounded" row without a bound is a problem.
+
 Checked per query: the logged reserve equals the recomputed one, the gate decision matches the rule, and the
 charge does not exceed the query time the probe measured with its own clock. Per run: total cost minus the run's own
 re-mine cost (sum of aborted charges plus completed charges minus their F_hat) is at most
@@ -26,6 +31,7 @@ eps * sum F_hat + c * F_hat of the first attempt + the largest overrun of a budg
 Prints the denominators. Exit status 1 on any mismatch, or when no bud3rs query could be checked.
 """
 import csv
+import math
 import sys
 from pathlib import Path
 
@@ -43,14 +49,15 @@ def params(policy):
 def check_policy(name, rows):
     """rows: dicts merged from exactness.csv and timing_feasibility.csv, in query order. Returns (checked, problems, summary)."""
     c, eps = params(name)
-    capped = name.split("-")[0] == "bud3rb"
+    capped = name.split("-")[0] in ("bud3rb", "bud3rbx")
+    selector = name.split("-")[0] == "bud3rbx"
     problems = []
     run_len, run_floor, run_prem, longest = 0, 0, None, (0, 0)   # current refusal run; longest (length, bound)
     reserve, opened, first_budget = 0, False, None
     overrun = 0
     excess = 0                                  # sum aborted charges + sum (completed charge - F_hat)
     premiums = 0
-    counts = {"discover": 0, "aborted": 0, "gated": 0, "skipped": 0, "other": 0}
+    counts = {"discover": 0, "aborted": 0, "gated": 0, "skipped": 0, "bounded": 0, "other": 0}
     checked = 0
     for i, r in enumerate(rows):
         act = r["action"]
@@ -63,6 +70,15 @@ def check_policy(name, rows):
         charge = int(r["charge_us"] or 0)
         budget = int(c * fhat)
         given = budget
+        if selector and act != "skipped":
+            lb = r.get("bound_log2") or ""
+            rate = float(r.get("selector_rate") or 0)
+            cap = math.log2(rate * budget / 1e6) if rate > 0 and budget > 0 else float("-inf")
+            should = lb != "" and float(lb) > cap
+            if act == "bounded" and lb == "":
+                problems.append("%s q%s: bounded without a bound" % (name, r["query"]))
+            elif should != (act == "bounded"):
+                problems.append("%s q%s: bound %s against cap %.6f, action %r" % (name, r["query"], lb or "-", cap, act))
         if act in ("discover", "aborted", "gated"):
             if not opened:
                 reserve += budget
@@ -142,7 +158,7 @@ def read_run(run_dir):
         raise ValueError("%s: %d exactness rows, %d timing rows" % (d.as_posix(), len(ex), len(tm)))
     by = {}
     for e, t in zip(ex, tm):
-        if e["policy"].split("-")[0] in ("bud3rs", "bud3rb"):
+        if e["policy"].split("-")[0] in ("bud3rs", "bud3rb", "bud3rbx"):
             row = dict(e)
             row["query_ms"] = t["query_ms"]
             by.setdefault(e["policy"], []).append(row)
@@ -238,6 +254,35 @@ def self_test():
     bad = [dict(r) for r in early]
     bad[2] = row(2, "discover", 10**6, 3 * 10**5, 15 * 10**5, 300, budget=7 * 10**5, floor=8 * 10**5)  # 7e5 < floor 8e5
     case_rb("defect: bud3rb attempts below the floor", bad, False)
+    # bud3rbx, rate 1e6 patterns/s: cap = log2(1e6 * F_hat s). q1 bound 40 > log2(1e6 * 1 s) = 19.93: bounded, reserve
+    # stays unopened, premium 1e5; q2 bound 10 < cap: attempt opens the advance 1e6 -> 1.1e6, completes at 2e5 -> 1.9e6
+    # + 1e5 = 2e6; q3 no bound: attempt, completes at 3e5 -> 2.7e6 + 1e5.
+    def sel(q, act, fhat, charge, reserve, ms, bound, budget=None, floor=None):
+        r = row(q, act, fhat, charge, reserve, ms, budget=budget, floor=floor)
+        r["bound_log2"], r["selector_rate"] = ("" if bound is None else "%.9f" % bound), "1000000.0"
+        return r
+    xs = [row(0, "seed", 0, 0, 0, 5), sel(1, "bounded", 10**6, 0, 10**5, 900, 40.0),
+          sel(2, "discover", 10**6, 2 * 10**5, 20 * 10**5, 200, 10.0, budget=10**6, floor=0),
+          sel(3, "discover", 10**6, 3 * 10**5, 28 * 10**5, 300, None, budget=10**6, floor=10**5)]
+
+    def case_x(name, rows, expect_ok):
+        n, p, _ = check_policy("bud3rbx", rows)
+        ok = (not p and n > 0) if expect_ok else bool(p)
+        cases.append((name, ok, "%d checked, %d problems" % (n, len(p))))
+
+    case_x("clean bud3rbx: a bound skip, then attempts", xs, True)
+    bad = [dict(r) for r in xs]
+    bad[1] = sel(1, "aborted", 10**6, 10**6, 10**5, 1000, 40.0, budget=10**6, floor=0)   # bound above the cap, not skipped
+    case_x("defect 14: the selector never skips", bad, False)
+    # The skip opens the advance (+1e6) and is charged 1e6: q1 still ends at 1e5, but q2 no longer gets the advance,
+    # so the log reads 1e5 + 1e6 - 2e5 + 1e5 = 1e6 at q2 and 1e6 + 1e6 - 3e5 + 1e5 = 1.8e6 at q3.
+    bad = [dict(r) for r in xs]
+    bad[2]["reserve_us"] = str(10**6)
+    bad[3]["reserve_us"] = str(18 * 10**5)
+    case_x("defect 16: a skip is charged like an aborted attempt", bad, False)
+    bad = [dict(r) for r in xs]
+    bad[2] = sel(2, "bounded", 10**6, 0, 2 * 10**5, 900, None)   # bounded without any bound
+    case_x("defect: bounded without a bound", bad, False)
     n, p, _ = check_policy("bud3rs", [row(0, "seed", 0, 0, 0, 5)])
     cases.append(("vacuous: nothing after the seed is not a pass", n == 0, "%d checked" % n))
     for name, ok, detail in cases:

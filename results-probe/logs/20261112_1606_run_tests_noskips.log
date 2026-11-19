@@ -1,0 +1,12 @@
+# cmd: python3 tools/run_tests.py --only 'positive budget'; injection: same policies with -DselectorRate=1
+# tool sha256 a03768353250d4e2
+clean: bound selector (bud3rbx) never skipping at a positive budget    ok  compared 2708 (non-empty 2664), failing 0, aborts in mining 72, bound skips 0, expected zero+noskips (207 s)
+
+1/1 tests as expected
+# injection
+1
+clean: bound selector (bud3rbx) never skipping at a positive budget    FAILED  compared 2708 (non-empty 2664), failing 0, aborts in mining 87, bound skips 276, expected zero+noskips (211 s)
+
+0/1 tests as expected
+  FAILED: clean: bound selector (bud3rbx) never skipping at a positive budget: compared 2708 (non-empty 2664), failing 0, aborts in mining 87, bound skips 276, expected zero+noskips (211 s)
+injection exit 1
