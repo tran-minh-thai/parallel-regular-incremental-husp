@@ -1,0 +1,30 @@
+rate=3486536.2
+about=largest output rate (patterns per second of enumeration) over shapes i-iii, k=22, 5 measured runs after 2 warm-ups each
+command=java -Xmx32768m -Dthreads=16 test.SelectorCalibration results\9950x\selector_rate.txt
+sha256_SelectorCalibration=23e75b0eabbeeaa69c4891ece0e2920d214d5b44ebd2bedd2adff801f86bd0ac
+sha256_AlgoRHUSPMinerParallel=432ff44aace85c07f0777fe56512e31f2d76f687b822a079e50a19db50d5f4b2
+java=25.0.5+8-LTS Eclipse Adoptium
+os=Windows 11 10.0 amd64
+threads=16
+written=2026-11-19T21:00:08+07:00
+i: one sequence, k single-item events run 0 (warm-up, not counted): patterns 4194303 enum_ms 2779 rate 1509285.0
+i: one sequence, k single-item events run 1 (warm-up, not counted): patterns 4194303 enum_ms 2453 rate 1709866.7
+i: one sequence, k single-item events run 2: patterns 4194303 enum_ms 2362 rate 1775742.2
+i: one sequence, k single-item events run 3: patterns 4194303 enum_ms 2504 rate 1675041.1
+i: one sequence, k single-item events run 4: patterns 4194303 enum_ms 2330 rate 1800130.0
+i: one sequence, k single-item events run 5: patterns 4194303 enum_ms 2334 rate 1797045.0
+i: one sequence, k single-item events run 6: patterns 4194303 enum_ms 2262 rate 1854245.4
+ii: one sequence, k/2 two-item events run 0 (warm-up, not counted): patterns 4194303 enum_ms 2472 rate 1696724.5
+ii: one sequence, k/2 two-item events run 1 (warm-up, not counted): patterns 4194303 enum_ms 2281 rate 1838800.1
+ii: one sequence, k/2 two-item events run 2: patterns 4194303 enum_ms 2352 rate 1783292.1
+ii: one sequence, k/2 two-item events run 3: patterns 4194303 enum_ms 2328 rate 1801676.5
+ii: one sequence, k/2 two-item events run 4: patterns 4194303 enum_ms 2200 rate 1906501.4
+ii: one sequence, k/2 two-item events run 5: patterns 4194303 enum_ms 2356 rate 1780264.4
+ii: one sequence, k/2 two-item events run 6: patterns 4194303 enum_ms 2203 rate 1903905.1
+iii: 64 copies of (i) run 0 (warm-up, not counted): patterns 4194303 enum_ms 1392 rate 3013148.7
+iii: 64 copies of (i) run 1 (warm-up, not counted): patterns 4194303 enum_ms 1251 rate 3352760.2
+iii: 64 copies of (i) run 2: patterns 4194303 enum_ms 1254 rate 3344739.2
+iii: 64 copies of (i) run 3: patterns 4194303 enum_ms 1220 rate 3437953.3
+iii: 64 copies of (i) run 4: patterns 4194303 enum_ms 1213 rate 3457793.1
+iii: 64 copies of (i) run 5: patterns 4194303 enum_ms 1203 rate 3486536.2
+iii: 64 copies of (i) run 6: patterns 4194303 enum_ms 1254 rate 3344739.2
