@@ -1,0 +1,19 @@
+{
+  "kind": "measurement",
+  "cell": "E2X-S3-remine+bud3rb+bud3rbx-t16-r0",
+  "command": "java -Dthreads=16 -Ddold=0.5 -Doracle=first -Dlimit=3600 -Dout=results/9950x -Dcell=E2X-S3-remine+bud3rb+bud3rbx-t16-r0 -Dkind=measurement -Dwarmup=true -DselectorRate=1e8 test.QueryScheduleProbe datasets/KOSARAK_seq.txt datasets/KOSARAK_eui.txt 0.015 297000 21 every:4 remine-nogc,bud3rb,bud3rbx",
+  "git_commit": "f90b3c2b43796031102ef7504c051064c4588fa8",
+  "tree": "clean",
+  "sha256_AlgoPRIncHUSP": "8b00c83a3e68b80dfcf543e2e78f0ac42eac89abf1fae50cd5732e3ed7cf09db",
+  "sha256_AlgoParRemine": "d0be829fcd600b10e8fd7de3407d8177f6dbab97214ed67c2c7c6ff4149b8989",
+  "sha256_AlgoRHUSPMinerParallel": "432ff44aace85c07f0777fe56512e31f2d76f687b822a079e50a19db50d5f4b2",
+  "sha256_QueryScheduleProbe": "2fc144485cde3c10ddc96e44bec11291a4d4d017d8160ad0a3d83683bfe6fde0",
+  "sha256_HeavyBound": "e155472a998e68ae6d46ace4e0416088d2b0e0a5626045419708df6e7d377472",
+  "sha256_seq": "5694d65a18c347120891d0549a5ab8599dc17826d970b3c95ef00096ef83019e",
+  "sha256_eui": "176c4036de190047cedc669af4a4450231c77f3fdc4004c7077f56f0cd8a0413",
+  "java": "25.0.5+8-LTS Eclipse Adoptium",
+  "os": "Windows 11 10.0 amd64",
+  "threads": "16",
+  "max_heap_mb": "32768",
+  "started": "2026-11-19T21:58:16+07:00"
+}
