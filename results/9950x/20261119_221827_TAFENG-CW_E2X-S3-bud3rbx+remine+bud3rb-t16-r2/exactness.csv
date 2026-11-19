@@ -1,0 +1,16 @@
+dataset,policy,batches,schedule,fault,query,after_batch,n_seqs,oracle_size,returned,missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,gap_rejected,tracked_after,action,r,kept_on_abort,budget_ms,attempt_ms,attempt_load_ms,attempt_preprocess_ms,attempt_enum_ms,attempt_rebuild_ms,abort_phase,heap_guard_mb,heap_start_mb,heap_abort_mb,heap_live_after_abort_mb,heap_valve_collections,abort_cause,fhat_us,charge_us,reserve_us,gate,attempt_budget_us,floor_us,bound_log2,bound_form,selector_us,selector_rate
+TAFENG-CW,bud3rbx,21,every:4,0,0,4,59842,722,722,0,0,0,0,0,12961,722,0,0,722,seed,0.00,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,0,0,0,0,0,0,,,0,100000000.0
+TAFENG-CW,bud3rbx,21,every:4,0,1,8,69814,684,684,0,0,0,0,9972,15751,684,0,0,704,bounded,2.00,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,945285,0,94528,0,0,0,166.755239680,b,31071,100000000.0
+TAFENG-CW,bud3rbx,21,every:4,0,2,12,79786,659,659,0,0,0,0,19944,17821,659,0,0,674,bounded,3.99,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,599644,0,154492,0,0,0,94.000000193,b,8212,100000000.0
+TAFENG-CW,bud3rbx,21,every:4,0,3,16,89758,642,642,0,0,0,0,29916,6892,908,473,305,818,discover,5.98,0,591,521,5,23,418,73,,19660,467,-1,-1,0,,591796,521438,875825,0,591796,0,,,5402,100000000.0
+TAFENG-CW,bud3rbx,21,every:4,0,4,20,99739,629,629,0,0,0,0,39897,8609,827,244,228,808,discover,7.98,0,657,397,5,28,355,8,,19660,911,-1,-1,0,,657603,397500,1201688,0,657603,4073,,,4554,100000000.0
+TAFENG-CW,remine-nogc,21,every:4,0,0,4,59842,722,722,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+TAFENG-CW,remine-nogc,21,every:4,0,1,8,69814,684,684,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+TAFENG-CW,remine-nogc,21,every:4,0,2,12,79786,659,659,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+TAFENG-CW,remine-nogc,21,every:4,0,3,16,89758,642,642,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+TAFENG-CW,remine-nogc,21,every:4,0,4,20,99739,629,629,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+TAFENG-CW,bud3rb,21,every:4,0,0,4,59842,722,722,0,0,0,0,0,12961,722,0,0,722,seed,0.00,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,0,0,0,0,0,0,,,,
+TAFENG-CW,bud3rb,21,every:4,0,1,8,69814,684,684,0,0,0,0,9972,15751,684,0,0,704,aborted,2.00,0,793,796,1,19,776,0,mining,19660,246,1290,709,0,deadline,793983,881518,-8137,0,793983,0,,,,
+TAFENG-CW,bud3rb,21,every:4,0,2,12,79786,659,659,0,0,0,0,19944,17821,659,0,0,674,gated,3.99,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,592984,0,51161,1,0,84,,,,
+TAFENG-CW,bud3rb,21,every:4,0,3,16,89758,642,642,0,0,0,0,29916,19852,642,0,0,650,aborted,5.98,0,51,52,4,16,32,0,mining,19660,1641,1985,84,0,deadline,589899,82299,27851,0,51161,84,,,,
+TAFENG-CW,bud3rb,21,every:4,0,4,20,99739,629,629,0,0,0,0,39897,21569,629,0,0,630,skipped,7.98,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,599168,0,87767,0,0,0,,,,
