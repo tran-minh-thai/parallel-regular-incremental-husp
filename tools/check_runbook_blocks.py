@@ -2,13 +2,14 @@
 """Run the two measurement-machine blocks of a runbook verbatim under PowerShell, with fake tools, on throw-away
 git repositories, and check what they do.
 
-    python3 tools/check_runbook_blocks.py <runbook.txt> <run-status report.ps1> <scratch dir> [--only main|followup|resume2|reserve|budget|selector]
+    python3 tools/check_runbook_blocks.py <runbook.txt> <run-status report.ps1> <scratch dir> [--only main|followup|resume2|reserve|budget|selector|gate]
 
 The main block is the one whose header (within six lines above its "& {") names E2R; the follow-up block is the
 one whose header names E2G; the pinned resume block is the one whose header names the pinned code "src a7bc247"; the reserve block is the one
 whose header names bud3rs; the reserve-budget block is the one whose header names bud3rb; the bound selector block is the one whose header
 names bud3rbx (it runs the reserve-budget scenarios plus: calibration once before the campaign, kept on a second paste, and a failing
-calibration stops it). Only machine-specific parts are replaced, and each replacement must
+calibration stops it); the window gate block is the one whose header names bud3rbw (the reserve-budget scenarios without
+generated repeats or calibration). Only machine-specific parts are replaced, and each replacement must
 match exactly once: the D: paths, the run-status path, the GitHub URLs, and the kernel32 import (a stub type records
 the keep-awake calls). In the git wrapper, backslashes in arguments become slashes, since the fakes run on macOS or
 Linux. java, javac, py and Get-Process are PowerShell functions that record their calls.
@@ -88,6 +89,11 @@ function py {
       if ($rest -contains '--write-repeats') { Set-Content experiments/campaign_9950x_selector.json '{"experiments": {"E2X": {}, "E2XR": {}}}' }
       "X0: 1 completed discoveries"; $code = 1
     }
+    '*summarize_gate.py' {
+      New-Item -ItemType Directory -Force results/9950x | Out-Null
+      Set-Content results/9950x/summary_E2W.tsv 'x'
+      "W1: 0 queries disagreeing"; $code = 1
+    }
   }
   $global:LASTEXITCODE = $code
 }
@@ -113,7 +119,7 @@ def find_block(lines, marker):
     raise SystemExit("no block with %r in its header" % marker)
 
 
-def seed_repos(T, report, followup, reserve=False, budget=False, selector=False):
+def seed_repos(T, report, followup, reserve=False, budget=False, selector=False, gate=False):
     seed = T / "seed"
     seed.mkdir()
     files = {"src/main/java/A.java": "class A {}\n", "tools/stream_datasets/manifests/X.json": "{}\n", "tools/t.py": "\n",
@@ -139,6 +145,9 @@ def seed_repos(T, report, followup, reserve=False, budget=False, selector=False)
         if selector:
             (seed / "experiments/campaign_9950x_selector.json").write_text('{"experiments": {"E2X": {}}}\n')
             (seed / "tools/summarize_selector.py").write_text("\n")
+        if gate:
+            (seed / "experiments/campaign_9950x_gate.json").write_text('{"experiments": {"E2W": {}}}\n')
+            (seed / "tools/summarize_gate.py").write_text("\n")
         git("add", "-A", cwd=seed)
         git("-c", "user.name=S", "-c", "user.email=s@x", "commit", "-q", "-m", "follow-up", cwd=seed)
     git("clone", "-q", "--bare", str(seed), str(T / "remote.git"))
@@ -406,6 +415,8 @@ BUDGET_SPEC = {"tag": "budget", "cfg": "experiments/campaign_9950x_budget.json",
 SELECTOR_SPEC = {"tag": "selector", "cfg": "experiments/campaign_9950x_selector.json", "summarizer": "summarize_selector.py",
                  "summary": "summary_E2X", "repeats": "E2XR", "first_line": "X0:", "calibration": "results/9950x/selector_rate.txt",
                  "runs": ["run --exp E2X --exp E2X-152 --interleave"]}
+GATE_SPEC = {"tag": "gate", "cfg": "experiments/campaign_9950x_gate.json", "summarizer": "summarize_gate.py",
+             "summary": "summary_E2W", "repeats": None, "first_line": "W1:", "runs": ["run --exp E2W --interleave"]}
 
 
 def check_reserve_block(block, report, base, check, spec=RESERVE_SPEC):
@@ -416,7 +427,8 @@ def check_reserve_block(block, report, base, check, spec=RESERVE_SPEC):
         if T.exists():
             shutil.rmtree(T)
         T.mkdir(parents=True)
-        seed_repos(T, report, followup=True, reserve=True, budget=(tag == "budget"), selector=(tag == "selector"))
+        seed_repos(T, report, followup=True, reserve=True, budget=(tag == "budget"), selector=(tag in ("selector", "gate")),
+                   gate=(tag == "gate"))
         c = T / "work" / "parallel-regular-incremental-husp"
         git("clone", "-q", "-b", "revision-apin", str(T / "remote.git"), str(c))
         for d in (c, T / "rs"):
@@ -436,19 +448,20 @@ def check_reserve_block(block, report, base, check, spec=RESERVE_SPEC):
     check(ok_git("merge-base", "--is-ancestor", "origin/heap-guard-live", "HEAD", cwd=c), "%s A: heap-guard-live merged" % tag)
     check(sum("run_tests.py" in l for l in calls) == 1, "%s A: tests run once on the merged code" % tag)
     camp = [l for l in calls if "tools/campaign.py" in l]
+    rep = spec.get("repeats")
     check(camp == ["py tools/campaign.py --config %s %s" % (cfg, x) for x in spec["runs"]]
-          + ["py tools/campaign.py --config %s run --exp %s" % (cfg, spec["repeats"])],
-          "%s A: the campaign, then the generated repeats %s" % (tag, camp))
+          + (["py tools/campaign.py --config %s run --exp %s" % (cfg, rep)] if rep else []),
+          "%s A: the campaign%s %s" % (tag, ", then the generated repeats" if rep else "", camp))
     summ = [l for l in calls if summ_name in l]
-    check(summ == ["py tools/%s --config %s --write-repeats" % (summ_name, cfg), "py tools/%s --config %s" % (summ_name, cfg)],
-          "%s A: repeats generated, then the summary %s" % (tag, summ))
+    check(summ == (["py tools/%s --config %s --write-repeats" % (summ_name, cfg)] if rep else []) + ["py tools/%s --config %s" % (summ_name, cfg)],
+          "%s A: %sthe summary %s" % (tag, "repeats generated, then " if rep else "", summ))
     files = remote_files(T, "refs/heads/campaign-9950x")
-    check({cfg, "results/9950x/%s.txt" % sm, "results/9950x/%s.tsv" % sm} <= files,
-          "%s A: generated repeats and the summary on campaign-9950x" % tag)
+    check(({cfg} if rep else set()) | {"results/9950x/%s.txt" % sm, "results/9950x/%s.tsv" % sm} <= files,
+          "%s A: %sthe summary on campaign-9950x" % (tag, "generated repeats and " if rep else ""))
     s = (c / ("results/9950x/%s.txt" % sm)).read_bytes()
     check(spec["first_line"].encode() in s and not s.startswith(b"\xef\xbb\xbf") and b"\x00" not in s,
           "%s A: summary is UTF-8 without BOM" % tag)
-    check(any("%s repeats: exit 1" % tag in l for l in log) and any("%s summary: exit 1" % tag in l for l in log)
+    check((not rep or any("%s repeats: exit 1" % tag in l for l in log)) and any("%s summary: exit 1" % tag in l for l in log)
           and any("%s finished" % tag in l for l in log) and not any("STOPPED" in l for l in log),
           "%s A: failing hypotheses reported, block finished" % tag)
     check(AWAKE_OK in r.stdout, "%s A: keep-awake set then released" % tag)
@@ -486,7 +499,7 @@ def main(argv=None):
     ap.add_argument("runbook")
     ap.add_argument("report")
     ap.add_argument("scratch")
-    ap.add_argument("--only", choices=("main", "followup", "resume2", "reserve", "budget", "selector"))
+    ap.add_argument("--only", choices=("main", "followup", "resume2", "reserve", "budget", "selector", "gate"))
     args = ap.parse_args(argv)
     lines = Path(args.runbook).read_text(encoding="utf-8").splitlines()
     base = Path(args.scratch).resolve()
@@ -508,6 +521,8 @@ def main(argv=None):
         check_reserve_block(find_block(lines, "bud3rb"), Path(args.report), base, check, BUDGET_SPEC)
     if args.only in (None, "selector"):
         check_reserve_block(find_block(lines, "bud3rbx"), Path(args.report), base, check, SELECTOR_SPEC)
+    if args.only in (None, "gate"):
+        check_reserve_block(find_block(lines, "bud3rbw"), Path(args.report), base, check, GATE_SPEC)
     bad = [w for ok, w in results if not ok]
     print("\n%d/%d checks passed" % (len(results) - len(bad), len(results)))
     return 1 if bad else 0

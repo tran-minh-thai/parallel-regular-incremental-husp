@@ -132,7 +132,7 @@ public class QueryScheduleProbe {
                     + "gap_rejected,tracked_after,action,r,kept_on_abort,budget_ms,attempt_ms,attempt_load_ms,"
                     + "attempt_preprocess_ms,attempt_enum_ms,attempt_rebuild_ms,abort_phase,heap_guard_mb,heap_start_mb,"
                     + "heap_abort_mb,heap_live_after_abort_mb,heap_valve_collections,abort_cause,fhat_us,charge_us,reserve_us,gate,attempt_budget_us,floor_us,"
-                    + "bound_log2,bound_form,selector_us,selector_rate\n");
+                    + "bound_log2,bound_form,selector_us,selector_rate,bound_gate,selector_b\n");
             tm.write("dataset,policy,batches,schedule,fault,query,after_batch,ingest_ms,query_ms,"
                     + "discovery_mine_ms,rebuild_ms,seed_ms\n");
             final long limitS = Long.getLong("limit", 0);         // per-policy time limit, reference excluded
@@ -218,7 +218,9 @@ public class QueryScheduleProbe {
                                     : String.format(java.util.Locale.ROOT, "%.9f", p.lastBoundLog2),
                             p == null || !p.boundSelector || p.lastBoundForm == ' ' ? "" : "" + p.lastBoundForm,
                             p == null || !p.boundSelector ? "" : "" + p.lastSelectorUs,
-                            p == null || !p.boundSelector ? "" : String.format(java.util.Locale.ROOT, "%.1f", p.selectorRate)) + "\n");
+                            p == null || !p.boundSelector ? "" : String.format(java.util.Locale.ROOT, "%.1f", p.selectorRate),
+                            p == null || !p.windowGate || !p.lastBoundGated ? "" : "window",
+                            p == null || !p.windowGate || p.lastSelectorB == 0 ? "" : "" + p.lastSelectorB) + "\n");
                     tm.write(String.join(",", tag, policy, "" + batches.size(), schedule, "" + AlgoPRIncHUSP.FAULT,
                             "" + q, "" + b, "" + ingestMs, "" + queryMs,
                             p == null ? "" : "" + p.lastQueryMineMs,
@@ -310,6 +312,8 @@ public class QueryScheduleProbe {
                 boolean sel = parts.get(0).equals("sel");
                 boolean bud2 = parts.get(0).equals("bud2");          // bud2: bud + keep rebuilt + overhead gate + no GC
                 boolean live = parts.get(0).equals("bud3live");      // bud3live: bud3 with the heap guard judged on the live heap
+                boolean gate = parts.get(0).equals("bud3rbw");       // bud3rbw: bud3rbx with the window gate (n >= 2B: no bound)
+                if (gate) parts.set(0, "bud3rbx");
                 boolean selector = parts.get(0).equals("bud3rbx");   // bud3rbx: bud3rb with the heavy-sequence bound selector
                 if (selector) parts.set(0, "bud3rb");
                 boolean capped = parts.get(0).equals("bud3rb");      // bud3rb: bud3rs, budget min(c * F_hat, reserve)
@@ -353,6 +357,7 @@ public class QueryScheduleProbe {
                 p.reserveEps = eps;
                 p.reserveCapBudget = capped;
                 p.boundSelector = selector;
+                p.windowGate = gate;
                 if (selector) p.selectorRate = selectorRate();
                 p.measureMemoryOnQuery = !parts.contains("nogc");
                 p.selectorKappa = kappa;

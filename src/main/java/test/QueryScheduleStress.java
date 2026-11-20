@@ -34,8 +34,9 @@ public class QueryScheduleStress {
         AlgoPRIncHUSP.FAULT = Integer.getInteger("fault", 0);
         AlgoPRIncHUSP.FORCE_REBUILD_ABORT = Boolean.getBoolean("forceRebuildAbort");
         AlgoPRIncHUSP.FORCE_MID_CANDIDATE_ABORT = Boolean.getBoolean("forceMidCandidateAbort");
+        AlgoPRIncHUSP.GATE_CROSS_CHECK = Boolean.getBoolean("gateCrossCheck");
         String[] policies = System.getProperty("policies", "keep-sfx,reset-sfx,keep-sfx-gf,keep-sfx-gf-l0.5,sel-k0,sel-k5,sel-k1000000000,bud-c0,bud-c0.001,bud-c1,bud-c1000000000,bud3-c0,bud3-c0.001,bud3-c1,bud3-c1000000000").split(",");
-        int compared = 0, failing = 0, nonEmpty = 0, multiItemSeqs = 0, boundSkips = 0;
+        int compared = 0, failing = 0, nonEmpty = 0, multiItemSeqs = 0, boundSkips = 0, boundGated = 0;
         Map<String, Integer> failsByPolicy = new TreeMap<>();
         for (int seed = 1; seed <= trials; seed++) {
             Random r = new Random(seed);
@@ -69,6 +70,7 @@ public class QueryScheduleStress {
                     Map<String, long[]> res = new HashMap<>(mm.getHighUtilityPatterns());
                     int[] d = QueryScheduleProbe.diff(res, oracle.get(b));
                     if (mm instanceof AlgoPRIncHUSP && ((AlgoPRIncHUSP) mm).boundSelector && ((AlgoPRIncHUSP) mm).lastQueryAction == 6) boundSkips++;
+                    if (mm instanceof AlgoPRIncHUSP && ((AlgoPRIncHUSP) mm).windowGate && ((AlgoPRIncHUSP) mm).lastBoundGated) boundGated++;
                     compared++;
                     if (!oracle.get(b).isEmpty()) nonEmpty++;
                     if (d[0] + d[1] + d[2] + d[3] > 0) {
@@ -85,10 +87,13 @@ public class QueryScheduleStress {
         System.out.printf("forceRebuildAbort=%s forceMidCandidateAbort=%s aborts-in-mining=%d aborts-in-rebuild=%d half-built=%d bound-skips=%d%n",
                 AlgoPRIncHUSP.FORCE_REBUILD_ABORT, AlgoPRIncHUSP.FORCE_MID_CANDIDATE_ABORT,
                 AlgoPRIncHUSP.ABORTS_IN_MINING.get(), AlgoPRIncHUSP.ABORTS_IN_REBUILD.get(), AlgoPRIncHUSP.HALF_BUILT.get(), boundSkips);
+        System.out.printf("window-gate gated-queries=%d cross-checked-gated=%d cross-checked-open=%d disagreeing=%d resets-while-paused=%d%n",
+                boundGated, AlgoPRIncHUSP.GATE_CHECKED_GATED.get(), AlgoPRIncHUSP.GATE_CHECKED_OPEN.get(),
+                AlgoPRIncHUSP.GATE_DISAGREE.get(), AlgoPRIncHUSP.GATE_RESETS_PAUSED.get());
         System.out.printf("fault=%d trials=%d sequences-with-multi-item-events=%d compared-queries=%d "
                         + "with-non-empty-oracle=%d failing=%d %s%n",
                 AlgoPRIncHUSP.FAULT, trials, multiItemSeqs, compared, nonEmpty, failing, failsByPolicy);
-        if (compared == 0 || nonEmpty == 0 || failing > 0) System.exit(1);
+        if (compared == 0 || nonEmpty == 0 || failing > 0 || AlgoPRIncHUSP.GATE_DISAGREE.get() > 0) System.exit(1);
     }
 
     /** Random quantitative sequence database: events of 1..3 distinct items, utilities 1..6. */
