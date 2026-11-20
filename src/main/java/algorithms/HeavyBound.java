@@ -34,6 +34,16 @@ import java.util.TreeMap;
 public final class HeavyBound {
     private HeavyBound() {}
 
+    /**
+     * Whether no form can apply to a window of n sequences under bound B: form (a) needs n <= B, form (b) needs i + 1 <= B and
+     * n - i <= B, so n <= 2B - 1. A window with n >= 2B has no bound, and the selector need not compute one. Computed in long
+     * arithmetic (B may be Integer.MAX_VALUE in relative mode). Fault 18 closes the gate one sequence early (n >= 2B - 1),
+     * which hides the form (b) bound of a sequence at i = B - 1.
+     */
+    public static boolean windowGated(long n, long bound) {
+        return AlgoPRIncHUSP.FAULT == 18 ? n >= 2 * bound - 1 : n >= 2 * bound;
+    }
+
     /** Result of a window bound: log2 of the bound and its form ('a' or 'b'). */
     public static final class Result {
         public final double log2;

@@ -24,6 +24,10 @@ attempt. It opens, charges and refuses nothing; only the premium is added. Check
 (every query after the seed except the window backoff's), the action is "bounded" exactly when the logged bound_log2 exceeds
 log2(selector_rate * floor(c * F_hat) / 1e6); a "bounded" row without a bound is a problem.
 
+bud3rbw (bud3rbx with the window gate) is checked as bud3rbx, and also: wherever the selector ran, bound_gate is "window"
+exactly when increment_seqs >= 2 * selector_b (the B the gate compared with); a gated row has no bound; selector_b is
+logged there and never rises from one query to a later one (the argument that pausing the bookkeeping is safe needs it).
+
 Checked per query: the logged reserve equals the recomputed one, the gate decision matches the rule, and the
 charge does not exceed the query time the probe measured with its own clock. Per run: total cost minus the run's own
 re-mine cost (sum of aborted charges plus completed charges minus their F_hat) is at most
@@ -49,8 +53,10 @@ def params(policy):
 def check_policy(name, rows):
     """rows: dicts merged from exactness.csv and timing_feasibility.csv, in query order. Returns (checked, problems, summary)."""
     c, eps = params(name)
-    capped = name.split("-")[0] in ("bud3rb", "bud3rbx")
-    selector = name.split("-")[0] == "bud3rbx"
+    capped = name.split("-")[0] in ("bud3rb", "bud3rbx", "bud3rbw")
+    selector = name.split("-")[0] in ("bud3rbx", "bud3rbw")
+    gate = name.split("-")[0] == "bud3rbw"
+    last_b = None
     problems = []
     run_len, run_floor, run_prem, longest = 0, 0, None, (0, 0)   # current refusal run; longest (length, bound)
     reserve, opened, first_budget = 0, False, None
@@ -79,6 +85,19 @@ def check_policy(name, rows):
                 problems.append("%s q%s: bounded without a bound" % (name, r["query"]))
             elif should != (act == "bounded"):
                 problems.append("%s q%s: bound %s against cap %.6f, action %r" % (name, r["query"], lb or "-", cap, act))
+            if gate:
+                b = int(r.get("selector_b") or 0)
+                n = int(r.get("increment_seqs") or 0)
+                if b <= 0:
+                    problems.append("%s q%s: the selector ran without a logged selector_b" % (name, r["query"]))
+                else:
+                    if (r.get("bound_gate") == "window") != (n >= 2 * b):
+                        problems.append("%s q%s: window %d, B %d, gate %r" % (name, r["query"], n, b, r.get("bound_gate") or ""))
+                    if r.get("bound_gate") == "window" and lb != "":
+                        problems.append("%s q%s: gated with a bound %s" % (name, r["query"], lb))
+                    if last_b is not None and b > last_b:
+                        problems.append("%s q%s: selector_b rose from %d to %d" % (name, r["query"], last_b, b))
+                    last_b = b
         if act in ("discover", "aborted", "gated"):
             if not opened:
                 reserve += budget
@@ -158,7 +177,7 @@ def read_run(run_dir):
         raise ValueError("%s: %d exactness rows, %d timing rows" % (d.as_posix(), len(ex), len(tm)))
     by = {}
     for e, t in zip(ex, tm):
-        if e["policy"].split("-")[0] in ("bud3rs", "bud3rb", "bud3rbx"):
+        if e["policy"].split("-")[0] in ("bud3rs", "bud3rb", "bud3rbx", "bud3rbw"):
             row = dict(e)
             row["query_ms"] = t["query_ms"]
             by.setdefault(e["policy"], []).append(row)
@@ -283,6 +302,28 @@ def self_test():
     bad = [dict(r) for r in xs]
     bad[2] = sel(2, "bounded", 10**6, 0, 2 * 10**5, 900, None)   # bounded without any bound
     case_x("defect: bounded without a bound", bad, False)
+    # bud3rbw: the same trajectory with a window gate at B = 3: q1 (n = 4 < 6) open with its bound, q2 (n = 6) and q3 (n = 9)
+    # gated without a bound, so q2's attempt is the bud3rbx one with no bound.
+    def gw(r, n, b, gated):
+        r = dict(r); r["increment_seqs"], r["selector_b"], r["bound_gate"] = str(n), str(b), "window" if gated else ""
+        if gated: r["bound_log2"] = ""
+        return r
+    ws = [xs[0], gw(xs[1], 4, 3, False), gw(xs[2], 6, 3, True), gw(xs[3], 9, 3, True)]
+
+    def case_w(name, rows, expect_ok):
+        n, p, _ = check_policy("bud3rbw", rows)
+        ok = (not p and n > 0) if expect_ok else bool(p)
+        cases.append((name, ok, "%d checked, %d problems" % (n, len(p))))
+
+    case_w("clean bud3rbw: open, then gated", ws, True)
+    bad = [dict(r) for r in ws]; bad[2]["bound_gate"] = ""
+    case_w("defect: the gate stays open at n = 2B", bad, False)
+    bad = [dict(r) for r in ws]; bad[1] = gw(xs[1], 5, 3, True); bad[1]["bound_log2"] = ""; bad[1]["action"] = "discover"
+    case_w("defect 18: the gate closes at n = 2B - 1", bad, False)
+    bad = [dict(r) for r in ws]; bad[3]["selector_b"] = "4"; bad[3]["increment_seqs"] = "9"
+    case_w("defect: selector_b rises", bad, False)
+    bad = [dict(r) for r in ws]; bad[2]["selector_b"] = ""
+    case_w("defect: the selector ran without selector_b", bad, False)
     n, p, _ = check_policy("bud3rs", [row(0, "seed", 0, 0, 0, 5)])
     cases.append(("vacuous: nothing after the seed is not a pass", n == 0, "%d checked" % n))
     for name, ok, detail in cases:

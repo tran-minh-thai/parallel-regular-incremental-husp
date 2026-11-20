@@ -1328,6 +1328,19 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
     /** Per query, read by the probes: log2 of the bound (NaN: not computed or no form applies), its form, the selector's time. */
     public double lastBoundLog2 = Double.NaN;
     public char lastBoundForm = ' ';
+    /**
+     * bud3rbw: bud3rbx with a window gate. At a query whose window has n >= 2B sequences (B = seedMaxReg) no form of the
+     * bound applies ({@link HeavyBound#windowGated}), so the selector answers "no skip" without computing it. From the first
+     * batch that makes n >= 2B the bookkeeping for the selector pauses until the next anchor reset: the window only grows
+     * between resets and seedMaxReg never rises, so no later query before the reset can have n < 2B. A query that finds the
+     * bookkeeping paused and n < 2B throws instead of computing a bound from incomplete bookkeeping. Fault 17: the reset
+     * leaves the bookkeeping paused.
+     */
+    public boolean windowGate = false;
+    private boolean selectorBookPaused = false;
+    /** Per query, read by the probes: whether the window gate answered for the selector, and the B it compared with. */
+    public boolean lastBoundGated;
+    public int lastSelectorB;
     public long lastSelectorUs;
     private final List<Long> windowSeqUtil = new ArrayList<>();             // utility of each sequence of increments
     private final Map<Integer, Integer> windowItemSeqs = new java.util.HashMap<>();    // item -> window sequences that contain it
@@ -1478,7 +1491,7 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
     private void cappedAnswer() {
         lastFhatUs = lastChargeUs = 0; lastQueryGated = false; lastReserveUs = reserveUs;
         lastAttemptBudgetUs = lastFloorUs = 0;
-        lastBoundLog2 = Double.NaN; lastBoundForm = ' ';
+        lastBoundLog2 = Double.NaN; lastBoundForm = ' '; lastBoundGated = false; lastSelectorB = 0;
         lastSelectorUs = selectorBookNanos / 1000; selectorBookNanos = 0;
         lastQueryMineMs = lastQueryRebuildMs = lastQueryThreshold = 0;
         lastQueryCandidates = lastQueryFresh = lastQueryGapRejected = 0;
@@ -1555,6 +1568,19 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         long t = System.nanoTime();
         long theta = integerDiscoveryThreshold ? minUtil - (long) Math.ceil(seedThreshold0) + 1
                 : (long) Math.ceil(minUtil - seedThreshold0);
+        if (windowGate) {
+            lastSelectorB = seedMaxReg;
+            boolean gated = HeavyBound.windowGated(increments.size(), seedMaxReg);
+            if (GATE_CROSS_CHECK) crossCheckGate(gated, theta);
+            if (gated) {
+                lastBoundGated = true;
+                lastSelectorUs += (System.nanoTime() - t) / 1000;
+                return false;
+            }
+            if (selectorBookPaused)
+                throw new IllegalStateException("bud3rbw: selector bookkeeping is paused but the window has " + increments.size()
+                        + " sequences, below 2 * " + seedMaxReg + "; the bound would be computed from incomplete bookkeeping");
+        }
         HeavyBound.Result r = HeavyBound.window(increments, windowSeqUtil, windowItemSeqs, theta, seedMaxReg);
         boolean skip = false;
         if (r != null) {
@@ -1565,6 +1591,40 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         }
         lastSelectorUs += (System.nanoTime() - t) / 1000;
         return skip;
+    }
+
+    /** Tests only (-DgateCrossCheck): every bud3rbw selector query recomputes the bound from the raw window. */
+    public static boolean GATE_CROSS_CHECK = false;
+    /** Counters of the cross-check: queries checked (gated, not gated), disagreements; resets met with the bookkeeping paused. */
+    public static final java.util.concurrent.atomic.AtomicInteger GATE_CHECKED_GATED = new java.util.concurrent.atomic.AtomicInteger(),
+            GATE_CHECKED_OPEN = new java.util.concurrent.atomic.AtomicInteger(),
+            GATE_DISAGREE = new java.util.concurrent.atomic.AtomicInteger(),
+            GATE_RESETS_PAUSED = new java.util.concurrent.atomic.AtomicInteger();
+
+    /**
+     * Recompute the bound with bookkeeping built afresh from {@link #increments}. A gated query must have no bound; an open
+     * query must get the same bound from the kept bookkeeping (unless it is paused, which the caller then refuses).
+     */
+    private void crossCheckGate(boolean gated, long theta) {
+        List<Long> u = new ArrayList<>();
+        Map<Integer, Integer> items = new java.util.HashMap<>();
+        java.util.HashSet<Integer> seen = new java.util.HashSet<>();
+        for (List<int[]> seq : increments) {
+            long s = 0; seen.clear();
+            for (int[] ev : seq) for (int k = 0; k < ev.length; k += 2) { s += ev[k + 1]; seen.add(ev[k]); }
+            u.add(s);
+            for (int x : seen) items.merge(x, 1, Integer::sum);
+        }
+        HeavyBound.Result fresh = HeavyBound.window(increments, u, items, theta, seedMaxReg);
+        if (gated) {
+            GATE_CHECKED_GATED.incrementAndGet();
+            if (fresh != null) GATE_DISAGREE.incrementAndGet();
+        } else if (!selectorBookPaused) {
+            GATE_CHECKED_OPEN.incrementAndGet();
+            HeavyBound.Result kept = HeavyBound.window(increments, windowSeqUtil, windowItemSeqs, theta, seedMaxReg);
+            boolean same = fresh == null ? kept == null : kept != null && kept.form == fresh.form && kept.log2 == fresh.log2;
+            if (!same) GATE_DISAGREE.incrementAndGet();
+        }
     }
 
     /** One cost-capped attempt from the anchor, given budgetNanos; on an abort the whole database is re-mined. */
@@ -1715,11 +1775,18 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
         increments.clear();
         windowSeqUtil.clear();
         windowItemSeqs.clear();
+        if (windowGate && selectorBookPaused) GATE_RESETS_PAUSED.incrementAndGet();
+        if (FAULT != 17) selectorBookPaused = false;                    // FAULT 17: the reset leaves the bookkeeping paused
     }
 
     /** Selector bookkeeping for a batch joining the window: per-sequence utility, per-item sequence counts. */
     private void noteWindow(List<List<int[]>> batch) {
         long t = System.nanoTime();
+        if (windowGate && (selectorBookPaused || HeavyBound.windowGated(increments.size(), seedMaxReg))) {
+            selectorBookPaused = true;                                  // increments already holds this batch
+            selectorBookNanos += System.nanoTime() - t;
+            return;
+        }
         java.util.HashSet<Integer> seen = new java.util.HashSet<>();
         for (List<int[]> seq : batch) {
             long u = 0;

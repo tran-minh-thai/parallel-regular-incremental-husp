@@ -26,7 +26,10 @@ BUD3 = "bud3-c0,bud3-c0.001,bud3-c1,bud3-c1000000000"
 
 # (name, JVM properties, expected): "zero" = no failing query; "some" = at least one failing query;
 # "zero+aborts" = no failing query over a run that aborted at least one discovery in mining;
-# "zero+skips" = no failing query over a run where the bound selector skipped at least one attempt.
+# "zero+skips" = no failing query over a run where the bound selector skipped at least one attempt;
+# "zero+gate" / "zero+gate+noskips" = as "zero" (with or without skips) over a bud3rbw run whose window gate closed at least
+# once, whose cross-check compared both gated and open queries with 0 disagreeing, and that met at least one anchor reset
+# with the bookkeeping paused (the path fault 17 breaks); "throws" = the run stops with bud3rbw's IllegalStateException.
 STRESS = [
     ("clean: all policies", [], "zero"),
     ("clean: dense co-occurrence build", ["-Deucs.build=dense", "-Dpolicies=keep-sfx," + BUD3], "zero"),
@@ -67,6 +70,14 @@ STRESS = [
      ["-DselectorRate=1", "-Dpolicies=keep-sfx," + BUD3.replace("bud3", "bud3rbx")], "zero+skips"),
     ("clean: bound selector (bud3rbx) never skipping at a positive budget",
      ["-DselectorRate=1e300", "-Dpolicies=keep-sfx," + BUD3.replace("bud3-c0,", "").replace("bud3", "bud3rbx")], "zero+noskips"),
+    # bud3rbw: the cross-check (-DgateCrossCheck) recomputes the bound from the raw window at every selector query.
+    ("clean: window gate (bud3rbw) skipping wherever a bound applies",
+     ["-DgateCrossCheck=true", "-DselectorRate=1", "-Dpolicies=keep-sfx," + BUD3.replace("bud3", "bud3rbw")], "zero+gate"),
+    ("clean: window gate (bud3rbw) never skipping at a positive budget",
+     ["-DgateCrossCheck=true", "-DselectorRate=1e300", "-Dpolicies=keep-sfx," + BUD3.replace("bud3-c0,", "").replace("bud3", "bud3rbw")],
+     "zero+gate+noskips"),
+    ("defect 17: the anchor reset leaves the selector bookkeeping paused",
+     ["-Dfault=17", "-DgateCrossCheck=true", "-DselectorRate=1", "-Dpolicies=bud3rbw-c1"], "throws"),
     ("clean: heap guard judged on the live heap (bud3live)", ["-Dpolicies=keep-sfx," + BUD3.replace("bud3", "bud3live")], "zero"),
     # A guard of a few bytes is breached at every attempt: bud3 aborts on the raw reading, bud3live collects and then aborts.
     ("clean: heap guard breached at every attempt, bud3 and bud3live",
@@ -87,6 +98,7 @@ STRESS = [
 RSV = "bud3rs-c0.001-e0,bud3rs-c1000000000"
 RB = "bud3rb-c0.1-e0"
 RX = "bud3rbx-c0.1-e0"
+RW = "bud3rbw-c0.1-e0"
 TINY_GUARD = "-DheapGuard=0.000000001"
 RESERVE = [
     ("reserve: probe on SIGN, then the reserve check", [], RSV, "pass"),
@@ -99,6 +111,8 @@ RESERVE = [
     ("bound selector (bud3rbx): probe on SIGN, then the reserve check", [TINY_GUARD, "-DselectorRate=1"], RX, "pass"),
     ("defect 14: the bound selector never skips", [TINY_GUARD, "-DselectorRate=1", "-Dfault=14"], RX, "fail"),
     ("defect 16: a bound skip is charged to the reserve", [TINY_GUARD, "-DselectorRate=1", "-Dfault=16"], RX, "fail"),
+    # bud3rbw on SIGN (B = 21): the window passes 2B within the run, so gated queries follow the open ones.
+    ("window gate (bud3rbw): probe on SIGN, then the reserve and gate check", [TINY_GUARD, "-DselectorRate=1"], RW, "pass"),
 ]
 
 
@@ -122,6 +136,13 @@ HEAVY_BOUND = [
 ]
 
 # (name, JVM properties, expected) for test.HeapValveCheck: "pass" = all four cases tested and correct; "fail" = a case fails.
+# (name, JVM properties, expected) for test.WindowGateCheck: "pass" = closed and open gates and boundary windows (n = 2B - 1)
+# with a form (b) bound all occur, and no closed gate hides a bound; "fail" = a violation (fault 18: closed at n >= 2B - 1).
+WINDOW_GATE = [
+    ("window gate: closed only where no bound exists, boundary n = 2B - 1", [], "pass"),
+    ("defect 18: the window gate closes one sequence early", ["-Dfault=18"], "fail"),
+]
+
 HEAP_VALVE = [
     ("heap valve: raw and live modes on garbage and on live data", [], "pass"),
     ("defect: live heap valve skips its collection", ["-Dheapvalve.fault=1"], "fail"),
@@ -156,7 +177,8 @@ def main(argv=None):
                       ("self-test: heap guard summary", [sys.executable, "tools/summarize_heap_guard.py", "--self-test"]),
                       ("self-test: reserve check", [sys.executable, "tools/check_reserve.py", "--self-test"]),
                       ("self-test: reserve-budget summary", [sys.executable, "tools/summarize_budget.py", "--self-test"]),
-                      ("self-test: bound selector summary", [sys.executable, "tools/summarize_selector.py", "--self-test"])):
+                      ("self-test: bound selector summary", [sys.executable, "tools/summarize_selector.py", "--self-test"]),
+                      ("self-test: window gate summary", [sys.executable, "tools/summarize_gate.py", "--self-test"])):
         if args.only and args.only not in name:
             continue
         p, secs = run(cmd)
@@ -169,6 +191,12 @@ def main(argv=None):
             continue
         cmd = ["java", "-Xmx4g"] + props + ["-cp", "out", "test.QueryScheduleStress", str(args.trials)]
         p, secs = run(cmd)
+        if expected == "throws":
+            ok = p.returncode != 0 and "IllegalStateException: bud3rbw" in p.stderr
+            detail = "exit %d, %s, expected throws (%.0f s)" % (p.returncode, "bud3rbw guard thrown" if ok else (p.stderr or p.stdout)[-200:], secs)
+            results.append((name, ok, detail))
+            print("%-70s %s  %s" % (name, "ok" if ok else "FAILED", detail), flush=True)
+            continue
         m = re.search(r"compared-queries=(\d+) with-non-empty-oracle=(\d+) failing=(\d+)", p.stdout)
         if not m:
             results.append((name, False, "no summary line; exit %d; %s" % (p.returncode, (p.stderr or p.stdout)[-300:])))
@@ -186,8 +214,13 @@ def main(argv=None):
             ok = ok and skips == 0
         if expected == "zero+skips":
             ok = ok and skips > 0
-        detail = "compared %d (non-empty %d), failing %d, aborts in mining %d, bound skips %d, expected %s (%.0f s)" % (
-            compared, nonempty, failing, aborts, skips, expected, secs)
+        mg = re.search(r"window-gate gated-queries=(\d+) cross-checked-gated=(\d+) cross-checked-open=(\d+) disagreeing=(\d+) resets-while-paused=(\d+)", p.stdout)
+        gq, cg, co, dis, rp = map(int, mg.groups()) if mg else (-1, -1, -1, -1, -1)
+        if expected.startswith("zero+gate"):
+            ok = ok and gq > 0 and cg > 0 and co > 0 and dis == 0 and rp > 0
+            ok = ok and ((skips == 0) if expected.endswith("noskips") else (skips > 0))
+        detail = "compared %d (non-empty %d), failing %d, aborts in mining %d, bound skips %d, gated %d, cross-checked %d/%d, disagreeing %d, resets while paused %d, expected %s (%.0f s)" % (
+            compared, nonempty, failing, aborts, skips, gq, cg, co, dis, rp, expected, secs)
         results.append((name, ok, detail))
         print("%-70s %s  %s" % (name, "ok" if ok else "FAILED", detail), flush=True)
 
@@ -211,15 +244,16 @@ def main(argv=None):
         checked, problems = (int(mc.group(1)), int(mc.group(2))) if mc else (0, -1)
         aborts, refusals = log.count(",aborted,"), log.count(",gated,")
         bounded, discovers = log.count(",bounded,"), log.count(",discover,")
-        rx = policies.startswith("bud3rbx")
+        rx = policies.split("-")[0] in ("bud3rbx", "bud3rbw")
         rb = policies.startswith("bud3rb") and not rx
         if expected == "pass":
             ok = c.returncode == 0 and checked > 0 and problems == 0 and aborts > 0 and refusals > 0 and (capped > 0 or not rb)
             ok = ok and (not rx or (bounded > 0 and aborts + discovers > 0))
+            ok = ok and (not policies.startswith("bud3rbw") or log.count(",window,") > 0)   # the gate closed at least once
         else:
             ok = c.returncode != 0 and problems > 0
-        detail = "probe compared %s failing %s; reserve check %d queries, %d problems; %d aborts, %d refusals, %d capped, %d bounded, expected %s (%.0f s)" % (
-            m.group(1), m.group(2), checked, problems, aborts, refusals, capped, bounded, expected, secs)
+        detail = "probe compared %s failing %s; reserve check %d queries, %d problems; %d aborts, %d refusals, %d capped, %d bounded, %d gated by window, expected %s (%.0f s)" % (
+            m.group(1), m.group(2), checked, problems, aborts, refusals, capped, bounded, log.count(",window,"), expected, secs)
         results.append((name, ok, detail))
         print("%-70s %s  %s" % (name, "ok" if ok else "FAILED", detail), flush=True)
 
@@ -240,6 +274,25 @@ def main(argv=None):
             ok = sv + wv > 0
         detail = "sequences %d (violations %d), windows %d (violations %d, form a %d, form b %d), expected %s (%.0f s)" % (
             st, sv, wt, wv, fa, fb, expected, secs)
+        results.append((name, ok, detail))
+        print("%-70s %s  %s" % (name, "ok" if ok else "FAILED", detail), flush=True)
+
+    for name, props, expected in WINDOW_GATE:
+        if args.only and args.only not in name:
+            continue
+        p, secs = run(["java", "-Xmx2g"] + props + ["-cp", "out", "test.WindowGateCheck"])
+        m = re.search(r"windows tested=(\d+) violations=(\d+) closed=(\d+) open-with-bound=(\d+) boundary=(\d+) boundary-with-form-b=(\d+) closed-with-bound=(\d+)", p.stdout)
+        if not m:
+            results.append((name, False, "no summary line; exit %d; %s" % (p.returncode, (p.stderr or p.stdout)[-300:])))
+            print("%-70s FAILED (no summary)" % name, flush=True)
+            continue
+        wt, wv, wc, wo, wb, wbb, wcb = map(int, m.groups())
+        if expected == "pass":
+            ok = p.returncode == 0 and wt > 0 and wv == 0 and wc > 0 and wo > 0 and wbb > 0 and wcb == 0
+        else:
+            ok = wv > 0
+        detail = "windows %d, violations %d, closed %d, open with a bound %d, boundary %d (form b %d), closed with a bound %d, expected %s (%.0f s)" % (
+            wt, wv, wc, wo, wb, wbb, wcb, expected, secs)
         results.append((name, ok, detail))
         print("%-70s %s  %s" % (name, "ok" if ok else "FAILED", detail), flush=True)
 

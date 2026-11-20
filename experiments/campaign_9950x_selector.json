@@ -453,6 +453,83 @@
         "-Dwarmup=true",
         "-DselectorRate=1e8"
       ]
+    },
+    "E2W": {
+      "about": "window gate (bud3rbw): the 11 pairs whose E2X selector time at windows of at least 2B sequences was at least 0.5% of F; four runs, every policy once in every position",
+      "pairs": [
+        [
+          "DUNNHUMBY-H",
+          "S1"
+        ],
+        [
+          "DUNNHUMBY-H",
+          "S2"
+        ],
+        [
+          "DUNNHUMBY-H",
+          "S3"
+        ],
+        [
+          "DUNNHUMBY-HW",
+          "S1"
+        ],
+        [
+          "DUNNHUMBY-HW",
+          "S3"
+        ],
+        [
+          "HM-CW-TYPE",
+          "S3"
+        ],
+        [
+          "HM-CW-TYPE-12W",
+          "S3"
+        ],
+        [
+          "ONLINE-RETAIL-II-H",
+          "S1"
+        ],
+        [
+          "ONLINE-RETAIL-II-H",
+          "S2"
+        ],
+        [
+          "ONLINE-RETAIL-II-H",
+          "S3"
+        ],
+        [
+          "REES46-COSMETICS-CW",
+          "S3"
+        ]
+      ],
+      "policies": [
+        "remine-nogc",
+        "bud3rb",
+        "bud3rbx",
+        "bud3rbw"
+      ],
+      "reps": 4,
+      "rotate": true,
+      "oracle": "first",
+      "limit_s": 3600,
+      "props": [
+        "-Dwarmup=true",
+        "-DselectorRate=1e8"
+      ]
     }
-  }
+  },
+  "gate_w3_excluded": [
+    [
+      "DUNNHUMBY-H",
+      "S2"
+    ],
+    [
+      "HM-CW-TYPE-12W",
+      "S3"
+    ],
+    [
+      "ONLINE-RETAIL-II-H",
+      "S2"
+    ]
+  ]
 }
