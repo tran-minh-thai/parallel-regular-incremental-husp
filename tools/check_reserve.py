@@ -28,6 +28,9 @@ bud3rbw (bud3rbx with the window gate) is checked as bud3rbx, and also: wherever
 exactly when increment_seqs >= 2 * selector_b (the B the gate compared with); a gated row has no bound; selector_b is
 logged there and never rises from one query to a later one (the argument that pausing the bookkeeping is safe needs it).
 
+When the log has the column seed_gc (collections inside the clock, MemMeter.reset calls since the previous row): every row of a
+policy without the part "sgc" has 0; a policy with "sgc" (the control that keeps the seed's collection) has at least 1 at q0.
+
 Checked per query: the logged reserve equals the recomputed one, the gate decision matches the rule, and the
 charge does not exceed the query time the probe measured with its own clock. Per run: total cost minus the run's own
 re-mine cost (sum of aborted charges plus completed charges minus their F_hat) is at most
@@ -65,9 +68,16 @@ def check_policy(name, rows):
     premiums = 0
     counts = {"discover": 0, "aborted": 0, "gated": 0, "skipped": 0, "bounded": 0, "other": 0}
     checked = 0
+    sgc = "sgc" in name.split("-")[1:]
     for i, r in enumerate(rows):
         act = r["action"]
         logged = int(r["reserve_us"] or 0)
+        if r.get("seed_gc", "") != "":
+            g = int(r["seed_gc"])
+            if not sgc and g != 0:
+                problems.append("%s q%s: %d collection(s) inside the clock" % (name, r["query"], g))
+            if sgc and i == 0 and g < 1:
+                problems.append("%s q0: the -sgc control has no collection in the seed" % name)
         if i == 0:
             if act != "seed" or logged != 0:
                 problems.append("%s q0: expected a fused seed with reserve 0, got %r reserve %d" % (name, act, logged))
@@ -324,6 +334,17 @@ def self_test():
     case_w("defect: selector_b rises", bad, False)
     bad = [dict(r) for r in ws]; bad[2]["selector_b"] = ""
     case_w("defect: the selector ran without selector_b", bad, False)
+    # seed_gc: the clean trajectory with 0 everywhere passes; one collection in the seed fails; the -sgc control needs one at q0.
+    def gcs(rows, values):
+        out = [dict(r) for r in rows]
+        for r, v in zip(out, values): r["seed_gc"] = str(v)
+        return out
+    case("clean seed_gc: no collection in the clock", gcs(aborts, [0] * len(aborts)), True)
+    case("defect 19: a collection in the seed's clock", gcs(aborts, [1] + [0] * (len(aborts) - 1)), False)
+    n, p, _ = check_policy("bud3rs-sgc", gcs(aborts, [1] + [0] * (len(aborts) - 1)))
+    cases.append(("clean -sgc control: one collection at q0", not p and n > 0, "%d checked, %d problems" % (n, len(p))))
+    n, p, _ = check_policy("bud3rs-sgc", gcs(aborts, [0] * len(aborts)))
+    cases.append(("defect: the -sgc control without its collection", bool(p), "%d checked, %d problems" % (n, len(p))))
     n, p, _ = check_policy("bud3rs", [row(0, "seed", 0, 0, 0, 5)])
     cases.append(("vacuous: nothing after the seed is not a pass", n == 0, "%d checked" % n))
     for name, ok, detail in cases:
