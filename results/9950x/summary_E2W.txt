@@ -1,0 +1,21 @@
+dataset  schedule  runs  F_ms  bud3rb_over_F  bud3rbx_over_F  bud3rbw_over_F  w_minus_x  w5_tol  bud3rbx_selector_long_over_F  skips_per_run  w7_vs_E2X  checks
+DUNNHUMBY-H  S1  4  1503  1.435  1.512  1.431  -0.081  0.120  0.056  0/0/0/0  bud3rbx -0.117 (2se 0.229); bud3rb -0.165 (2se 0.225)  W6 ok; W4 ok; W5 ok
+DUNNHUMBY-H  S2  4  884  1.796  1.562  1.547  -0.015  0.164  0.018  1/1/1/1  bud3rbx -0.043 (2se 0.312); bud3rb -0.004 (2se 0.149)  W6 ok; W5 ok
+DUNNHUMBY-H  S3  4  430  2.383  2.456  2.240  -0.215  0.534  0.155  0/0/0/0  bud3rbx -0.202 (2se 0.797); bud3rb -0.149 (2se 0.437)  W6 FAIL; W4 ok; W5 ok
+DUNNHUMBY-HW  S1  4  8012  1.175  1.162  1.154  -0.009  0.026  0.009  1/1/1/1  bud3rbx -0.066 (2se 0.037); bud3rb -0.121 (2se 0.039)  W6 ok; W5 ok
+DUNNHUMBY-HW  S3  4  1986  1.143  0.949  0.882  -0.067  0.292  0.038  0/0/0/0  bud3rbx -0.014 (2se 0.241); bud3rb -0.121 (2se 0.587)  W6 ok; W4 ok; W5 ok
+HM-CW-TYPE  S3  4  23036  0.455  0.460  0.448  -0.013  0.025  0.014  0/0/0/0  bud3rbx -0.007 (2se 0.031); bud3rb -0.001 (2se 0.031)  W6 ok; W4 ok; W5 ok
+HM-CW-TYPE-12W  S3  4  1567  0.754  0.705  0.716  +0.012  0.260  0.006  0/0/0/0  bud3rbx -0.048 (2se 0.239); bud3rb +0.009 (2se 0.192)  W6 ok; W4 ok; W5 ok
+ONLINE-RETAIL-II-H  S1  4  884  1.652  1.771  1.902  +0.131  0.289  0.030  0/0/0/0  bud3rbx -0.045 (2se 0.200); bud3rb -0.045 (2se 0.227)  W6 ok; W4 FAIL; W5 ok
+ONLINE-RETAIL-II-H  S2  4  414  2.197  1.830  1.828  -0.002  0.287  0.016  2/2/2/2  bud3rbx -0.007 (2se 0.412); bud3rb +0.086 (2se 0.279)  W6 ok; W5 ok
+ONLINE-RETAIL-II-H  S3  4  223  3.396  3.434  3.263  -0.171  0.913  0.109  0/0/0/0  bud3rbx -0.038 (2se 1.041); bud3rb -0.278 (2se 1.019)  W6 FAIL; W4 ok; W5 ok
+REES46-COSMETICS-CW  S3  4  4198  1.399  1.312  1.290  -0.022  0.049  0.008  1/1/1/1  bud3rbx -0.021 (2se 0.063); bud3rb -0.041 (2se 0.079)  W6 ok; W5 ok
+W1: 1320 queries of the policies after the first compared with the first, 0 disagreeing
+W2: 1188 bud3rb, bud3rbx and bud3rbw queries checked against the reserve, selector and gate rules
+W3: selector time above 2% of F in 0 of 32 runs; excluded pairs, per run: DUNNHUMBY-H S2 1.3%, DUNNHUMBY-H S2 1.4%, DUNNHUMBY-H S2 1.3%, DUNNHUMBY-H S2 3.2%, HM-CW-TYPE-12W S3 1.6%, HM-CW-TYPE-12W S3 1.7%, HM-CW-TYPE-12W S3 2.2%, HM-CW-TYPE-12W S3 2.7%, ONLINE-RETAIL-II-H S2 2.2%, ONLINE-RETAIL-II-H S2 2.5%, ONLINE-RETAIL-II-H S2 2.5%, ONLINE-RETAIL-II-H S2 6.4%
+W4: 6 of 7 pairs as predicted
+W5: 11 of 11 pairs as predicted
+W6: 9 of 11 pairs as predicted
+FAILED W6 DUNNHUMBY-H S3
+FAILED W4 ONLINE-RETAIL-II-H S1: bud3rbw/F 1.902 > bud3rb/F 1.652 + 0.02
+FAILED W6 ONLINE-RETAIL-II-H S3
