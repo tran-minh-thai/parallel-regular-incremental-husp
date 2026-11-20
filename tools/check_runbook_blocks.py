@@ -143,10 +143,10 @@ def seed_repos(T, report, followup, reserve=False, budget=False, selector=False,
             (seed / "experiments/campaign_9950x_budget.json").write_text('{"experiments": {"E2B": {}}}\n')
             (seed / "tools/summarize_budget.py").write_text("\n")
         if selector:
-            (seed / "experiments/campaign_9950x_selector.json").write_text(
-                '{"experiments": {"E2X": {}, "E2W": {}}}\n' if gate else '{"experiments": {"E2X": {}}}\n')
+            (seed / "experiments/campaign_9950x_selector.json").write_text('{"experiments": {"E2X": {}}}\n')
             (seed / "tools/summarize_selector.py").write_text("\n")
         if gate:
+            (seed / "experiments/campaign_9950x_gate.json").write_text('{"experiments": {"E2W": {}}}\n')
             (seed / "tools/summarize_gate.py").write_text("\n")
         git("add", "-A", cwd=seed)
         git("-c", "user.name=S", "-c", "user.email=s@x", "commit", "-q", "-m", "follow-up", cwd=seed)
@@ -415,7 +415,7 @@ BUDGET_SPEC = {"tag": "budget", "cfg": "experiments/campaign_9950x_budget.json",
 SELECTOR_SPEC = {"tag": "selector", "cfg": "experiments/campaign_9950x_selector.json", "summarizer": "summarize_selector.py",
                  "summary": "summary_E2X", "repeats": "E2XR", "first_line": "X0:", "calibration": "results/9950x/selector_rate.txt",
                  "runs": ["run --exp E2X --exp E2X-152 --interleave"]}
-GATE_SPEC = {"tag": "gate", "cfg": "experiments/campaign_9950x_selector.json", "summarizer": "summarize_gate.py",
+GATE_SPEC = {"tag": "gate", "cfg": "experiments/campaign_9950x_gate.json", "summarizer": "summarize_gate.py",
              "summary": "summary_E2W", "repeats": None, "first_line": "W1:", "runs": ["run --exp E2W --interleave"]}
 
 

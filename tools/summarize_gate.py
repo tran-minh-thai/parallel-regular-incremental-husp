@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Summarise the window-gate experiment (E2W): F (remine-nogc), bud3rb, bud3rbx and bud3rbw in one JVM per cell.
 
-    python3 tools/summarize_gate.py [--config experiments/campaign_9950x_selector.json]
+    python3 tools/summarize_gate.py [--config experiments/campaign_9950x_gate.json]
     python3 tools/summarize_gate.py --self-test
 
 Reads <out>/cells.tsv and every recorded cell of the experiments whose name starts with E2W. Per (dataset, schedule) and
@@ -39,7 +39,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
 import check_reserve  # noqa: E402
 
-CONFIG = ROOT / "experiments" / "campaign_9950x_selector.json"
+CONFIG = ROOT / "experiments" / "campaign_9950x_gate.json"
 POLICIES = ("remine-nogc", "bud3rb", "bud3rbx", "bud3rbw")
 
 
@@ -82,6 +82,8 @@ def summarize(cfg, root):
     w1_n = w1_bad = w2_n = w3_runs = w3_bad = 0
     w3_excl = []
     for r in ledger:
+        if not r["experiment"].startswith(("E2X", "E2W")) or r["dataset"] not in cfg["datasets"]:
+            continue                                  # other experiments share the ledger; E2X is read for W7 only
         key = (r["dataset"], r["schedule"])
         B = int(cfg["datasets"][r["dataset"]]["B"])
         if r["experiment"].startswith("E2X") and r["status"] == "OK":
