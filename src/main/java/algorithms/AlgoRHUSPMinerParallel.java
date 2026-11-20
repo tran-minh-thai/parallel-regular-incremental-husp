@@ -82,6 +82,8 @@ public class AlgoRHUSPMinerParallel {
     private final LongAdder prunedBoundA = new LongAdder();
     private final LongAdder prunedNodeCondA = new LongAdder();
     private final LongAdder prunedRegularityA = new LongAdder();
+    /** Nodes explored by every run of this engine class in this JVM, aborted runs included (read by the probes per query). */
+    public static final java.util.concurrent.atomic.AtomicLong NODES_TOTAL = new java.util.concurrent.atomic.AtomicLong();
     public long exploredNodes, candidateCount;
     public long prunedEucs, prunedBound, prunedNodeCond, prunedRegularity;
 
@@ -425,6 +427,7 @@ public class AlgoRHUSPMinerParallel {
             cpuEndNanos = THREAD_MX.isCurrentThreadCpuTimeSupported()
                     ? THREAD_MX.getCurrentThreadCpuTime() : -1L;
             maxMemory = MemMeter.peakBytes(); // true peak for this run
+            NODES_TOTAL.addAndGet(exploredNodesA.sum());
         }
 
         // Merge atomic counters into public fields

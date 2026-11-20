@@ -1,0 +1,19 @@
+{
+  "kind": "probe",
+  "cell": "E2C-probe-S1",
+  "command": "java -Dthreads=10 -Ddold=0.5 -Doracle=first -Dlimit=3600 -Dout=<scratch>/probe_clock -Dcell=E2C-probe-S1 -Dkind=probe -Dwarmup=true -DselectorRate=1e8 test.QueryScheduleProbe datasets/ONLINE-RETAIL-II-H_seq.txt datasets/ONLINE-RETAIL-II-H_eui.txt 0.0002 68 21 every remine-nogc,bud3rbw,bud3rbw-sgc",
+  "git_commit": "8ec2b06287d1462570f18aae3ecb4c63b31230a9",
+  "tree": "MODIFIED (4 files)",
+  "sha256_AlgoPRIncHUSP": "ae23c56d78d922a31824cf58ed6d9aafdc3bf3b8fbabc38020d2392816d7cb4b",
+  "sha256_AlgoParRemine": "1c2d15b22aa6bef9a6bc5f24022edb6b4b564bba984c6cd07f932e6c335364e4",
+  "sha256_AlgoRHUSPMinerParallel": "a398532322f9c241d78a79fe6a519579408b4600eb5881cf1832222f1b92a28c",
+  "sha256_QueryScheduleProbe": "34d8d6213c621eb231124d37f415160b783931aecf64109b6b80baa4be7d19dc",
+  "sha256_HeavyBound": "f5353c402571d382165a4542d0ca23cd850cf1454d24a131eb7834626c650a7d",
+  "sha256_seq": "cf312cdb3baa15dbebc117b5d345c0d3754ecc64dec00599e50fa96500385f83",
+  "sha256_eui": "5863fa3867809c97a311db50cb9422a5a638d0a82d18bb569bcd3aad0f3d687b",
+  "java": "25.0.4.1+1-LTS Eclipse Adoptium",
+  "os": "Mac OS X 27.2.1 aarch64",
+  "threads": "10",
+  "max_heap_mb": "16384",
+  "started": "2026-11-20T20:42:07+07:00"
+}

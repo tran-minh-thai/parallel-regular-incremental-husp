@@ -32,7 +32,11 @@ public final class MemMeter {
     private MemMeter() {}
 
     /** Run GC to clear the previous run's garbage, then reset the peak baseline of every heap pool to the current level. */
+    /** Calls of {@link #reset()} so far in this JVM (read by the probes to tell which queries collected inside their clock). */
+    public static final java.util.concurrent.atomic.AtomicLong RESETS = new java.util.concurrent.atomic.AtomicLong();
+
     public static void reset() {
+        RESETS.incrementAndGet();
         gc();
         for (MemoryPoolMXBean p : ManagementFactory.getMemoryPoolMXBeans()) {
             if (p.getType() == MemoryType.HEAP) {

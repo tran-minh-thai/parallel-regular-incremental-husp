@@ -1,0 +1,21 @@
+# command: python3 tools/run_tests.py --only bud3rb  (three times in a row)
+# tree: 8ec2b06 plus the seed clock changes and RB = bud3rb-c0.2-e0 in tools/run_tests.py
+# machine: development machine (feasibility checks, not measurements)
+ok
+defect 10 under bud3rb: a refused attempt answers from the stale set   ok  compared 1354 (non-empty 1332), failing 505, aborts in mining 19, bound skips 0, gated 0, cross-checked 0/0, disagreeing 0, r
+reserve budget (bud3rb): probe on SIGN, then the reserve check         ok  probe compared 15 failing 0; reserve check 14 queries, 0 problems; 2 aborts, 11 refusals, 1 capped, 0 bounded, 0 gated by win
+defect 12: the bud3rb budget ignores the reserve                       ok  probe compared 15 failing 0; reserve check 14 queries, 2 problems; 2 aborts, 11 refusals, 0 capped, 0 bounded, 0 gated by win
+defect 13: the bud3rb deadline keeps the full budget                   ok  probe compared 15 failing 0; reserve check 14 queries, 1 problems; 2 aborts, 11 refusals, 1 capped, 0 bounded, 0 gated by win
+11/11 tests as expected
+defect 10 under bud3rb: a refused attempt answers from the stale set   ok  compared 1354 (non-empty 1332), failing 501, aborts in mining 18, bound skips 0, gated 0, cross-checked 0/0, disagreeing 0, r
+reserve budget (bud3rb): probe on SIGN, then the reserve check         ok  probe compared 15 failing 0; reserve check 14 queries, 0 problems; 2 aborts, 11 refusals, 1 capped, 0 bounded, 0 gated by win
+defect 12: the bud3rb budget ignores the reserve                       ok  probe compared 15 failing 0; reserve check 14 queries, 2 problems; 2 aborts, 11 refusals, 0 capped, 0 bounded, 0 gated by win
+defect 13: the bud3rb deadline keeps the full budget                   ok  probe compared 15 failing 0; reserve check 14 queries, 1 problems; 2 aborts, 11 refusals, 1 capped, 0 bounded, 0 gated by win
+11/11 tests as expected
+defect 10 under bud3rb: a refused attempt answers from the stale set   ok  compared 1354 (non-empty 1332), failing 501, aborts in mining 20, bound skips 0, gated 0, cross-checked 0/0, disagreeing 0, r
+reserve budget (bud3rb): probe on SIGN, then the reserve check         ok  probe compared 15 failing 0; reserve check 14 queries, 0 problems; 2 aborts, 11 refusals, 1 capped, 0 bounded, 0 gated by win
+defect 12: the bud3rb budget ignores the reserve                       ok  probe compared 15 failing 0; reserve check 14 queries, 2 problems; 2 aborts, 11 refusals, 0 capped, 0 bounded, 0 gated by win
+defect 13: the bud3rb deadline keeps the full budget                   ok  probe compared 15 failing 0; reserve check 14 queries, 1 problems; 2 aborts, 11 refusals, 1 capped, 0 bounded, 0 gated by win
+11/11 tests as expected
+
+[exited with code 0]

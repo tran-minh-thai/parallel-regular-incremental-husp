@@ -432,6 +432,11 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
             e.seedMode = true;                                   // keep seeds with a large trailing gap
             e.floorPrune = floorPruneSeeds && soundCeilingBound();
             e.forcedMinUtil = (long) Math.ceil(bufferThreshold); // θ = μ_min · minUtil
+            // The seed measures memory only as every other run of the policy does: a measuring engine collects garbage
+            // before its timer (MemMeter.reset), which would put a collection inside the seed's clock, and the fused seed's
+            // time is F_hat of the first attempt. seedMeasuresMemory keeps the earlier behaviour as a control.
+            // FAULT 19: the seed measures memory regardless.
+            e.measureMemory = measureMemoryOnQuery || seedMeasuresMemory || FAULT == 19;
             return e;
         };
         int[] seededAt = new int[1];
@@ -1337,6 +1342,8 @@ public class AlgoPRIncHUSP implements IncrementalHUSPMiner {
      * leaves the bookkeeping paused.
      */
     public boolean windowGate = false;
+    /** Control (-sgc): the seed's engine measures memory, so it collects garbage inside the seed's time, as before 2026-11-21. */
+    public boolean seedMeasuresMemory = false;
     private boolean selectorBookPaused = false;
     /** Per query, read by the probes: whether the window gate answered for the selector, and the B it compared with. */
     public boolean lastBoundGated;

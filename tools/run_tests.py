@@ -92,11 +92,12 @@ STRESS = [
 # bud3rb needs a reserve that is positive but below c * F_hat, or its capped budget never differs from bud3rs's (measured:
 # with the bud3rs settings above the bud3rb log is the bud3rs log, and defects 12 and 13 went uncaught). A heap guard of a
 # few bytes aborts every attempt within milliseconds; with c = 0.1 and no premium the first abort leaves a reserve below
-# the next c * F_hat (measured on SIGN: 6.9 ms left, next full budget 23 ms), so the second attempt runs on a capped budget,
-# and the reserve is then negative and refuses the rest. With c = 1 the reserve stays above c * F_hat on SIGN, whose F_hat
-# falls as the JVM warms (measured: 0 capped attempts). "pass" for bud3rb also requires at least one capped attempt.
+# the next c * F_hat, so a later attempt runs on a capped budget, and the reserve is then negative and refuses the rest.
+# "pass" for bud3rb also requires at least one capped attempt. c was 0.1 while the fused seed collected garbage inside its
+# clock; without that collection F_hat at q1 is smaller, and c = 0.1 leaves a negative reserve after the first abort (measured
+# 2026-11-20 on SIGN: 1 abort, 13 refusals, 0 capped; c = 0.2 and 0.3: 2 capped; c = 0.5 and 1: 1 capped, no refusal).
 RSV = "bud3rs-c0.001-e0,bud3rs-c1000000000"
-RB = "bud3rb-c0.1-e0"
+RB = "bud3rb-c0.2-e0"
 RX = "bud3rbx-c0.1-e0"
 RW = "bud3rbw-c0.1-e0"
 TINY_GUARD = "-DheapGuard=0.000000001"
@@ -143,6 +144,15 @@ WINDOW_GATE = [
     ("defect 18: the window gate closes one sequence early", ["-Dfault=18"], "fail"),
 ]
 
+# (name, JVM properties, expected) for the seed clock: test.QueryScheduleProbe on SIGN with F, bud3rbw and its -sgc control,
+# then tools/check_reserve.py. "pass" = probe exact, reserve check clean (it requires seed_gc = 0 on every row of bud3rbw and >= 1
+# at q0 of the control), F has no collection either, and at q0 the seed explored as many nodes as the control and at least as many
+# as F's re-mine (the seed explores every node of the re-mine); "fail" = the reserve check reports (fault 19: the seed collects).
+SEED_CLOCK = [
+    ("seed clock: no collection in the fused seed, -sgc control keeps it", [], "pass"),
+    ("defect 19: the fused seed collects garbage inside its clock", ["-Dfault=19"], "fail"),
+]
+
 HEAP_VALVE = [
     ("heap valve: raw and live modes on garbage and on live data", [], "pass"),
     ("defect: live heap valve skips its collection", ["-Dheapvalve.fault=1"], "fail"),
@@ -178,7 +188,8 @@ def main(argv=None):
                       ("self-test: reserve check", [sys.executable, "tools/check_reserve.py", "--self-test"]),
                       ("self-test: reserve-budget summary", [sys.executable, "tools/summarize_budget.py", "--self-test"]),
                       ("self-test: bound selector summary", [sys.executable, "tools/summarize_selector.py", "--self-test"]),
-                      ("self-test: window gate summary", [sys.executable, "tools/summarize_gate.py", "--self-test"])):
+                      ("self-test: window gate summary", [sys.executable, "tools/summarize_gate.py", "--self-test"]),
+                      ("self-test: seed clock summary", [sys.executable, "tools/summarize_clock.py", "--self-test"])):
         if args.only and args.only not in name:
             continue
         p, secs = run(cmd)
@@ -293,6 +304,35 @@ def main(argv=None):
             ok = wv > 0
         detail = "windows %d, violations %d, closed %d, open with a bound %d, boundary %d (form b %d), closed with a bound %d, expected %s (%.0f s)" % (
             wt, wv, wc, wo, wb, wbb, wcb, expected, secs)
+        results.append((name, ok, detail))
+        print("%-70s %s  %s" % (name, "ok" if ok else "FAILED", detail), flush=True)
+
+    for name, props, expected in SEED_CLOCK:
+        if args.only and args.only not in name:
+            continue
+        with tempfile.TemporaryDirectory() as tmp:
+            p, secs = run(["java", "-Xmx2g"] + props + ["-DselectorRate=1e8", "-Dthreads=2", "-Dout=" + tmp, "-cp", "out",
+                                                       "test.QueryScheduleProbe", "datasets/SIGN_seq.txt", "datasets/SIGN_eui.txt",
+                                                       "0.005", "21", "16", "every", "remine-nogc,bud3rbw-c1,bud3rbw-c1-sgc"])
+            runs = [d for d in Path(tmp).iterdir() if d.is_dir()]
+            m = re.search(r"compared queries=(\d+) failing=(\d+)", p.stdout)
+            if p.returncode != 0 or not m or len(runs) != 1:
+                results.append((name, False, "probe exit %d, %d run directories; %s" % (p.returncode, len(runs), (p.stderr or p.stdout)[-300:])))
+                print("%-70s FAILED (probe)" % name, flush=True)
+                continue
+            c = subprocess.run([sys.executable, "tools/check_reserve.py", str(runs[0])], cwd=str(ROOT), capture_output=True, text=True)
+            rows = list(csv.DictReader(open(runs[0] / "exactness.csv", encoding="utf-8", newline="")))
+        mc = re.search(r"reserve check: (\d+) queries checked, (\d+) problems", c.stdout)
+        checked, problems = (int(mc.group(1)), int(mc.group(2))) if mc else (0, -1)
+        gcF = sum(int(r["seed_gc"]) for r in rows if r["policy"] == "remine-nogc")
+        q0 = {r["policy"]: int(r["engine_nodes"]) for r in rows if r["query"] == "0"}
+        nodes_ok = q0.get("bud3rbw-c1", -1) == q0.get("bud3rbw-c1-sgc", -2) and q0.get("bud3rbw-c1", -1) >= q0.get("remine-nogc", 1 << 62)
+        if expected == "pass":
+            ok = c.returncode == 0 and checked > 0 and problems == 0 and int(m.group(2)) == 0 and gcF == 0 and nodes_ok
+        else:
+            ok = c.returncode != 0 and problems > 0
+        detail = "probe compared %s failing %s; reserve check %d queries, %d problems; F collections %d; q0 nodes F %s, seed %s, control %s, expected %s (%.0f s)" % (
+            m.group(1), m.group(2), checked, problems, gcF, q0.get("remine-nogc"), q0.get("bud3rbw-c1"), q0.get("bud3rbw-c1-sgc"), expected, secs)
         results.append((name, ok, detail))
         print("%-70s %s  %s" % (name, "ok" if ok else "FAILED", detail), flush=True)
 
