@@ -1,0 +1,16 @@
+dataset,policy,batches,schedule,fault,query,after_batch,ingest_ms,query_ms,discovery_mine_ms,rebuild_ms,seed_ms
+KOSARAK,bud3rbw-sgc,21,every:4,0,0,4,0,2388,2388,0,0
+KOSARAK,bud3rbw-sgc,21,every:4,0,1,8,306,457,450,0,
+KOSARAK,bud3rbw-sgc,21,every:4,0,2,12,127,860,858,0,
+KOSARAK,bud3rbw-sgc,21,every:4,0,3,16,89,1053,1052,0,
+KOSARAK,bud3rbw-sgc,21,every:4,0,4,20,120,1251,1250,0,
+KOSARAK,remine-nogc,21,every:4,0,0,4,0,1749,,,1
+KOSARAK,remine-nogc,21,every:4,0,1,8,0,2097,,,
+KOSARAK,remine-nogc,21,every:4,0,2,12,0,2678,,,
+KOSARAK,remine-nogc,21,every:4,0,3,16,0,2706,,,
+KOSARAK,remine-nogc,21,every:4,0,4,20,0,3260,,,
+KOSARAK,bud3rbw,21,every:4,0,0,4,0,1911,1911,0,0
+KOSARAK,bud3rbw,21,every:4,0,1,8,126,350,350,0,
+KOSARAK,bud3rbw,21,every:4,0,2,12,125,783,783,0,
+KOSARAK,bud3rbw,21,every:4,0,3,16,91,936,935,0,
+KOSARAK,bud3rbw,21,every:4,0,4,20,117,1322,1321,0,
