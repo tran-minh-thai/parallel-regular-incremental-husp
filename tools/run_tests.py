@@ -40,7 +40,13 @@ STRESS = [
     ("defect 1: discovery threshold one unit too high", ["-Dfault=1", "-Dpolicies=keep-sfx"], "some"),
     ("defect 2: anchor reset drops the raw increment", ["-Dfault=2", "-Dpolicies=reset-sfx"], "some"),
     ("defect 3: fresh candidates rebuilt from the increment only", ["-Dfault=3", "-Dpolicies=keep-sfx"], "some"),
-    ("defect 4: half-built candidates left in the tracked set (measured harmless)", ["-Dfault=4", "-Dpolicies=" + BUD3], "zero"),
+    # Defect 4 was once listed as measured harmless under bud3 (expected zero): there the window backoff re-mines after an
+    # abort, so the half-built candidates are rarely read. The measurement machine then found 1 failing query over 2708
+    # (2026-11-21), so "harmless" only meant "rarely given the chance". As defect 6, it is now checked where it must act: the
+    # test hook aborts mid-rebuild under bud and bud2, which answer from the tracked set after an abort (measured on the
+    # development machine three times: 9, 10 and 10 failing over 1354 queries; clean twin: 0).
+    ("defect 4: half-built candidates left in the tracked set",
+     ["-Dfault=4", "-DforceMidCandidateAbort=true", "-Dpolicies=bud2-c1000000000,bud-c1000000000"], "some"),
     ("defect 5: aborted discovery skips the fallback re-mine", ["-Dfault=5", "-Dpolicies=" + BUD3], "some"),
     # Defect 6 needs a query after the abort that answers from the tracked set. bud3 re-mines the queries after an
     # abort (window backoff), so there the defect cannot act (measured: 0 failing over 2708 queries). bud and bud2
