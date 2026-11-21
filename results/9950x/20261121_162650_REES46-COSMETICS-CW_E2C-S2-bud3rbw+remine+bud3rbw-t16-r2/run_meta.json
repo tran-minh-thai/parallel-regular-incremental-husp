@@ -1,0 +1,19 @@
+{
+  "kind": "measurement",
+  "cell": "E2C-S2-bud3rbw+remine+bud3rbw-t16-r2",
+  "command": "java -Dthreads=16 -Ddold=0.9 -Doracle=first -Dlimit=3600 -Dout=results/9950x -Dcell=E2C-S2-bud3rbw+remine+bud3rbw-t16-r2 -Dkind=measurement -Dwarmup=true -DselectorRate=1e8 test.QueryScheduleProbe datasets/REES46-COSMETICS-CW_seq.txt datasets/REES46-COSMETICS-CW_eui.txt 0.0002 13600 11 every bud3rbw-sgc,remine-nogc,bud3rbw",
+  "git_commit": "641c7da59c3d7b0b3f2297a7e396c7c49c315c40",
+  "tree": "clean",
+  "sha256_AlgoPRIncHUSP": "5c22211b35309f397f99941c3b8d1f0738905125febe8cc8ddc14e53597a5507",
+  "sha256_AlgoParRemine": "d0be829fcd600b10e8fd7de3407d8177f6dbab97214ed67c2c7c6ff4149b8989",
+  "sha256_AlgoRHUSPMinerParallel": "50eae0ac9635402d566d9e344ce70e7d5582a1c0857d88657d6b183e290c0bef",
+  "sha256_QueryScheduleProbe": "c994038337f07a58e1172d7289994d7b6a797ef322abe92a2ab182f29da79d07",
+  "sha256_HeavyBound": "254af073628b858056c02f541a9e2f5df06c4d538d99d71182ec0ea45ff9e9c5",
+  "sha256_seq": "9a421d2e642a02ec1f6cbf4b56f0ab9ac12bab37fcc09128293a043d5fc5b723",
+  "sha256_eui": "96287991b1c4d76cadb81187f878ed28b656e149e602fd1145842782e8ecca20",
+  "java": "25.0.5+8-LTS Eclipse Adoptium",
+  "os": "Windows 11 10.0 amd64",
+  "threads": "16",
+  "max_heap_mb": "32768",
+  "started": "2026-11-21T16:26:50+07:00"
+}
