@@ -1,0 +1,16 @@
+dataset,policy,batches,schedule,fault,query,after_batch,ingest_ms,query_ms,discovery_mine_ms,rebuild_ms,seed_ms
+HM-CW-TYPE-12W,bud3rbw-sgc,21,every:4,0,0,4,0,534,533,0,0
+HM-CW-TYPE-12W,bud3rbw-sgc,21,every:4,0,1,8,258,372,216,150,
+HM-CW-TYPE-12W,bud3rbw-sgc,21,every:4,0,2,12,27,100,67,29,
+HM-CW-TYPE-12W,bud3rbw-sgc,21,every:4,0,3,16,19,111,97,12,
+HM-CW-TYPE-12W,bud3rbw-sgc,21,every:4,0,4,20,16,149,140,8,
+HM-CW-TYPE-12W,remine-nogc,21,every:4,0,0,4,0,226,,,0
+HM-CW-TYPE-12W,remine-nogc,21,every:4,0,1,8,0,262,,,
+HM-CW-TYPE-12W,remine-nogc,21,every:4,0,2,12,0,301,,,
+HM-CW-TYPE-12W,remine-nogc,21,every:4,0,3,16,0,360,,,
+HM-CW-TYPE-12W,remine-nogc,21,every:4,0,4,20,0,368,,,
+HM-CW-TYPE-12W,bud3rbw,21,every:4,0,0,4,0,344,344,0,0
+HM-CW-TYPE-12W,bud3rbw,21,every:4,0,1,8,22,94,31,61,
+HM-CW-TYPE-12W,bud3rbw,21,every:4,0,2,12,18,99,67,29,
+HM-CW-TYPE-12W,bud3rbw,21,every:4,0,3,16,17,113,99,11,
+HM-CW-TYPE-12W,bud3rbw,21,every:4,0,4,20,18,148,139,7,
