@@ -425,7 +425,7 @@
       ]
     },
     "E2C-152": {
-      "about": "VS-CHAIN152-CW, three schedules, one run (exactness, logs, node counts and the cost bound only)",
+      "about": "VS-CHAIN152-CW, three schedules, three runs (r0 measured with E2C; r1 and r2 added so every pair of the paper has three runs)",
       "pairs": [
         [
           "VS-CHAIN152-CW",
@@ -445,7 +445,7 @@
         "bud3rbw",
         "bud3rbw-sgc"
       ],
-      "reps": 1,
+      "reps": 3,
       "rotate": true,
       "oracle": "first",
       "limit_s": 3600,
