@@ -1,0 +1,16 @@
+dataset,policy,batches,schedule,fault,query,after_batch,n_seqs,oracle_size,returned,missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,gap_rejected,tracked_after,action,r,kept_on_abort,budget_ms,attempt_ms,attempt_load_ms,attempt_preprocess_ms,attempt_enum_ms,attempt_rebuild_ms,abort_phase,heap_guard_mb,heap_start_mb,heap_abort_mb,heap_live_after_abort_mb,heap_valve_collections,abort_cause,fhat_us,charge_us,reserve_us,gate,attempt_budget_us,floor_us,bound_log2,bound_form,selector_us,selector_rate,bound_gate,selector_b,engine_nodes,seed_gc
+REES46-COSMETICS-CW,bud3rbw-sgc,21,every:4,0,0,4,89756,771,771,0,0,0,0,0,75817,771,0,0,771,seed,0.00,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,0,0,0,0,0,0,,,0,100000000.0,,,20569,1
+REES46-COSMETICS-CW,bud3rbw-sgc,21,every:4,0,1,8,104716,756,756,0,0,0,0,14960,88574,756,0,0,746,bounded,2.99,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,1230857,0,123085,0,0,0,250.000000000,b,29556,100000000.0,,13600,10336,0
+REES46-COSMETICS-CW,bud3rbw-sgc,21,every:4,0,2,12,119676,737,737,0,0,0,0,29920,101499,737,0,0,727,aborted,5.98,0,842,844,5,43,796,0,mining,19660,468,1434,101,0,deadline,842241,876818,172732,0,842241,0,,,6528,100000000.0,window,13600,943948,0
+REES46-COSMETICS-CW,bud3rbw-sgc,21,every:4,0,3,16,134636,721,721,0,0,0,0,44880,114221,721,0,0,712,skipped,8.98,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,953523,0,268084,0,0,0,,,0,100000000.0,,,6321,0
+REES46-COSMETICS-CW,bud3rbw-sgc,21,every:4,0,4,20,149592,713,713,0,0,0,0,59836,127037,713,0,0,700,skipped,11.97,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,1023044,0,370388,0,0,0,,,0,100000000.0,,,5090,0
+REES46-COSMETICS-CW,remine-nogc,21,every:4,0,0,4,89756,771,771,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,16016,0
+REES46-COSMETICS-CW,remine-nogc,21,every:4,0,1,8,104716,756,756,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,10336,0
+REES46-COSMETICS-CW,remine-nogc,21,every:4,0,2,12,119676,737,737,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,7412,0
+REES46-COSMETICS-CW,remine-nogc,21,every:4,0,3,16,134636,721,721,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,6321,0
+REES46-COSMETICS-CW,remine-nogc,21,every:4,0,4,20,149592,713,713,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,5090,0
+REES46-COSMETICS-CW,bud3rbw,21,every:4,0,0,4,89756,771,771,0,0,0,0,0,75817,771,0,0,771,seed,0.00,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,0,0,0,0,0,0,,,0,100000000.0,,,20569,0
+REES46-COSMETICS-CW,bud3rbw,21,every:4,0,1,8,104716,756,756,0,0,0,0,14960,88574,756,0,0,746,bounded,2.99,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,872783,0,87278,0,0,0,250.000000000,b,15969,100000000.0,,13600,10336,0
+REES46-COSMETICS-CW,bud3rbw,21,every:4,0,2,12,119676,737,737,0,0,0,0,29920,101499,737,0,0,727,aborted,5.98,0,851,852,5,23,824,0,mining,19660,488,347,99,0,deadline,851664,893552,130556,0,851664,0,,,9958,100000000.0,window,13600,2996683,0
+REES46-COSMETICS-CW,bud3rbw,21,every:4,0,3,16,134636,721,721,0,0,0,0,44880,114221,721,0,0,712,skipped,8.98,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,930355,0,223591,0,0,0,,,0,100000000.0,,,6321,0
+REES46-COSMETICS-CW,bud3rbw,21,every:4,0,4,20,149592,713,713,0,0,0,0,59836,127037,713,0,0,700,skipped,11.97,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,1002197,0,323810,0,0,0,,,0,100000000.0,,,5090,0

@@ -1,0 +1,16 @@
+dataset,policy,batches,schedule,fault,query,after_batch,ingest_ms,query_ms,discovery_mine_ms,rebuild_ms,seed_ms
+REES46-COSMETICS-CW,bud3rbw-sgc,21,every:4,0,0,4,0,1055,1055,0,0
+REES46-COSMETICS-CW,bud3rbw-sgc,21,every:4,0,1,8,100,747,736,0,
+REES46-COSMETICS-CW,bud3rbw-sgc,21,every:4,0,2,12,29,1724,847,0,
+REES46-COSMETICS-CW,bud3rbw-sgc,21,every:4,0,3,16,4,920,920,0,
+REES46-COSMETICS-CW,bud3rbw-sgc,21,every:4,0,4,20,3,980,980,0,
+REES46-COSMETICS-CW,remine-nogc,21,every:4,0,0,4,0,705,,,0
+REES46-COSMETICS-CW,remine-nogc,21,every:4,0,1,8,0,761,,,
+REES46-COSMETICS-CW,remine-nogc,21,every:4,0,2,12,0,870,,,
+REES46-COSMETICS-CW,remine-nogc,21,every:4,0,3,16,0,910,,,
+REES46-COSMETICS-CW,remine-nogc,21,every:4,0,4,20,0,969,,,
+REES46-COSMETICS-CW,bud3rbw,21,every:4,0,0,4,0,748,748,0,0
+REES46-COSMETICS-CW,bud3rbw,21,every:4,0,1,8,13,751,745,0,
+REES46-COSMETICS-CW,bud3rbw,21,every:4,0,2,12,12,1720,826,0,
+REES46-COSMETICS-CW,bud3rbw,21,every:4,0,3,16,3,902,901,0,
+REES46-COSMETICS-CW,bud3rbw,21,every:4,0,4,20,0,958,957,0,
