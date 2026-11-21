@@ -1,0 +1,16 @@
+dataset,policy,batches,schedule,fault,query,after_batch,n_seqs,oracle_size,returned,missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,gap_rejected,tracked_after,action,r,kept_on_abort,budget_ms,attempt_ms,attempt_load_ms,attempt_preprocess_ms,attempt_enum_ms,attempt_rebuild_ms,abort_phase,heap_guard_mb,heap_start_mb,heap_abort_mb,heap_live_after_abort_mb,heap_valve_collections,abort_cause,fhat_us,charge_us,reserve_us,gate,attempt_budget_us,floor_us,bound_log2,bound_form,selector_us,selector_rate,bound_gate,selector_b,engine_nodes,seed_gc
+ONLINE-RETAIL-II-H,bud3rbw-sgc,21,every:4,0,0,4,3473,312,312,0,0,0,0,0,234502,312,0,0,312,seed,0.00,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,0,0,0,0,0,0,,,0,100000000.0,,,101501,1
+ONLINE-RETAIL-II-H,bud3rbw-sgc,21,every:4,0,1,8,4053,245,245,0,0,0,0,580,265457,245,0,0,245,aborted,0.12,0,259,260,2,37,222,0,mining,19660,100,741,55,0,deadline,259448,287240,-1848,0,259448,0,,,301,100000000.0,window,68,755588,0
+ONLINE-RETAIL-II-H,bud3rbw-sgc,21,every:4,0,2,12,4633,201,201,0,0,0,0,1160,299328,201,0,0,201,gated,0.23,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,109848,0,9136,1,0,1638,,,1,100000000.0,window,68,39878,0
+ONLINE-RETAIL-II-H,bud3rbw-sgc,21,every:4,0,3,16,5213,178,178,0,0,0,0,1740,341236,178,0,0,178,aborted,0.35,0,9,11,2,7,2,0,mining,19660,204,283,56,0,deadline,41192,39383,-26128,0,9136,1638,,,1,100000000.0,window,68,32113,0
+ONLINE-RETAIL-II-H,bud3rbw-sgc,21,every:4,0,4,20,5786,164,164,0,0,0,0,2313,401150,164,0,0,165,skipped,0.46,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,65734,0,-19555,0,0,0,,,1,100000000.0,,,27843,0
+ONLINE-RETAIL-II-H,remine-nogc,21,every:4,0,0,4,3473,312,312,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,85913,0
+ONLINE-RETAIL-II-H,remine-nogc,21,every:4,0,1,8,4053,245,245,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,55315,0
+ONLINE-RETAIL-II-H,remine-nogc,21,every:4,0,2,12,4633,201,201,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,39878,0
+ONLINE-RETAIL-II-H,remine-nogc,21,every:4,0,3,16,5213,178,178,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,32104,0
+ONLINE-RETAIL-II-H,remine-nogc,21,every:4,0,4,20,5786,164,164,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,27843,0
+ONLINE-RETAIL-II-H,bud3rbw,21,every:4,0,0,4,3473,312,312,0,0,0,0,0,234502,312,0,0,312,seed,0.00,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,0,0,0,0,0,0,,,0,100000000.0,,,101501,0
+ONLINE-RETAIL-II-H,bud3rbw,21,every:4,0,1,8,4053,245,245,0,0,0,0,580,265457,245,0,0,245,aborted,0.12,0,67,70,0,14,55,0,mining,19660,1190,270,55,0,deadline,67349,95906,-21823,0,67349,0,,,1,100000000.0,window,68,408751,0
+ONLINE-RETAIL-II-H,bud3rbw,21,every:4,0,2,12,4633,201,201,0,0,0,0,1160,299328,201,0,0,201,gated,0.23,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,45689,0,-17255,1,0,38,,,1,100000000.0,window,68,39878,0
+ONLINE-RETAIL-II-H,bud3rbw,21,every:4,0,3,16,5213,178,178,0,0,0,0,1740,341236,178,0,0,178,gated,0.35,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,44866,0,-12769,1,0,38,,,0,100000000.0,window,68,32104,0
+ONLINE-RETAIL-II-H,bud3rbw,21,every:4,0,4,20,5786,164,164,0,0,0,0,2313,401150,164,0,0,165,gated,0.46,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,40698,0,-8700,1,0,38,,,1,100000000.0,window,68,27843,0
