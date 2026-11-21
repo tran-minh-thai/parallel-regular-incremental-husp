@@ -1,0 +1,16 @@
+dataset,policy,batches,schedule,fault,query,after_batch,n_seqs,oracle_size,returned,missing,extra,utility_mismatch,period_mismatch,increment_seqs,threshold,candidates,fresh,gap_rejected,tracked_after,action,r,kept_on_abort,budget_ms,attempt_ms,attempt_load_ms,attempt_preprocess_ms,attempt_enum_ms,attempt_rebuild_ms,abort_phase,heap_guard_mb,heap_start_mb,heap_abort_mb,heap_live_after_abort_mb,heap_valve_collections,abort_cause,fhat_us,charge_us,reserve_us,gate,attempt_budget_us,floor_us,bound_log2,bound_form,selector_us,selector_rate,bound_gate,selector_b,engine_nodes,seed_gc
+DUNNHUMBY-HW,remine-nogc,21,every:4,0,0,4,74332,532,532,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,12430,0
+DUNNHUMBY-HW,remine-nogc,21,every:4,0,1,8,86720,508,508,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,11716,0
+DUNNHUMBY-HW,remine-nogc,21,every:4,0,2,12,99108,480,480,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,10619,0
+DUNNHUMBY-HW,remine-nogc,21,every:4,0,3,16,111496,459,459,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,9496,0
+DUNNHUMBY-HW,remine-nogc,21,every:4,0,4,20,123887,445,445,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,9219,0
+DUNNHUMBY-HW,bud3rbw,21,every:4,0,0,4,74332,532,532,0,0,0,0,0,95049,532,0,0,532,seed,0.00,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,0,0,0,0,0,0,,,0,100000000.0,,,12757,0
+DUNNHUMBY-HW,bud3rbw,21,every:4,0,1,8,86720,508,508,0,0,0,0,12388,111330,508,0,0,510,aborted,2.48,0,428,429,3,165,261,0,mining,19660,978,562,150,0,deadline,428949,465725,6118,0,428949,0,,,11445,100000000.0,window,2430,140573,0
+DUNNHUMBY-HW,bud3rbw,21,every:4,0,2,12,99108,480,480,0,0,0,0,24776,127227,480,0,0,487,aborted,4.96,0,6,6,7,0,0,0,mining,19660,571,599,144,0,deadline,465890,46648,6059,0,6118,1120,,,1,100000000.0,window,2430,10619,0
+DUNNHUMBY-HW,bud3rbw,21,every:4,0,3,16,111496,459,459,0,0,0,0,37164,144156,459,0,0,466,skipped,7.43,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,476649,0,53723,0,0,0,,,0,100000000.0,,,9496,0
+DUNNHUMBY-HW,bud3rbw,21,every:4,0,4,20,123887,445,445,0,0,0,0,49555,161149,445,0,0,457,aborted,9.91,0,53,63,13,0,50,0,mining,19660,418,593,209,0,deadline,467042,95559,4868,0,53723,51,,,1,100000000.0,window,2430,9219,0
+DUNNHUMBY-HW,bud3rbw-sgc,21,every:4,0,0,4,74332,532,532,0,0,0,0,0,95049,532,0,0,532,seed,0.00,0,0,0,0,0,0,0,,0,-1,-1,-1,0,,0,0,0,0,0,0,,,0,100000000.0,,,12757,1
+DUNNHUMBY-HW,bud3rbw-sgc,21,every:4,0,1,8,86720,508,508,0,0,0,0,12388,16282,4003,3562,3390,564,discover,2.48,0,663,371,3,23,220,118,,19660,220,-1,-1,0,,663865,371981,1022135,0,663865,0,,,5146,100000000.0,window,2430,154578,0
+DUNNHUMBY-HW,bud3rbw-sgc,21,every:4,0,2,12,99108,480,480,0,0,0,0,24776,32179,832,383,286,544,discover,4.96,0,758,255,6,38,193,17,,19660,482,-1,-1,0,,758699,255360,1601343,0,758699,13824,,,0,100000000.0,window,2430,30446,0
+DUNNHUMBY-HW,bud3rbw-sgc,21,every:4,0,3,16,111496,459,459,0,0,0,0,37164,49108,681,244,169,521,discover,7.43,0,853,283,12,33,223,14,,19660,720,-1,-1,0,,853532,283571,2256657,0,853532,1198,,,1,100000000.0,window,2430,19063,0
+DUNNHUMBY-HW,bud3rbw-sgc,21,every:4,0,4,20,123887,445,445,0,0,0,0,49555,66101,639,199,137,513,discover,9.91,0,948,330,17,33,266,14,,19660,1173,-1,-1,0,,948389,330706,2969178,0,948389,901,,,1,100000000.0,window,2430,15807,0
