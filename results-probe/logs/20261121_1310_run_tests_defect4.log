@@ -1,0 +1,9 @@
+# command: python3 tools/run_tests.py --only "defect 4"
+# started: 2026-11-21T13:10:34+0700
+# tree: fd7f3c8c3a81c5628733a0a409dd429f64b9a3f6 plus uncommitted changes to tools/run_tests.py (defect 4 entry) and tools/check_runbook_blocks.py
+# machine: development machine (check, not a measurement)
+# direct runs before this one (QueryScheduleStress 150, -Dfault=4 -DforceMidCandidateAbort=true, bud2/bud at c=1e9): failing 9, 10, 10 over 1354; clean twin 0
+defect 4: half-built candidates left in the tracked set                ok  compared 1354 (non-empty 1332), failing 9, aborts in mining 0, bound skips 0, gated 0, cross-checked 0/0, disagreeing 0, resets while paused 0, expected some (247 s)
+
+1/1 tests as expected
+# exit 0

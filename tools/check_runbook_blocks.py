@@ -59,7 +59,7 @@ function py {
   $code = 0
   switch -Wildcard ($tool) {
     '*machine_info.py' { Set-Content MEASUREMENT_MACHINE.json '{"hostname": "MEASURE-HOST"}' }
-    '*run_tests.py' { $code = [int]$env:FAIL_TESTS }
+    '*run_tests.py' { $code = [int]$env:FAIL_TESTS; if ($code) { "56/57 tests as expected"; "  FAILED: defect 4: half-built candidates: failing 1, expected zero" } }
     '*campaign.py' {
       if ($rest -contains 'lock') { New-Item -ItemType Directory -Force results/9950x | Out-Null; if (-not (Test-Path results/9950x/ENV_LOCK.json)) { Set-Content results/9950x/ENV_LOCK.json '{}' } }
       if ($rest -contains 'run' -and $rest -contains $env:FAIL_EXP) { $code = 1 }
@@ -425,7 +425,8 @@ SELECTOR_SPEC = {"tag": "selector", "cfg": "experiments/campaign_9950x_selector.
                  "summary": "summary_E2X", "repeats": "E2XR", "first_line": "X0:", "calibration": "results/9950x/selector_rate.txt",
                  "runs": ["run --exp E2X --exp E2X-152 --interleave"]}
 CLOCK_SPEC = {"tag": "clock", "cfg": "experiments/campaign_9950x_clock.json", "summarizer": "summarize_clock.py",
-              "summary": "summary_E2C", "repeats": None, "first_line": "C1:", "runs": ["run --exp E2C --exp E2C-152 --interleave"]}
+              "summary": "summary_E2C", "repeats": None, "first_line": "C1:", "runs": ["run --exp E2C --exp E2C-152 --interleave"],
+              "test_log": True}
 GATE_SPEC = {"tag": "gate", "cfg": "experiments/campaign_9950x_gate.json", "summarizer": "summarize_gate.py",
              "summary": "summary_E2W", "repeats": None, "first_line": "W1:", "runs": ["run --exp E2W --interleave"]}
 
@@ -503,6 +504,11 @@ def check_reserve_block(block, report, base, check, spec=RESERVE_SPEC):
     r, calls, log = run_block(T, block, reserve_subs(T), {"FAIL_TESTS": "1"})
     check(any("STOPPED at %s tests" % tag in l for l in log) and not any("campaign.py" in l or "summarize" in l for l in calls)
           and AWAKE_OK in r.stdout, "%s D: failing tests stop before the campaign, keep-awake released" % tag)
+    if spec.get("test_log"):
+        check(any("%s tests: 56/57 tests as expected" % tag in l for l in log) and any("%s tests: FAILED: defect 4" % tag in l for l in log),
+              "%s D: the summary and FAILED lines of the test suite reach run-status" % tag)
+        logs = [f for f in remote_files(T, "refs/heads/campaign-9950x") if f.startswith("results/9950x/logs/tests_")]
+        check(len(logs) == 1, "%s D: the test suite output is on campaign-9950x %s" % (tag, logs))
 
 
 def main(argv=None):
