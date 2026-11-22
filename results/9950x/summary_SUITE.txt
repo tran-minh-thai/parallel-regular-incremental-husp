@@ -1,0 +1,8 @@
+U0 ok: 47 of 47 cells recorded, 47 OK
+U1 ok: 6 datasets, 30 (dataset, T) groups; differing: none
+U2 ok: 2277 measured runs of exact methods compared with the oracle, 0 differ
+U3 info: 20 configuration(s) with a TIMEOUT or ERROR row: BIBLE|S10-exactness|both-EXACT|P-RIncHUSP[reg|0.03|1.0000; BIBLE|S10-exactness|disc-only|P-RIncHUSP[-|0.03|1.0000; BIBLE|S10-exactness|neither|P-RIncHUSP[-|0.03|0.9636; BIBLE|S10-exactness|reg-only|P-RIncHUSP[reg|0.03|0.9636; C8T1S5I8N5K|S10-exactness|both-EXACT|P-RIncHUSP[reg|0.06|; C8T1S5I8N5K|S10-exactness|disc-only|P-RIncHUSP[-|0.06|; C8T1S5I8N5K|S10-exactness|neither|P-RIncHUSP[-|0.06|; C8T1S5I8N5K|S10-exactness|reg-only|P-RIncHUSP[reg|0.06|; C8T1S5I8N5K|S4-distribution|B-Increasing|P-RIncHUSP|16|ERROR; C8T1S5I8N5K|S4-distribution|B-Increasing|RIncHusp-Fix0.4|1|ERROR; C8T1S5I8N5K|S7-rhosweep|r=0.0900|P-RIncHUSP-approx|16|ERROR; C8T1S5I8N5K|S7-rhosweep|r=0.0900|RIncHusp-Fix0.4|1|ERROR; LEVIATHAN|S10-exactness|both-EXACT|P-RIncHUSP[reg|0.03|1.0000; LEVIATHAN|S10-exactness|disc-only|P-RIncHUSP[-|0.03|1.0000; LEVIATHAN|S10-exactness|neither|P-RIncHUSP[-|0.03|0.6734; LEVIATHAN|S10-exactness|reg-only|P-RIncHUSP[reg|0.03|0.6734; SIGN|S10-exactness|both-EXACT|P-RIncHUSP[reg|0.03|1.0000; SIGN|S10-exactness|disc-only|P-RIncHUSP[-|0.03|1.0000; SIGN|S10-exactness|neither|P-RIncHUSP[-|0.03|0.9817; SIGN|S10-exactness|reg-only|P-RIncHUSP[reg|0.03|0.9817
+U4 ok: 4 (dataset, T) recall checks over 2 cell(s); all exact
+U5 ok: 29 configurations in both, 0 with a different pattern count
+configurations: 351 (from 3967 measured rows)
+-> D:/work/parallel-regular-incremental-husp/results/9950x/summary_SUITE.tsv
