@@ -1,0 +1,7 @@
+# java -Xmx32g -Xss4m -cp out test.RecallProbe datasets/KOSARAK_seq.txt datasets/KOSARAK_eui.txt 0.015 0.30 1,16
+# commit c59f475caa595f52616b794bdcc31c7ac01fe7d1
+
+=== RecallProbe KOSARAK | n=990002 delta=0.0150 rho=0.30 | prune=rho*N_final(sound) ===
+oracle HS=27 (7843447 ms)
+  T=1   | HS=27 correct=27 recall=100.00% (24342 ms) | peak=2612.6 MB
+  T=16  | HS=27 correct=27 recall=100.00% (3547 ms) | peak=3371.6 MB
