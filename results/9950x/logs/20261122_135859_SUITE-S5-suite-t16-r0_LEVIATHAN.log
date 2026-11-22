@@ -1,0 +1,16 @@
+# java -Xmx32g -Xss4m -Dsuite.threads=1,2,4,8,16 -Dsuite.out=results/9950x/suite -Dsuite.cell=SUITE-S5-suite-t16-r0-LEVIATHAN -cp out test.ExperimentOfficial --absolute --only=LEVIATHAN --scenarios=S5
+# commit 4fe0f34be5511dc450abdf7547994688ce8bab6d
+### --only: partial run of 1 dataset(s): [LEVIATHAN] ###
+### RUN DIR -> results/9950x/suite/run_20261122_135859_SUITE-S5-suite-t16-r0-LEVIATHAN_7ced709c
+### PARALLEL EXPERIMENT | 1 datasets | fresh run | dir=results/9950x/suite/run_20261122_135859_SUITE-S5-suite-t16-r0-LEVIATHAN_7ced709c ###
+### thread sweep (pinned) = [1, 2, 4, 8, 16] | best T = 16 ###
+   [stats LEVIATHAN] N=5834 distinctItems=9025 avgLen=33.8 maxLen=100 avgEvents=33.8 maxEvents=100 totalUtil=10502159
+
+### ABSOLUTE maxReg: B = 175 sequences (declared; constant at every batch) ###
+
+========== LEVIATHAN | 5834 sequences | ?=0.0050 ?=0.03 | oracle(RHusp)=3340 | best T=16 (machine has 32) ==========
+-- S5 Fine-batch streaming (D_old 25% + 15 x 5% increments, best T=16) --
+   [S5-finebatch    F-Fine16   P-RIncHUSP      T=16]    393 ms |   316.4 MB | HS=3340 SHS=0 | recall=1.0000
+   [S5-finebatch    F-Fine16   P-RIncHUSP-invidx T=16]    550 ms |   330.5 MB | HS=3340 SHS=0 | recall=1.0000
+   [S5-finebatch    F-Fine16   RIncHusp-Fix0.4 T=1 ]   4620 ms |   335.3 MB | HS=3340 SHS=3049 | recall=1.0000
+### DONE. dir: results\9950x\suite\run_20261122_135859_SUITE-S5-suite-t16-r0-LEVIATHAN_7ced709c ###
