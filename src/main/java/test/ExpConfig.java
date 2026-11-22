@@ -98,7 +98,22 @@ public final class ExpConfig {
      * the tables. Entries above the machine's real core count are DROPPED rather than oversubscribed,
      * and {@link #threadSweepTruncated()} makes the runner print a loud warning.
      */
-    public static final int[] THREAD_SWEEP = {1, 2, 4, 8, 10};
+    public static final int[] THREAD_SWEEP = threadSweep(System.getProperty("suite.threads"), new int[]{1, 2, 4, 8, 10});
+
+    /** The sweep named by {@code -Dsuite.threads=1,2,4,8,16}, or the default; the last entry is the best T.
+     *  A machine with a different core count gets its own sweep by this property, never by
+     *  {@code availableProcessors()}, so the sweep stays a declared number that the run records. */
+    static int[] threadSweep(String prop, int[] dflt) {
+        if (prop == null || prop.trim().isEmpty()) return dflt;
+        String[] parts = prop.split(",");
+        int[] a = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) {
+            a[i] = Integer.parseInt(parts[i].trim());
+            if (a[i] < 1 || (i > 0 && a[i] <= a[i - 1]))
+                throw new IllegalArgumentException("suite.threads must be increasing positive integers: " + prop);
+        }
+        return a;
+    }
 
     /** The pinned sweep restricted to what this machine can actually run. */
     public static int[] effectiveThreadSweep() {
@@ -370,9 +385,20 @@ public final class ExpConfig {
      * Its output is verified element-wise against per-pattern re-matching and does not depend on the
      * thread count. D_old itself is seeded by the companion study's parallel engine.
      */
+    /**
+     * Whether the miners run their own GC-based memory reset ({@code MemMeter.reset}: three collections, each followed
+     * by a 40 ms sleep) before every engine run. The harness times the whole run and reads memory with ONE meter for
+     * every algorithm ({@link PeakMemoryMeter}), collecting garbage before each run outside the clock, so a reset inside
+     * the miner only adds sleep to the clock, and unevenly: per-batch re-mining pays it once per batch, the proposal twice
+     * per run (seed and discovery), the sequential baselines never. Off by default; {@code -Dsuite.minerGc=true} restores
+     * the earlier behaviour as a control.
+     */
+    public static boolean minerMemoryReset = Boolean.getBoolean("suite.minerGc");
+
     public static AlgoPRIncHUSP newProposed(int threads) {
         AlgoPRIncHUSP m = new AlgoPRIncHUSP();
         m.numThreads = threads;
+        m.measureMemoryOnQuery = minerMemoryReset;   // seed and discovery engines alike (seedMeasuresMemory stays false)
         m.seedWithEngine05 = true;                   // seed D_old with the companion parallel engine
         m.trieMaintain = true;                       // content-driven parallel maintenance
         m.seedPruneByFinalN = true;                  // regularity bound at seeding: ρ·N_final
@@ -500,6 +526,7 @@ public final class ExpConfig {
         // pattern set as the RDLB strategy, so only the timing differs.
         m.parallelStrategy = AlgoRHUSPMinerParallel.STRAT_STEAL;
         m.denseBuffers = true;
+        m.measureMemory = minerMemoryReset;          // no GC-and-sleep inside the clock at every batch; see minerMemoryReset
         if (absoluteB > 0) m.setAbsoluteMaxReg(absoluteB);
         return m;
     }

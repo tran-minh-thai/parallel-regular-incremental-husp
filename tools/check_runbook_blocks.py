@@ -2,14 +2,15 @@
 """Run the two measurement-machine blocks of a runbook verbatim under PowerShell, with fake tools, on throw-away
 git repositories, and check what they do.
 
-    python3 tools/check_runbook_blocks.py <runbook.txt> <run-status report.ps1> <scratch dir> [--only main|followup|resume2|reserve|budget|selector|gate|clock]
+    python3 tools/check_runbook_blocks.py <runbook.txt> <run-status report.ps1> <scratch dir> [--only main|followup|resume2|reserve|budget|selector|gate|clock|suite]
 
 The main block is the one whose header (within six lines above its "& {") names E2R; the follow-up block is the
 one whose header names E2G; the pinned resume block is the one whose header names the pinned code "src a7bc247"; the reserve block is the one
 whose header names bud3rs; the reserve-budget block is the one whose header names bud3rb; the bound selector block is the one whose header
 names bud3rbx (it runs the reserve-budget scenarios plus: calibration once before the campaign, kept on a second paste, and a failing
 calibration stops it); the window gate block is the one whose header names bud3rbw (the reserve-budget scenarios without
-generated repeats or calibration); the seed clock block is the one whose header names bud3rbw-sgc (the same scenarios).
+generated repeats or calibration); the seed clock block is the one whose header names bud3rbw-sgc (the same scenarios); the S1-S11
+suite block is the one whose header names "S1-S11 TR" (the same scenarios, with the suite summary).
 Only machine-specific parts are replaced, and each replacement must
 match exactly once: the D: paths, the run-status path, the GitHub URLs, and the kernel32 import (a stub type records
 the keep-awake calls). In the git wrapper, backslashes in arguments become slashes, since the fakes run on macOS or
@@ -95,6 +96,11 @@ function py {
       Set-Content results/9950x/summary_E2C.tsv 'x'
       "C1: 0 queries disagreeing"; $code = 1
     }
+    '*summarize_suite.py' {
+      New-Item -ItemType Directory -Force results/9950x | Out-Null
+      Set-Content results/9950x/summary_SUITE.tsv 'x'
+      "U0 ok: 47 of 47 cells recorded"; $code = 1
+    }
     '*summarize_gate.py' {
       New-Item -ItemType Directory -Force results/9950x | Out-Null
       Set-Content results/9950x/summary_E2W.tsv 'x'
@@ -125,7 +131,7 @@ def find_block(lines, marker):
     raise SystemExit("no block with %r in its header" % marker)
 
 
-def seed_repos(T, report, followup, reserve=False, budget=False, selector=False, gate=False, clock=False):
+def seed_repos(T, report, followup, reserve=False, budget=False, selector=False, gate=False, clock=False, suite=False):
     seed = T / "seed"
     seed.mkdir()
     files = {"src/main/java/A.java": "class A {}\n", "tools/stream_datasets/manifests/X.json": "{}\n", "tools/t.py": "\n",
@@ -157,6 +163,9 @@ def seed_repos(T, report, followup, reserve=False, budget=False, selector=False,
         if clock:
             (seed / "experiments/campaign_9950x_clock.json").write_text('{"experiments": {"E2C": {}, "E2C-152": {}}}\n')
             (seed / "tools/summarize_clock.py").write_text("\n")
+        if suite:
+            (seed / "experiments/campaign_9950x_suite.json").write_text('{"experiments": {"SUITE": {}, "SUITE-GC": {}}}\n')
+            (seed / "tools/summarize_suite.py").write_text("\n")
         git("add", "-A", cwd=seed)
         git("-c", "user.name=S", "-c", "user.email=s@x", "commit", "-q", "-m", "follow-up", cwd=seed)
     git("clone", "-q", "--bare", str(seed), str(T / "remote.git"))
@@ -427,6 +436,9 @@ SELECTOR_SPEC = {"tag": "selector", "cfg": "experiments/campaign_9950x_selector.
 CLOCK_SPEC = {"tag": "clock", "cfg": "experiments/campaign_9950x_clock.json", "summarizer": "summarize_clock.py",
               "summary": "summary_E2C", "repeats": None, "first_line": "C1:", "runs": ["run --exp E2C --exp E2C-152 --interleave"],
               "test_log": True}
+SUITE_SPEC = {"tag": "suite", "cfg": "experiments/campaign_9950x_suite.json", "summarizer": "summarize_suite.py",
+              "summary": "summary_SUITE", "repeats": None, "first_line": "U0 ok:",
+              "runs": ["run --exp SUITE --exp SUITE-GC --exp RECALL-C8T1 --exp RECALL-KOSARAK"], "test_log": True}
 GATE_SPEC = {"tag": "gate", "cfg": "experiments/campaign_9950x_gate.json", "summarizer": "summarize_gate.py",
              "summary": "summary_E2W", "repeats": None, "first_line": "W1:", "runs": ["run --exp E2W --interleave"]}
 
@@ -440,7 +452,7 @@ def check_reserve_block(block, report, base, check, spec=RESERVE_SPEC):
             shutil.rmtree(T)
         T.mkdir(parents=True)
         seed_repos(T, report, followup=True, reserve=True, budget=(tag == "budget"), selector=(tag in ("selector", "gate", "clock")),
-                   gate=(tag in ("gate", "clock")), clock=(tag == "clock"))
+                   gate=(tag in ("gate", "clock")), clock=(tag == "clock"), suite=(tag == "suite"))
         c = T / "work" / "parallel-regular-incremental-husp"
         git("clone", "-q", "-b", "revision-apin", str(T / "remote.git"), str(c))
         for d in (c, T / "rs"):
@@ -516,7 +528,7 @@ def main(argv=None):
     ap.add_argument("runbook")
     ap.add_argument("report")
     ap.add_argument("scratch")
-    ap.add_argument("--only", choices=("main", "followup", "resume2", "reserve", "budget", "selector", "gate", "clock"))
+    ap.add_argument("--only", choices=("main", "followup", "resume2", "reserve", "budget", "selector", "gate", "clock", "suite"))
     args = ap.parse_args(argv)
     lines = Path(args.runbook).read_text(encoding="utf-8").splitlines()
     base = Path(args.scratch).resolve()
@@ -542,6 +554,8 @@ def main(argv=None):
         check_reserve_block(find_block(lines, "bud3rbw"), Path(args.report), base, check, GATE_SPEC)
     if args.only in (None, "clock"):
         check_reserve_block(find_block(lines, "bud3rbw-sgc"), Path(args.report), base, check, CLOCK_SPEC)
+    if args.only in (None, "suite"):
+        check_reserve_block(find_block(lines, "S1-S11 TR"), Path(args.report), base, check, SUITE_SPEC)
     bad = [w for ok, w in results if not ok]
     print("\n%d/%d checks passed" % (len(results) - len(bad), len(results)))
     return 1 if bad else 0

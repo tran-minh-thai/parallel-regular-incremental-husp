@@ -72,8 +72,9 @@ def cells(cfg, only=None):
                     pol = ",".join(order)
                     key = "|".join([exp, ds, sch, pol, "t%d" % th, "r%d" % rep])
                     out.append({"key": key, "experiment": exp, "dataset": ds, "schedule": sch, "policies": pol,
-                                "threads": th, "rep": rep, "oracle": spec["oracle"], "limit_s": spec["limit_s"],
-                                "props": list(spec.get("props", []))})
+                                "threads": th, "rep": rep, "oracle": spec.get("oracle", ""), "limit_s": spec["limit_s"],
+                                "props": list(spec.get("props", [])), "kind": spec.get("kind", "probe"),
+                                "args": list(spec.get("args", [])), "main": spec.get("main", "")})
     return out
 
 
@@ -96,11 +97,22 @@ def cell_id(c):
 
 
 def command(cfg, c):
-    d = cfg["datasets"][c["dataset"]]
-    s = cfg["schedules"][c["schedule"]]
     tmpl = cfg.get("command")
     if tmpl:                                                   # the self-test replaces the JVM by a stub
         return [a.format(cell=cell_id(c), out=cfg["out"], dataset=c["dataset"]) for a in tmpl]
+    if c.get("kind") == "suite":
+        # One (dataset, scenario) of the S1-S11 suite (test.ExperimentOfficial) in its own JVM. Thresholds come from
+        # DatasetCatalog, the scenario from the cell's schedule field; the run directory lands under <out>/suite.
+        return (["java"] + cfg["jvm"] + c.get("props", []) +
+                ["-Dsuite.out=%s/suite" % cfg["out"], "-Dsuite.cell=%s-%s" % (cell_id(c), c["dataset"]),
+                 "-cp", "out", "test.ExperimentOfficial"] + c.get("args", []) +
+                ["--only=%s" % c["dataset"], "--scenarios=%s" % c["schedule"]])
+    if c.get("kind") == "java":
+        # Any other main class; {dataset} in its arguments names the cell's dataset. Its console log is the artifact.
+        return (["java"] + cfg["jvm"] + c.get("props", []) + ["-cp", "out", c["main"]] +
+                [a.format(dataset=c["dataset"]) for a in c.get("args", [])])
+    d = cfg["datasets"][c["dataset"]]
+    s = cfg["schedules"][c["schedule"]]
     return (["java"] + cfg["jvm"] + c.get("props", []) +
             ["-Dthreads=%d" % c["threads"], "-Ddold=%s" % s["dold"], "-Doracle=%s" % c["oracle"],
              "-Dlimit=%d" % c["limit_s"], "-Dout=%s" % cfg["out"], "-Dcell=%s" % cell_id(c),
@@ -329,9 +341,15 @@ def checkpoint(cfg, paths, message, use_git):
 
 # ------------------------------------------------------------------ running
 
-def classify(exit_code, output, killed):
+def classify(exit_code, output, killed, kind="probe"):
     if killed:
         return "TIMEOUT"
+    if kind in ("suite", "java"):
+        # The suite records a configuration that runs out of memory or time as a row of its own and carries on, so
+        # the text "OutOfMemoryError" in a finished cell is a result, not a failure of the cell.
+        if exit_code == 0:
+            return "OK"
+        return "OOM" if "OutOfMemoryError" in output else "CRASH"
     if "OutOfMemoryError" in output:
         return "OOM"
     if exit_code == 0:
@@ -356,7 +374,7 @@ def run_cell(cfg, c, use_git, dry_run=False):
     log = logdir / ("%s_%s.log" % (started.strftime("%Y%m%d_%H%M%S"), cell_id(c) + "_" + c["dataset"]))
     # The outer limit must fire even when the JVM prints nothing (a heap near exhaustion can keep it collecting for
     # hours with no output), so it is enforced by a timer, not by the read loop, which blocks while the JVM is silent.
-    outer = c["limit_s"] * len(c["policies"].split(",")) + 900
+    outer = c["limit_s"] * len(c["policies"].split(",")) + 900   # a suite cell has one policy, "suite"
     outer = float(os.environ.get("CAMPAIGN_OUTER_S", outer))      # test hook: the self-test shortens it
     killed_flag = []
     with open(log, "w", encoding="utf-8", newline="\n") as lf:
@@ -386,8 +404,11 @@ def run_cell(cfg, c, use_git, dry_run=False):
     killed = bool(killed_flag)
     ended = datetime.datetime.now()
     output = "".join(chunks)
-    status = classify(p.returncode, output, killed)
-    m = re.search(r"-> (\S.*)$", output.splitlines()[0]) if output else None
+    status = classify(p.returncode, output, killed, c.get("kind", "probe"))
+    if c.get("kind") == "suite":
+        m = re.search(r"^### RUN DIR -> (\S.*)$", output, re.M)
+    else:
+        m = re.search(r"-> (\S.*)$", output.splitlines()[0]) if output else None
     run_dir = m.group(1).strip() if m else ""
     slept = slept_between(started, ended)
     if slept:
@@ -606,6 +627,23 @@ def self_test():
     cw, cn = cells(real)
     check("-Dwarmup=true" in command(real, cw) and "-Dwarmup=true" not in command(real, cn),
           "an experiment's own JVM properties reach its cells only")
+    suite = {"datasets": {"A": {}}, "threads": 16, "jvm": ["-Xmx1g"], "out": "results/x",
+             "experiments": {"SU": {"kind": "suite", "pairs": [["A", "S8"]], "policies": ["suite"], "limit_s": 60,
+                                    "args": ["--absolute"], "props": ["-Dsuite.threads=1,2,16"]}}}
+    (sc,) = cells(suite)
+    scmd = command(suite, sc)
+    check(scmd[-3:] == ["--absolute", "--only=A", "--scenarios=S8"] and "-Dsuite.out=results/x/suite" in scmd
+          and "-Dsuite.threads=1,2,16" in scmd and "test.ExperimentOfficial" in scmd,
+          "a suite cell runs ExperimentOfficial on its dataset and scenario, writing under <out>/suite")
+    check(classify(0, "ERROR:OutOfMemoryError", False, "suite") == "OK", "a suite cell that records an OOM row is OK")
+    check(classify(3, "Dataset error", False, "suite") == "CRASH", "a suite cell that stops on an error is CRASH")
+    check(classify(1, "java.lang.OutOfMemoryError: Java heap space", False, "suite") == "OOM",
+          "a suite JVM that dies of OOM is OOM")
+    jv = {"datasets": {"A": {}}, "threads": 16, "jvm": ["-Xmx1g"], "out": "results/x",
+          "experiments": {"J": {"kind": "java", "main": "test.RecallProbe", "pairs": [["A", "once"]], "policies": ["recall"],
+                                "limit_s": 60, "args": ["datasets/{dataset}_seq.txt", "1,16"]}}}
+    check(command(jv, cells(jv)[0])[-4:] == ["out", "test.RecallProbe", "datasets/A_seq.txt", "1,16"],
+          "a java cell runs its main class with the dataset filled into its arguments")
     rot = {"datasets": {"A": {}}, "threads": 2, "experiments": {
         "R": {"datasets": ["A"], "schedules": ["S1"], "policies": ["f", "a", "b", "c"], "oracle": "first", "limit_s": 60,
               "reps": 4, "rotate": True},
