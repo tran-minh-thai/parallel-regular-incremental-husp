@@ -1,0 +1,29 @@
+# java -Xmx32g -Xss4m -Dsuite.threads=1,2,4,8,16 -Dsuite.out=results/9950x/suite -Dsuite.cell=SUITE-S11-suite-t16-r0-C8T1S5I8N5K -cp out test.ExperimentOfficial --absolute --only=C8T1S5I8N5K --scenarios=S11
+# commit a9dc70a4c753e70794d4c948ac5e5bb36e129e9c
+### --only: partial run of 1 dataset(s): [C8T1S5I8N5K] ###
+### RUN DIR -> results/9950x/suite/run_20261122_180508_SUITE-S11-suite-t16-r0-C8T1S5I8N5K_d2083564
+### PARALLEL EXPERIMENT | 1 datasets | fresh run | dir=results/9950x/suite/run_20261122_180508_SUITE-S11-suite-t16-r0-C8T1S5I8N5K_d2083564 ###
+### thread sweep (pinned) = [1, 2, 4, 8, 16] | best T = 16 ###
+   [stats C8T1S5I8N5K] N=47132 distinctItems=68240 avgLen=18.8 maxLen=94 avgEvents=2.4 maxEvents=10 totalUtil=47416411
+
+### ABSOLUTE maxReg: B = 2827 sequences (declared; constant at every batch) ###
+
+========== C8T1S5I8N5K | 47132 sequences | ?=0.0010 ?=0.06 | recall=SKIPPED (N>40000) | best T=16 (machine has 32) ==========
+-- S11 baseline comparison across batch counts (best T=16) --
+   [S11-batchcompare B=4        P-RIncHUSP      T=16]    488 ms |  4073.2 MB | HS=5612 SHS=0
+   [S11-batchcompare B=4        P-RIncHUSP-seq  T=1 ]    506 ms |   762.9 MB | HS=5612 SHS=0
+   [S11-batchcompare B=4        RIncHusp-Fix0.4 T=1 ]  72990 ms |  6363.9 MB | HS=5612 SHS=14446
+   [S11-batchcompare B=4        RIncHusp-Fix0.9 T=1 ]  51220 ms |   500.6 MB | HS=5555 SHS=1697
+   [S11-batchcompare B=4        ParRemine       T=16]    783 ms |  4661.7 MB | HS=5612 SHS=0
+   [S11-batchcompare B=4        Remine-static   T=1 ] 719699 ms |   864.2 MB | HS=5612 SHS=0
+   [S11-batchcompare B=16       P-RIncHUSP      T=16]    516 ms |  3718.8 MB | HS=5612 SHS=0
+   [S11-batchcompare B=16       P-RIncHUSP-seq  T=1 ]    452 ms |   833.3 MB | HS=5612 SHS=0
+   [S11-batchcompare B=16       RIncHusp-Fix0.4 T=1 ]  75011 ms |  6529.4 MB | HS=5612 SHS=14446
+   [S11-batchcompare B=16       RIncHusp-Fix0.9 T=1 ]  52362 ms |   548.8 MB | HS=5555 SHS=1697
+   [S11-batchcompare B=16       ParRemine       T=16]   3219 ms | 11947.7 MB | HS=5612 SHS=0
+   [S11-batchcompare B=64       P-RIncHUSP      T=16]    614 ms |  5061.7 MB | HS=5612 SHS=0
+   [S11-batchcompare B=64       P-RIncHUSP-seq  T=1 ]    468 ms |   596.6 MB | HS=5612 SHS=0
+   [S11-batchcompare B=64       RIncHusp-Fix0.4 T=1 ]  82578 ms |  7107.2 MB | HS=5612 SHS=14446
+   [S11-batchcompare B=64       RIncHusp-Fix0.9 T=1 ]  51934 ms |   645.9 MB | HS=5555 SHS=1697
+   [S11-batchcompare B=64       ParRemine       T=16]  12861 ms |  8220.2 MB | HS=5612 SHS=0
+### DONE. dir: results\9950x\suite\run_20261122_180508_SUITE-S11-suite-t16-r0-C8T1S5I8N5K_d2083564 ###
