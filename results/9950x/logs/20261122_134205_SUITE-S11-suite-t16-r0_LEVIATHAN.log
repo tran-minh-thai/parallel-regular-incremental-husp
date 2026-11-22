@@ -1,0 +1,29 @@
+# java -Xmx32g -Xss4m -Dsuite.threads=1,2,4,8,16 -Dsuite.out=results/9950x/suite -Dsuite.cell=SUITE-S11-suite-t16-r0-LEVIATHAN -cp out test.ExperimentOfficial --absolute --only=LEVIATHAN --scenarios=S11
+# commit 17366f3b5dc8c99a5c23518bf153a30f229188ea
+### --only: partial run of 1 dataset(s): [LEVIATHAN] ###
+### RUN DIR -> results/9950x/suite/run_20261122_134205_SUITE-S11-suite-t16-r0-LEVIATHAN_c438c10c
+### PARALLEL EXPERIMENT | 1 datasets | fresh run | dir=results/9950x/suite/run_20261122_134205_SUITE-S11-suite-t16-r0-LEVIATHAN_c438c10c ###
+### thread sweep (pinned) = [1, 2, 4, 8, 16] | best T = 16 ###
+   [stats LEVIATHAN] N=5834 distinctItems=9025 avgLen=33.8 maxLen=100 avgEvents=33.8 maxEvents=100 totalUtil=10502159
+
+### ABSOLUTE maxReg: B = 175 sequences (declared; constant at every batch) ###
+
+========== LEVIATHAN | 5834 sequences | ?=0.0050 ?=0.03 | oracle(RHusp)=3340 | best T=16 (machine has 32) ==========
+-- S11 baseline comparison across batch counts (best T=16) --
+   [S11-batchcompare B=4        P-RIncHUSP      T=16]    373 ms |   314.6 MB | HS=3340 SHS=0 | recall=1.0000
+   [S11-batchcompare B=4        P-RIncHUSP-seq  T=1 ]   4805 ms |   339.6 MB | HS=3340 SHS=0 | recall=1.0000
+   [S11-batchcompare B=4        RIncHusp-Fix0.4 T=1 ]   4493 ms |   333.1 MB | HS=3340 SHS=3049 | recall=1.0000
+   [S11-batchcompare B=4        RIncHusp-Fix0.9 T=1 ]   2735 ms |   334.9 MB | HS=2620 SHS=160 | recall=0.7844
+   [S11-batchcompare B=4        ParRemine       T=16]    666 ms |   334.4 MB | HS=3340 SHS=0 | recall=1.0000
+   [S11-batchcompare B=4        Remine-static   T=1 ]  30536 ms |   359.7 MB | HS=3340 SHS=0 | recall=1.0000
+   [S11-batchcompare B=16       P-RIncHUSP      T=16]    383 ms |   300.6 MB | HS=3340 SHS=0 | recall=1.0000
+   [S11-batchcompare B=16       P-RIncHUSP-seq  T=1 ]   4766 ms |   301.6 MB | HS=3340 SHS=0 | recall=1.0000
+   [S11-batchcompare B=16       RIncHusp-Fix0.4 T=1 ]   4487 ms |   336.4 MB | HS=3340 SHS=3049 | recall=1.0000
+   [S11-batchcompare B=16       RIncHusp-Fix0.9 T=1 ]   2726 ms |   335.0 MB | HS=2620 SHS=160 | recall=0.7844
+   [S11-batchcompare B=16       ParRemine       T=16]   2650 ms |   336.8 MB | HS=3340 SHS=0 | recall=1.0000
+   [S11-batchcompare B=64       P-RIncHUSP      T=16]    423 ms |   336.7 MB | HS=3340 SHS=0 | recall=1.0000
+   [S11-batchcompare B=64       P-RIncHUSP-seq  T=1 ]   4790 ms |   337.2 MB | HS=3340 SHS=0 | recall=1.0000
+   [S11-batchcompare B=64       RIncHusp-Fix0.4 T=1 ]   4522 ms |   336.4 MB | HS=3340 SHS=3049 | recall=1.0000
+   [S11-batchcompare B=64       RIncHusp-Fix0.9 T=1 ]   2750 ms |   334.9 MB | HS=2620 SHS=160 | recall=0.7844
+   [S11-batchcompare B=64       ParRemine       T=16]  10610 ms |   341.8 MB | HS=3340 SHS=0 | recall=1.0000
+### DONE. dir: results\9950x\suite\run_20261122_134205_SUITE-S11-suite-t16-r0-LEVIATHAN_c438c10c ###
