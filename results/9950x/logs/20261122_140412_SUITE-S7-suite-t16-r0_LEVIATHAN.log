@@ -1,0 +1,22 @@
+# java -Xmx32g -Xss4m -Dsuite.threads=1,2,4,8,16 -Dsuite.out=results/9950x/suite -Dsuite.cell=SUITE-S7-suite-t16-r0-LEVIATHAN -cp out test.ExperimentOfficial --absolute --only=LEVIATHAN --scenarios=S7
+# commit fcf33d50d965dc3683892cbda8ef86c5f5ed7a82
+### --only: partial run of 1 dataset(s): [LEVIATHAN] ###
+### RUN DIR -> results/9950x/suite/run_20261122_140412_SUITE-S7-suite-t16-r0-LEVIATHAN_5379da1c
+### PARALLEL EXPERIMENT | 1 datasets | fresh run | dir=results/9950x/suite/run_20261122_140412_SUITE-S7-suite-t16-r0-LEVIATHAN_5379da1c ###
+### thread sweep (pinned) = [1, 2, 4, 8, 16] | best T = 16 ###
+   [stats LEVIATHAN] N=5834 distinctItems=9025 avgLen=33.8 maxLen=100 avgEvents=33.8 maxEvents=100 totalUtil=10502159
+
+### ABSOLUTE maxReg: B = 175 sequences (declared; constant at every batch) ###
+
+========== LEVIATHAN | 5834 sequences | ?=0.0050 ?=0.03 | oracle(RHusp)=3340 | best T=16 (machine has 32) ==========
+-- S7 ?-sensitivity sweep (distribution A, best T=16) --
+   [S7-rhosweep     r=0.0150   P-RIncHUSP      T=16]    105 ms |   247.2 MB | HS=794 SHS=0 | recall=1.0000
+   [S7-rhosweep     r=0.0150   P-RIncHUSP-approx T=16]     34 ms |   184.3 MB | HS=794 SHS=82 | recall=1.0000
+   [S7-rhosweep     r=0.0150   RIncHusp-Fix0.4 T=1 ]   2553 ms |   333.8 MB | HS=794 SHS=82 | recall=1.0000
+   [S7-rhosweep     r=0.0300   P-RIncHUSP      T=16]    369 ms |   339.7 MB | HS=3340 SHS=0 | recall=1.0000
+   [S7-rhosweep     r=0.0300   P-RIncHUSP-approx T=16]    119 ms |   323.5 MB | HS=3340 SHS=3049 | recall=1.0000
+   [S7-rhosweep     r=0.0300   RIncHusp-Fix0.4 T=1 ]   4449 ms |   341.7 MB | HS=3340 SHS=3049 | recall=1.0000
+   [S7-rhosweep     r=0.0450   P-RIncHUSP      T=16]    544 ms |   340.3 MB | HS=4603 SHS=0 | recall=1.0000
+   [S7-rhosweep     r=0.0450   P-RIncHUSP-approx T=16]    216 ms |   638.3 MB | HS=4601 SHS=11994 | recall=0.9996
+   [S7-rhosweep     r=0.0450   RIncHusp-Fix0.4 T=1 ]   6504 ms |   350.7 MB | HS=4601 SHS=11994 | recall=0.9996
+### DONE. dir: results\9950x\suite\run_20261122_140412_SUITE-S7-suite-t16-r0-LEVIATHAN_5379da1c ###
