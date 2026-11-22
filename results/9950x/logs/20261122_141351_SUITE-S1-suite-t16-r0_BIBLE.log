@@ -1,0 +1,25 @@
+# java -Xmx32g -Xss4m -Dsuite.threads=1,2,4,8,16 -Dsuite.out=results/9950x/suite -Dsuite.cell=SUITE-S1-suite-t16-r0-BIBLE -cp out test.ExperimentOfficial --absolute --only=BIBLE --scenarios=S1
+# commit 777b8dfe22116c8117ac5770ba36e060d779cec0
+### --only: partial run of 1 dataset(s): [BIBLE] ###
+### RUN DIR -> results/9950x/suite/run_20261122_141351_SUITE-S1-suite-t16-r0-BIBLE_88da85fa
+### PARALLEL EXPERIMENT | 1 datasets | fresh run | dir=results/9950x/suite/run_20261122_141351_SUITE-S1-suite-t16-r0-BIBLE_88da85fa ###
+### thread sweep (pinned) = [1, 2, 4, 8, 16] | best T = 16 ###
+   [stats BIBLE] N=36369 distinctItems=13905 avgLen=21.6 maxLen=100 avgEvents=21.6 maxEvents=100 totalUtil=35550162
+
+### ABSOLUTE maxReg: B = 1091 sequences (declared; constant at every batch) ###
+
+========== BIBLE | 36369 sequences | ?=0.0050 ?=0.03 | oracle(RHusp)=2141 | best T=16 (machine has 32) ==========
+-- S1 Scalability (distribution A) --
+   [S1-scalability  A-Uniform  P-RIncHUSP      T=1 ]   7605 ms |   242.6 MB | HS=2141 SHS=0 | recall=1.0000
+   [S1-scalability  A-Uniform  P-RIncHUSP      T=2 ]   3917 ms |   267.0 MB | HS=2141 SHS=0 | recall=1.0000
+   [S1-scalability  A-Uniform  P-RIncHUSP      T=4 ]   2097 ms |   401.3 MB | HS=2141 SHS=0 | recall=1.0000
+   [S1-scalability  A-Uniform  P-RIncHUSP      T=8 ]   1194 ms |   410.7 MB | HS=2141 SHS=0 | recall=1.0000
+   [S1-scalability  A-Uniform  P-RIncHUSP      T=16]    729 ms |   480.6 MB | HS=2141 SHS=0 | recall=1.0000
+   ?? Speedup ??  T :  ms  | S(p) | E(p)
+                 1 :   7605 | 1.00 | 1.00
+                 2 :   3917 | 1.94 | 0.97
+                 4 :   2097 | 3.63 | 0.91
+                 8 :   1194 | 6.37 | 0.80
+                16 :    729 | 10.43 | 0.65
+   S3 HS invariance across T: OK ([2141, 2141, 2141, 2141, 2141])
+### DONE. dir: results\9950x\suite\run_20261122_141351_SUITE-S1-suite-t16-r0-BIBLE_88da85fa ###

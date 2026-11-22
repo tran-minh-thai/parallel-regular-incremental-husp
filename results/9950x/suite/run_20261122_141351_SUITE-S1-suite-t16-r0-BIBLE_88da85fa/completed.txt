@@ -1,0 +1,5 @@
+BIBLE|S1-scalability|A-Uniform|P-RIncHUSP|1
+BIBLE|S1-scalability|A-Uniform|P-RIncHUSP|2
+BIBLE|S1-scalability|A-Uniform|P-RIncHUSP|4
+BIBLE|S1-scalability|A-Uniform|P-RIncHUSP|8
+BIBLE|S1-scalability|A-Uniform|P-RIncHUSP|16
