@@ -1,0 +1,21 @@
+# java -Xmx32g -Xss4m -Dsuite.threads=1,2,4,8,16 -Dsuite.out=results/9950x/suite -Dsuite.cell=SUITE-S4-suite-t16-r0-C8T1S5I8N5K -cp out test.ExperimentOfficial --absolute --only=C8T1S5I8N5K --scenarios=S4
+# commit bf5140f296d54855802c10b0ce4c1e19b5d4f323
+### --only: partial run of 1 dataset(s): [C8T1S5I8N5K] ###
+### RUN DIR -> results/9950x/suite/run_20261122_193405_SUITE-S4-suite-t16-r0-C8T1S5I8N5K_402deb68
+### PARALLEL EXPERIMENT | 1 datasets | fresh run | dir=results/9950x/suite/run_20261122_193405_SUITE-S4-suite-t16-r0-C8T1S5I8N5K_402deb68 ###
+### thread sweep (pinned) = [1, 2, 4, 8, 16] | best T = 16 ###
+   [stats C8T1S5I8N5K] N=47132 distinctItems=68240 avgLen=18.8 maxLen=94 avgEvents=2.4 maxEvents=10 totalUtil=47416411
+
+### ABSOLUTE maxReg: B = 2827 sequences (declared; constant at every batch) ###
+
+========== C8T1S5I8N5K | 47132 sequences | ?=0.0010 ?=0.06 | recall=SKIPPED (N>40000) | best T=16 (machine has 32) ==========
+-- S4 Distribution robustness (best T=16) --
+   [S4-distribution A-Uniform  P-RIncHUSP      T=16]    486 ms |  4045.2 MB | HS=5612 SHS=0
+   [S4-distribution A-Uniform  RIncHusp-Fix0.4 T=1 ]  69961 ms |  6833.9 MB | HS=5612 SHS=14446
+   [S4-distribution B-Increasing P-RIncHUSP      T=16] ERROR:OutOfMemoryError
+   [S4-distribution B-Increasing RIncHusp-Fix0.4 T=1 ] ERROR:OutOfMemoryError
+   [S4-distribution C-Oscillating P-RIncHUSP      T=16]    527 ms |  4073.7 MB | HS=5612 SHS=0
+   [S4-distribution C-Oscillating RIncHusp-Fix0.4 T=1 ]  93719 ms |   691.0 MB | HS=5612 SHS=13701
+   [S4-distribution D-Decreasing P-RIncHUSP      T=16]    460 ms |  4062.7 MB | HS=5612 SHS=0
+   [S4-distribution D-Decreasing RIncHusp-Fix0.4 T=1 ]  92439 ms |   676.6 MB | HS=5612 SHS=13701
+### DONE. dir: results\9950x\suite\run_20261122_193405_SUITE-S4-suite-t16-r0-C8T1S5I8N5K_402deb68 ###
