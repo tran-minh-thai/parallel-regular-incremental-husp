@@ -1,0 +1,21 @@
+# java -Xmx32g -Xss4m -Dsuite.threads=1,2,4,8,16 -Dsuite.out=results/9950x/suite -Dsuite.cell=SUITE-S4-suite-t16-r0-BIBLE -cp out test.ExperimentOfficial --absolute --only=BIBLE --scenarios=S4
+# commit 2814b552e39ae2013ad3782e718dba6b29097cfe
+### --only: partial run of 1 dataset(s): [BIBLE] ###
+### RUN DIR -> results/9950x/suite/run_20261122_153232_SUITE-S4-suite-t16-r0-BIBLE_e5bdec7a
+### PARALLEL EXPERIMENT | 1 datasets | fresh run | dir=results/9950x/suite/run_20261122_153232_SUITE-S4-suite-t16-r0-BIBLE_e5bdec7a ###
+### thread sweep (pinned) = [1, 2, 4, 8, 16] | best T = 16 ###
+   [stats BIBLE] N=36369 distinctItems=13905 avgLen=21.6 maxLen=100 avgEvents=21.6 maxEvents=100 totalUtil=35550162
+
+### ABSOLUTE maxReg: B = 1091 sequences (declared; constant at every batch) ###
+
+========== BIBLE | 36369 sequences | ?=0.0050 ?=0.03 | oracle(RHusp)=2141 | best T=16 (machine has 32) ==========
+-- S4 Distribution robustness (best T=16) --
+   [S4-distribution A-Uniform  P-RIncHUSP      T=16]    754 ms |   546.6 MB | HS=2141 SHS=0 | recall=1.0000
+   [S4-distribution A-Uniform  RIncHusp-Fix0.4 T=1 ]  36405 ms |   606.7 MB | HS=2141 SHS=2525 | recall=1.0000
+   [S4-distribution B-Increasing P-RIncHUSP      T=16]    663 ms |   639.6 MB | HS=2141 SHS=0 | recall=1.0000
+   [S4-distribution B-Increasing RIncHusp-Fix0.4 T=1 ]  12940 ms |   574.2 MB | HS=2138 SHS=2185 | recall=0.9986
+   [S4-distribution C-Oscillating P-RIncHUSP      T=16]    742 ms |   397.8 MB | HS=2141 SHS=0 | recall=1.0000
+   [S4-distribution C-Oscillating RIncHusp-Fix0.4 T=1 ]  49643 ms |   601.8 MB | HS=2141 SHS=2524 | recall=1.0000
+   [S4-distribution D-Decreasing P-RIncHUSP      T=16]    778 ms |   684.2 MB | HS=2141 SHS=0 | recall=1.0000
+   [S4-distribution D-Decreasing RIncHusp-Fix0.4 T=1 ]  49562 ms |   523.1 MB | HS=2141 SHS=2524 | recall=1.0000
+### DONE. dir: results\9950x\suite\run_20261122_153232_SUITE-S4-suite-t16-r0-BIBLE_e5bdec7a ###
