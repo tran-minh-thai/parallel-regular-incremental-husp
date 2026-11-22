@@ -1,0 +1,25 @@
+# java -Xmx32g -Xss4m -Dsuite.threads=1,2,4,8,16 -Dsuite.minerGc=true -Dsuite.out=results/9950x/suite -Dsuite.cell=SUITE-GC-S8-suite-t16-r0-LEVIATHAN -cp out test.ExperimentOfficial --absolute --only=LEVIATHAN --scenarios=S8
+# commit e991c9f4ff5e7d21da7f786f6df75b23e53e5c94
+### --only: partial run of 1 dataset(s): [LEVIATHAN] ###
+### RUN DIR -> results/9950x/suite/run_20261122_214017_SUITE-GC-S8-suite-t16-r0-LEVIATHAN_94ce36bf
+### PARALLEL EXPERIMENT | 1 datasets | fresh run | dir=results/9950x/suite/run_20261122_214017_SUITE-GC-S8-suite-t16-r0-LEVIATHAN_94ce36bf ###
+### thread sweep (pinned) = [1, 2, 4, 8, 16] | best T = 16 ###
+   [stats LEVIATHAN] N=5834 distinctItems=9025 avgLen=33.8 maxLen=100 avgEvents=33.8 maxEvents=100 totalUtil=10502159
+
+### ABSOLUTE maxReg: B = 175 sequences (declared; constant at every batch) ###
+
+========== LEVIATHAN | 5834 sequences | ?=0.0050 ?=0.03 | oracle(RHusp)=3340 | best T=16 (machine has 32) ==========
+-- S8 batch-count scaling / crossover (best T=16) --
+   [S8-batchscale   B=2        P-RIncHUSP      T=16]    728 ms |   307.8 MB | HS=3340 SHS=0 | recall=1.0000
+   [S8-batchscale   B=2        ParRemine       T=16]    662 ms |   151.5 MB | HS=3340 SHS=0 | recall=1.0000
+   [S8-batchscale   B=4        P-RIncHUSP      T=16]    724 ms |   306.5 MB | HS=3340 SHS=0 | recall=1.0000
+   [S8-batchscale   B=4        ParRemine       T=16]   1323 ms |   199.2 MB | HS=3340 SHS=0 | recall=1.0000
+   [S8-batchscale   B=8        P-RIncHUSP      T=16]    727 ms |   305.7 MB | HS=3340 SHS=0 | recall=1.0000
+   [S8-batchscale   B=8        ParRemine       T=16]   2637 ms |   205.6 MB | HS=3340 SHS=0 | recall=1.0000
+   [S8-batchscale   B=16       P-RIncHUSP      T=16]    737 ms |   305.1 MB | HS=3340 SHS=0 | recall=1.0000
+   [S8-batchscale   B=16       ParRemine       T=16]   5256 ms |   202.6 MB | HS=3340 SHS=0 | recall=1.0000
+   [S8-batchscale   B=32       P-RIncHUSP      T=16]    750 ms |   346.3 MB | HS=3340 SHS=0 | recall=1.0000
+   [S8-batchscale   B=32       ParRemine       T=16]  10562 ms |   209.8 MB | HS=3340 SHS=0 | recall=1.0000
+   [S8-batchscale   B=64       P-RIncHUSP      T=16]    779 ms |   345.8 MB | HS=3340 SHS=0 | recall=1.0000
+   [S8-batchscale   B=64       ParRemine       T=16]  21034 ms |   207.5 MB | HS=3340 SHS=0 | recall=1.0000
+### DONE. dir: results\9950x\suite\run_20261122_214017_SUITE-GC-S8-suite-t16-r0-LEVIATHAN_94ce36bf ###
