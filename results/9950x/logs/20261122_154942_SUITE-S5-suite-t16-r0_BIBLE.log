@@ -1,0 +1,16 @@
+# java -Xmx32g -Xss4m -Dsuite.threads=1,2,4,8,16 -Dsuite.out=results/9950x/suite -Dsuite.cell=SUITE-S5-suite-t16-r0-BIBLE -cp out test.ExperimentOfficial --absolute --only=BIBLE --scenarios=S5
+# commit e28310fe2b220167399e76dc374dc5ef965cb3b1
+### --only: partial run of 1 dataset(s): [BIBLE] ###
+### RUN DIR -> results/9950x/suite/run_20261122_154942_SUITE-S5-suite-t16-r0-BIBLE_e660f456
+### PARALLEL EXPERIMENT | 1 datasets | fresh run | dir=results/9950x/suite/run_20261122_154942_SUITE-S5-suite-t16-r0-BIBLE_e660f456 ###
+### thread sweep (pinned) = [1, 2, 4, 8, 16] | best T = 16 ###
+   [stats BIBLE] N=36369 distinctItems=13905 avgLen=21.6 maxLen=100 avgEvents=21.6 maxEvents=100 totalUtil=35550162
+
+### ABSOLUTE maxReg: B = 1091 sequences (declared; constant at every batch) ###
+
+========== BIBLE | 36369 sequences | ?=0.0050 ?=0.03 | oracle(RHusp)=2141 | best T=16 (machine has 32) ==========
+-- S5 Fine-batch streaming (D_old 25% + 15 x 5% increments, best T=16) --
+   [S5-finebatch    F-Fine16   P-RIncHUSP      T=16]    802 ms |   877.2 MB | HS=2141 SHS=0 | recall=1.0000
+   [S5-finebatch    F-Fine16   P-RIncHUSP-invidx T=16]   1723 ms |   490.4 MB | HS=2141 SHS=0 | recall=1.0000
+   [S5-finebatch    F-Fine16   RIncHusp-Fix0.4 T=1 ]  36538 ms |   590.4 MB | HS=2141 SHS=2525 | recall=1.0000
+### DONE. dir: results\9950x\suite\run_20261122_154942_SUITE-S5-suite-t16-r0-BIBLE_e660f456 ###
