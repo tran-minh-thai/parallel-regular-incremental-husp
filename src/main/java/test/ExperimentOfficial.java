@@ -121,6 +121,14 @@ public class ExperimentOfficial {
         if (flags.contains("--followup")) ExpConfig.enableFollowupOnly();
         // --absolute: the regularity constraint becomes each dataset's DECLARED constant B; see ExpConfig.
         if (flags.contains("--absolute")) ExpConfig.absoluteMode = true;
+        // --scenarios=S1,S8 runs only the named scenarios (S3 is read off the S1 runs), so a campaign can
+        // give each (dataset, scenario) its own JVM, its own row in the ledger and its own checkpoint.
+        for (String a : args) {
+            if (a.startsWith("--scenarios=")) {
+                String bad = selectScenarios(a.substring("--scenarios=".length()));
+                if (bad != null) { System.out.println("!! --scenarios names an unknown scenario: " + bad); System.exit(2); }
+            }
+        }
 
         // --only=TAG1,TAG2 restricts the suite to the named datasets, each keeping its own settings.
         // Useful after changing one dataset's threshold: re-run that dataset alone, then merge the
@@ -137,10 +145,20 @@ public class ExperimentOfficial {
             }
         }
 
+        // A declared sweep the machine cannot run is a different protocol, so a campaign run refuses it
+        // instead of printing the warning below and measuring a truncated sweep.
+        if (RunContext.outRoot() != null && ExpConfig.threadSweepTruncated()) {
+            System.out.printf("!! REFUSED: the sweep %s needs %d cores, this machine reports %d%n",
+                    Arrays.toString(ExpConfig.THREAD_SWEEP), ExpConfig.THREAD_SWEEP[ExpConfig.THREAD_SWEEP.length - 1],
+                    Runtime.getRuntime().availableProcessors());
+            System.exit(2);
+        }
         ctx = RunContext.start(suite, resume);
         csv = ctx.csv;
-        System.out.printf("### PARALLEL EXPERIMENT | %d datasets | %s | dir=results/%s ###%n",
-                suite.size(), ctx.resumed ? "RESUME (skipping finished work)" : "fresh run", ctx.dir.getName());
+        System.out.println("### RUN DIR -> " + ctx.dir.getPath().replace(File.separatorChar, '/'));
+        System.out.printf("### PARALLEL EXPERIMENT | %d datasets | %s | dir=%s ###%n",
+                suite.size(), ctx.resumed ? "RESUME (skipping finished work)" : "fresh run",
+                ctx.dir.getPath().replace(File.separatorChar, '/'));
         System.out.printf("### thread sweep (pinned) = %s | best T = %d ###%n",
                 Arrays.toString(ExpConfig.effectiveThreadSweep()), ExpConfig.bestT());
         if (ExpConfig.threadSweepTruncated()) {
@@ -163,12 +181,47 @@ public class ExperimentOfficial {
                 benchmarkDataset(s.tag, s.seqFile, s.euiFile, s.minUtilRatio, s.maxRegRatio, s.s1Only);
                 ctx.recordDataset(s.tag);   // reached only if the dataset finished (no crash / uncaught error)
             } catch (Throwable e) {
+                datasetErrors++;
                 System.out.println("  ! Dataset error " + s.tag + ": " + e.getClass().getSimpleName());
             } finally { all = null; System.gc(); }
+        }
+        if (datasetErrors > 0) {
+            // No DONE marker: a dataset that stopped on an uncaught error is not a finished measurement,
+            // and the non-zero exit tells a campaign so.
+            ctx.close();
+            System.out.println("### " + datasetErrors + " dataset(s) stopped on an error; no DONE marker. dir: " + ctx.dir + " ###");
+            System.exit(3);
         }
         ctx.finish();     // write DONE marker + meta status=completed
         ctx.close();
         System.out.println("### DONE. dir: " + ctx.dir + " ###");
+    }
+
+    static int datasetErrors = 0;
+
+    /** Turn on exactly the named scenarios; returns the first unknown name, or null. */
+    static String selectScenarios(String list) {
+        ExpConfig.runS1Scalability = ExpConfig.runS2Compare = ExpConfig.runS4Distribution = false;
+        ExpConfig.runS5FineBatch = ExpConfig.runS6DeltaSweep = ExpConfig.runS7RhoSweep = false;
+        ExpConfig.runS8BatchScaling = ExpConfig.runS9MuSweep = ExpConfig.runS10Exactness = false;
+        ExpConfig.runS11BatchCompare = false;
+        for (String raw : list.split(",")) {
+            String s = raw.trim();
+            switch (s) {
+                case "S1": ExpConfig.runS1Scalability = true; break;
+                case "S2": ExpConfig.runS2Compare = true; break;
+                case "S4": ExpConfig.runS4Distribution = true; break;
+                case "S5": ExpConfig.runS5FineBatch = true; break;
+                case "S6": ExpConfig.runS6DeltaSweep = true; break;
+                case "S7": ExpConfig.runS7RhoSweep = true; break;
+                case "S8": ExpConfig.runS8BatchScaling = true; break;
+                case "S9": ExpConfig.runS9MuSweep = true; break;
+                case "S10": ExpConfig.runS10Exactness = true; break;
+                case "S11": ExpConfig.runS11BatchCompare = true; break;
+                default: return s.isEmpty() ? "(empty)" : s;
+            }
+        }
+        return null;
     }
 
     static BufferedWriter openCsv(String path) throws IOException {
@@ -186,6 +239,9 @@ public class ExperimentOfficial {
                                  double minUtilRatio, double maxRegRatio, boolean s1Only) throws IOException {
         tag = tg;
         all = ExpUtil.loadAll(seqFile, euiFile);
+        // The loader skips lines it cannot parse, so a damaged file reads as an empty database and every
+        // scenario would then "succeed" on nothing; refuse it as a dataset error instead.
+        if (all.isEmpty()) throw new IllegalStateException(seqFile + " holds no sequence the loader could read");
         writeDatasetStats(tg, all);                    // characteristics table (once per dataset)
         final int cores = ExpConfig.bestT();           // PINNED best-T (not availableProcessors); see ExpConfig
         Set<String> oracle = oracleOrNull(minUtilRatio, maxRegRatio);

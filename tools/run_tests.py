@@ -195,7 +195,9 @@ def main(argv=None):
                       ("self-test: reserve-budget summary", [sys.executable, "tools/summarize_budget.py", "--self-test"]),
                       ("self-test: bound selector summary", [sys.executable, "tools/summarize_selector.py", "--self-test"]),
                       ("self-test: window gate summary", [sys.executable, "tools/summarize_gate.py", "--self-test"]),
-                      ("self-test: seed clock summary", [sys.executable, "tools/summarize_clock.py", "--self-test"])):
+                      ("self-test: seed clock summary", [sys.executable, "tools/summarize_clock.py", "--self-test"]),
+                      ("self-test: S1-S11 suite summary", [sys.executable, "tools/summarize_suite.py", "--self-test"]),
+                      ("self-test: S1-S11 suite runner", [sys.executable, "tools/check_suite_runner.py"])):
         if args.only and args.only not in name:
             continue
         p, secs = run(cmd)

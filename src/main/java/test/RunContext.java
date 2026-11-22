@@ -77,13 +77,14 @@ public final class RunContext {
     public static RunContext start(List<DatasetSpec> suite, boolean resume) throws IOException {
         String sig = signature(suite);
         String sig8 = Integer.toHexString(sig.hashCode());
-        new File("results").mkdirs();
+        File base = outRoot() != null ? new File(outRoot()) : new File("results");
+        base.mkdirs();
 
         File dir = null;
         boolean resumed = false;
         if (resume) {
             File best = null; long bestT = -1;
-            File[] runs = new File("results").listFiles(f -> f.isDirectory() && f.getName().startsWith("run_"));
+            File[] runs = base.listFiles(f -> f.isDirectory() && f.getName().startsWith("run_"));
             if (runs != null) for (File f : runs) {
                 if (new File(f, "DONE").exists()) continue;                       // already complete
                 Properties p = new Properties();
@@ -96,12 +97,20 @@ public final class RunContext {
         }
         if (dir == null) {
             String stamp = new java.text.SimpleDateFormat("yyyyMMdd_HHmmss").format(new java.util.Date());
-            dir = new File("results", "run_" + stamp + "_" + sig8);
+            String cell = System.getProperty("suite.cell", "");
+            dir = new File(base, "run_" + stamp + "_" + (cell.isEmpty() ? "" : cell.replaceAll("[^A-Za-z0-9._-]", "_") + "_") + sig8);
             dir.mkdirs();
         }
         RunContext ctx = new RunContext(dir, resumed);
         ctx.writeMeta(suite, sig, sig8);
         return ctx;
+    }
+
+    /** Root of the run directories when a campaign names one ({@code -Dsuite.out=results/9950x/suite}), so the
+     *  runs land in the committed measurement tree; null keeps the old default {@code results/}. */
+    public static String outRoot() {
+        String o = System.getProperty("suite.out");
+        return o == null || o.trim().isEmpty() ? null : o.trim();
     }
 
     // ---- resume queries / recording ----
@@ -162,9 +171,12 @@ public final class RunContext {
         meta.setProperty("env.java", System.getProperty("java.version") + " (" + System.getProperty("java.vendor") + ")");
         meta.setProperty("env.cores", Integer.toString(rt.availableProcessors()));
         meta.setProperty("env.maxHeapMB", Long.toString(rt.maxMemory() / (1024 * 1024)));
-        meta.setProperty("env.user", System.getProperty("user.name", "?"));
         try { meta.setProperty("env.host", java.net.InetAddress.getLocalHost().getHostName()); } catch (Exception ignore) {}
         meta.setProperty("env.gitCommit", gitCommit());
+        meta.setProperty("env.jvmArgs", String.join(" ",
+                java.lang.management.ManagementFactory.getRuntimeMXBean().getInputArguments()));
+        meta.setProperty("config.threadSweep", java.util.Arrays.toString(ExpConfig.THREAD_SWEEP));
+        meta.setProperty("config.minerMemoryReset", Boolean.toString(ExpConfig.minerMemoryReset));
         meta.setProperty("config.warmupRuns", Integer.toString(ExpConfig.warmupRuns));
         meta.setProperty("config.measuredRuns",
                 ExpConfig.fixedRepeatsForTest != null ? ExpConfig.fixedRepeatsForTest.toString()
@@ -280,7 +292,9 @@ public final class RunContext {
         sb.append("S=").append(ExpConfig.runS1Scalability).append(ExpConfig.runS2Compare)
           .append(ExpConfig.runS4Distribution).append(ExpConfig.runS5FineBatch).append(ExpConfig.runS6DeltaSweep)
           .append(ExpConfig.runS7RhoSweep).append(ExpConfig.runS8BatchScaling)
-          .append(ExpConfig.runS9MuSweep).append(ExpConfig.runS10Exactness);
+          .append(ExpConfig.runS9MuSweep).append(ExpConfig.runS10Exactness)
+          .append(ExpConfig.runS11BatchCompare ? "" : ";noS11")
+          .append(ExpConfig.minerMemoryReset ? "" : ";noMinerGc");
         sb.append(";s5x=").append(ExpConfig.s5ExtraDatasets);
         sb.append(";s6=").append(java.util.Arrays.toString(ExpConfig.S6_DELTA_MULT));
         sb.append(";s7=").append(java.util.Arrays.toString(ExpConfig.S7_RHO_MULT));
@@ -298,6 +312,10 @@ public final class RunContext {
             if (h.startsWith("ref:")) {
                 File ref = new File(".git", h.substring(4).trim());
                 if (ref.exists()) return new String(Files.readAllBytes(ref.toPath())).trim();
+                File packed = new File(".git", "packed-refs");      // a ref git has packed has no loose file
+                if (packed.exists())
+                    for (String line : Files.readAllLines(packed.toPath()))
+                        if (line.endsWith(" " + h.substring(4).trim())) return line.substring(0, line.indexOf(' '));
             }
             return h;
         } catch (Exception e) { return "n/a"; }

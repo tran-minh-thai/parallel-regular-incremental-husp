@@ -1,0 +1,275 @@
+{
+  "about": "Scenarios S1-S11 of test.ExperimentOfficial on the measurement machine: one JVM per (dataset, scenario), the regularity bound absolute (the declared B of DatasetCatalog), thread sweep 1, 2, 4, 8, 16 with best T 16; a control (SUITE-GC) with the miners' own memory reset on, on three (dataset, scenario) pairs; then the one-off recall check of the two datasets above the oracle cut-off (test.RecallProbe at T=1 and T=16). Thresholds come from DatasetCatalog; same machine, environment lock, datasets and output directory as the earlier experiments",
+  "out": "results/9950x",
+  "branch": "campaign-9950x",
+  "status_project": "07_RegIncHUSPM_Parallel",
+  "jvm": [
+    "-Xmx32g",
+    "-Xss4m"
+  ],
+  "threads": 16,
+  "datasets": {
+    "SIGN": {},
+    "LEVIATHAN": {},
+    "BIBLE": {},
+    "C8T1S5I8N5K": {},
+    "FIFA": {},
+    "KOSARAK": {}
+  },
+  "experiments": {
+    "SUITE": {
+      "kind": "suite",
+      "pairs": [
+        [
+          "SIGN",
+          "S1"
+        ],
+        [
+          "SIGN",
+          "S2"
+        ],
+        [
+          "SIGN",
+          "S11"
+        ],
+        [
+          "SIGN",
+          "S4"
+        ],
+        [
+          "SIGN",
+          "S5"
+        ],
+        [
+          "SIGN",
+          "S6"
+        ],
+        [
+          "SIGN",
+          "S7"
+        ],
+        [
+          "SIGN",
+          "S8"
+        ],
+        [
+          "SIGN",
+          "S9"
+        ],
+        [
+          "SIGN",
+          "S10"
+        ],
+        [
+          "LEVIATHAN",
+          "S1"
+        ],
+        [
+          "LEVIATHAN",
+          "S2"
+        ],
+        [
+          "LEVIATHAN",
+          "S11"
+        ],
+        [
+          "LEVIATHAN",
+          "S4"
+        ],
+        [
+          "LEVIATHAN",
+          "S5"
+        ],
+        [
+          "LEVIATHAN",
+          "S6"
+        ],
+        [
+          "LEVIATHAN",
+          "S7"
+        ],
+        [
+          "LEVIATHAN",
+          "S8"
+        ],
+        [
+          "LEVIATHAN",
+          "S9"
+        ],
+        [
+          "LEVIATHAN",
+          "S10"
+        ],
+        [
+          "BIBLE",
+          "S1"
+        ],
+        [
+          "BIBLE",
+          "S2"
+        ],
+        [
+          "BIBLE",
+          "S11"
+        ],
+        [
+          "BIBLE",
+          "S4"
+        ],
+        [
+          "BIBLE",
+          "S5"
+        ],
+        [
+          "BIBLE",
+          "S6"
+        ],
+        [
+          "BIBLE",
+          "S7"
+        ],
+        [
+          "BIBLE",
+          "S8"
+        ],
+        [
+          "BIBLE",
+          "S9"
+        ],
+        [
+          "BIBLE",
+          "S10"
+        ],
+        [
+          "C8T1S5I8N5K",
+          "S1"
+        ],
+        [
+          "C8T1S5I8N5K",
+          "S2"
+        ],
+        [
+          "C8T1S5I8N5K",
+          "S11"
+        ],
+        [
+          "C8T1S5I8N5K",
+          "S4"
+        ],
+        [
+          "C8T1S5I8N5K",
+          "S5"
+        ],
+        [
+          "C8T1S5I8N5K",
+          "S6"
+        ],
+        [
+          "C8T1S5I8N5K",
+          "S7"
+        ],
+        [
+          "C8T1S5I8N5K",
+          "S8"
+        ],
+        [
+          "C8T1S5I8N5K",
+          "S9"
+        ],
+        [
+          "C8T1S5I8N5K",
+          "S10"
+        ],
+        [
+          "FIFA",
+          "S1"
+        ],
+        [
+          "KOSARAK",
+          "S1"
+        ]
+      ],
+      "policies": [
+        "suite"
+      ],
+      "limit_s": 21600,
+      "props": [
+        "-Dsuite.threads=1,2,4,8,16"
+      ],
+      "args": [
+        "--absolute"
+      ]
+    },
+    "SUITE-GC": {
+      "kind": "suite",
+      "pairs": [
+        [
+          "SIGN",
+          "S1"
+        ],
+        [
+          "SIGN",
+          "S8"
+        ],
+        [
+          "LEVIATHAN",
+          "S8"
+        ]
+      ],
+      "policies": [
+        "suite"
+      ],
+      "limit_s": 21600,
+      "props": [
+        "-Dsuite.threads=1,2,4,8,16",
+        "-Dsuite.minerGc=true"
+      ],
+      "args": [
+        "--absolute"
+      ],
+      "about": "control: the miners' own GC-based memory reset left on, as in the runs before this campaign; not for the paper"
+    },
+    "RECALL-C8T1": {
+      "kind": "java",
+      "main": "test.RecallProbe",
+      "pairs": [
+        [
+          "C8T1S5I8N5K",
+          "once"
+        ]
+      ],
+      "policies": [
+        "recall"
+      ],
+      "limit_s": 7200,
+      "args": [
+        "datasets/{dataset}_seq.txt",
+        "datasets/{dataset}_eui.txt",
+        "0.001",
+        "0.06",
+        "1,16"
+      ]
+    },
+    "RECALL-KOSARAK": {
+      "kind": "java",
+      "main": "test.RecallProbe",
+      "pairs": [
+        [
+          "KOSARAK",
+          "once"
+        ]
+      ],
+      "policies": [
+        "recall"
+      ],
+      "limit_s": 14400,
+      "args": [
+        "datasets/{dataset}_seq.txt",
+        "datasets/{dataset}_eui.txt",
+        "0.015",
+        "0.30",
+        "1,16"
+      ]
+    }
+  }
+}

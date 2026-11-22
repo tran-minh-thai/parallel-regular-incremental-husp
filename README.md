@@ -73,7 +73,20 @@ java -Xmx24g -cp out test.ExperimentOfficial --absolute   # the suite the study 
 java -Xmx16g -cp out test.ExperimentOfficial              # the relative-mode suite
 java -Xmx16g -cp out test.ExperimentOfficial --only=SIGN  # one dataset
 java -Xmx16g -cp out test.ExperimentOfficial --resume     # continue an aborted run
+java -Xmx32g -Dsuite.threads=1,2,4,8,16 -cp out test.ExperimentOfficial --absolute --only=SIGN --scenarios=S1,S8
 ```
+
+Options of the runner, all optional:
+
+| Option | Effect |
+|---|---|
+| `--scenarios=S1,S8` | Run only the named scenarios (S1, S2, S4 to S11; S3 is read off the S1 runs) |
+| `-Dsuite.threads=1,2,4,8,16` | Thread sweep of S1; its last entry is the thread count of every other scenario (default `1,2,4,8,10`). The runner refuses a sweep larger than the machine's cores when `suite.out` is set |
+| `-Dsuite.out=DIR`, `-Dsuite.cell=NAME` | Write the run directory under `DIR` (default `results/`), with `NAME` in its name |
+| `-Dsuite.minerGc=true` | Let the miners run their own GC-based memory reset (three collections, 40 ms sleep each) before every engine run, inside the timed region. Off by default: memory is read by one meter for every algorithm and garbage is collected before each run outside the clock, so the reset only adds sleep, and unevenly (per-batch re-mining pays it at every batch). Kept as a control |
+
+The runner exits with status 2 on an unknown scenario or a refused sweep, and 3 when a dataset stops on an error or
+reads as empty (no `DONE` marker is written then).
 
 Wrapper scripts handle building, logging, and (on macOS) keeping the machine awake:
 
@@ -108,6 +121,8 @@ always exact? Every tool is standard-library Python 3 or Java and runs on Window
 | `python3 tools/summarize_campaign.py [--write-repeats]` | Per dataset and schedule: total cost of re-mining (F) and of cost-capped discovery (BUD3), their ratio, the checks of the pre-registered hypotheses, and the cells close to a tie that need repetitions |
 | `python3 tools/campaign.py --config experiments/campaign_9950x_followup.json run --exp E2G-raw --exp E2G-live --exp E2L --exp E2N --interleave` | The experiments run after the main campaign: BUD3 against BUD3-live on schedule S2 (alternating per dataset), VS-CHAIN46-CW schedule S1 with a limit its re-mine fits in, and the two chains rebuilt without store-type accounts |
 | `python3 tools/summarize_campaign.py --config experiments/campaign_9950x_followup.json --exp E2L --exp E2N --exp E2G-raw` | The same checks as for E2 on those experiments, written to `summary_E2L_E2N_E2G-raw.tsv` |
+| `python3 tools/campaign.py --config experiments/campaign_9950x_suite.json run --exp SUITE --exp SUITE-GC --exp RECALL-C8T1 --exp RECALL-KOSARAK` | Scenarios S1 to S11 on the measurement machine, one JVM per (dataset, scenario) with the declared absolute bound and the sweep 1, 2, 4, 8, 16; a control with the miners' memory reset on; then the one-off recall check (`test.RecallProbe`) of the two datasets above the oracle cut-off |
+| `python3 tools/summarize_suite.py` | Checks of that campaign: every cell recorded and OK, pattern count identical at every thread count, every exact method equal to the oracle set, the recall checks exact, the control equal to the main cells; per-configuration table `summary_SUITE.tsv` |
 | `python3 tools/check_runbook_blocks.py RUNBOOK REPORT_PS1 SCRATCH_DIR` | Run the measurement machine's command blocks verbatim under PowerShell with fake tools on throw-away git repositories, and check what each step does, including interrupted and failing runs |
 | `python3 tools/summarize_heap_guard.py [--pair DATASET RAW_DIR LIVE_DIR]` | Per dataset: BUD3 aborts and their cause, the heap after the collection that follows each abort, the live guard's collections, totals against F, and the checks of the heap guard hypotheses |
 
@@ -135,7 +150,9 @@ Results:
   directory, commit, Java build), one directory per cell with `run_meta.json` (command, commit, tree state,
   source and data hashes, Java, heap, threads), `exactness.csv` (per query: patterns returned, missing, extra,
   value mismatches, the policy's action) and `timing_feasibility.csv` (per query: ingest and query time), the
-  console log of every cell under `logs/`, `ENV_LOCK.json` and `summary_E2.tsv`.
+  console log of every cell under `logs/`, `ENV_LOCK.json` and `summary_E2.tsv`. The S1 to S11 cells write their run
+  directories under `results/9950x/suite/` (`results.csv`, one row per measured run; `meta.properties`, with the
+  commit, Java, JVM arguments, thread sweep and dataset settings; `dataset_stats.csv`; `DONE`).
 
 `COMMIT_MAP.tsv` maps commit ids that changed when manuscript tables were removed from the unpublished history;
 artifacts that cite an old id are resolved through it.
@@ -179,7 +196,7 @@ Configured in `ExpConfig`, implemented in `ExperimentOfficial`.
 
 | | Question it answers |
 |---|---|
-| S1 | How does runtime scale with threads? (T ∈ {1, 2, 4, 8, 10}) |
+| S1 | How does runtime scale with threads? (T ∈ {1, 2, 4, 8, 10} by default; set by `-Dsuite.threads`) |
 | S2 | How does it compare against the baselines, and against re-mining? |
 | S3 | Do results depend on the thread count? They must not; checked from the S1 runs |
 | S4 | Is it stable across batch distributions (uniform, increasing, oscillating, decreasing)? |
