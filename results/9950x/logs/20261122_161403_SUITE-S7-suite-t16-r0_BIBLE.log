@@ -1,0 +1,22 @@
+# java -Xmx32g -Xss4m -Dsuite.threads=1,2,4,8,16 -Dsuite.out=results/9950x/suite -Dsuite.cell=SUITE-S7-suite-t16-r0-BIBLE -cp out test.ExperimentOfficial --absolute --only=BIBLE --scenarios=S7
+# commit 004e1c03851e793355006c890be3546a7406cb94
+### --only: partial run of 1 dataset(s): [BIBLE] ###
+### RUN DIR -> results/9950x/suite/run_20261122_161403_SUITE-S7-suite-t16-r0-BIBLE_bced5dd6
+### PARALLEL EXPERIMENT | 1 datasets | fresh run | dir=results/9950x/suite/run_20261122_161403_SUITE-S7-suite-t16-r0-BIBLE_bced5dd6 ###
+### thread sweep (pinned) = [1, 2, 4, 8, 16] | best T = 16 ###
+   [stats BIBLE] N=36369 distinctItems=13905 avgLen=21.6 maxLen=100 avgEvents=21.6 maxEvents=100 totalUtil=35550162
+
+### ABSOLUTE maxReg: B = 1091 sequences (declared; constant at every batch) ###
+
+========== BIBLE | 36369 sequences | ?=0.0050 ?=0.03 | oracle(RHusp)=2141 | best T=16 (machine has 32) ==========
+-- S7 ?-sensitivity sweep (distribution A, best T=16) --
+   [S7-rhosweep     r=0.0150   P-RIncHUSP      T=16]    396 ms |   381.1 MB | HS=709 SHS=0 | recall=1.0000
+   [S7-rhosweep     r=0.0150   P-RIncHUSP-approx T=16]    325 ms |   483.0 MB | HS=709 SHS=343 | recall=1.0000
+   [S7-rhosweep     r=0.0150   RIncHusp-Fix0.4 T=1 ]  22232 ms |   423.4 MB | HS=709 SHS=343 | recall=1.0000
+   [S7-rhosweep     r=0.0300   P-RIncHUSP      T=16]    720 ms |   615.3 MB | HS=2141 SHS=0 | recall=1.0000
+   [S7-rhosweep     r=0.0300   P-RIncHUSP-approx T=16]    906 ms |  1152.8 MB | HS=2141 SHS=2525 | recall=1.0000
+   [S7-rhosweep     r=0.0300   RIncHusp-Fix0.4 T=1 ]  35968 ms |   599.8 MB | HS=2141 SHS=2525 | recall=1.0000
+   [S7-rhosweep     r=0.0450   P-RIncHUSP      T=16]    970 ms |   836.5 MB | HS=3646 SHS=0 | recall=1.0000
+   [S7-rhosweep     r=0.0450   P-RIncHUSP-approx T=16]   1867 ms |  1627.5 MB | HS=3646 SHS=6872 | recall=1.0000
+   [S7-rhosweep     r=0.0450   RIncHusp-Fix0.4 T=1 ]  53043 ms |   834.6 MB | HS=3646 SHS=6872 | recall=1.0000
+### DONE. dir: results\9950x\suite\run_20261122_161403_SUITE-S7-suite-t16-r0-BIBLE_bced5dd6 ###
