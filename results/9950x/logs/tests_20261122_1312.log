@@ -1,0 +1,61 @@
+self-test: machine_info                                                ok
+self-test: campaign runner                                             ok
+self-test: heap guard summary                                          ok
+self-test: reserve check                                               ok
+self-test: reserve-budget summary                                      ok
+self-test: bound selector summary                                      ok
+self-test: window gate summary                                         ok
+self-test: seed clock summary                                          ok
+self-test: S1-S11 suite summary                                        ok
+self-test: S1-S11 suite runner                                         ok
+clean: all policies                                                    ok  compared 10155 (non-empty 9990), failing 0, aborts in mining 1482, bound skips 0, gated 0, cross-checked 0/0, disagreeing 0, resets while paused 0, expected zero (1497 s)
+clean: dense co-occurrence build                                       ok  compared 3385 (non-empty 3330), failing 0, aborts in mining 131, bound skips 0, gated 0, cross-checked 0/0, disagreeing 0, resets while paused 0, expected zero (139 s)
+clean: partitioned build                                               ok  compared 3385 (non-empty 3330), failing 0, aborts in mining 127, bound skips 0, gated 0, cross-checked 0/0, disagreeing 0, resets while paused 0, expected zero (139 s)
+clean: sketch-filtered build                                           ok  compared 3385 (non-empty 3330), failing 0, aborts in mining 128, bound skips 0, gated 0, cross-checked 0/0, disagreeing 0, resets while paused 0, expected zero (140 s)
+clean: sketch with 16 counters per row                                 ok  compared 3385 (non-empty 3330), failing 0, aborts in mining 134, bound skips 0, gated 0, cross-checked 0/0, disagreeing 0, resets while paused 0, expected zero (140 s)
+clean: original hash build                                             ok  compared 3385 (non-empty 3330), failing 0, aborts in mining 212, bound skips 0, gated 0, cross-checked 0/0, disagreeing 0, resets while paused 0, expected zero (142 s)
+defect 1: discovery threshold one unit too high                        ok  compared 677 (non-empty 666), failing 28, aborts in mining 0, bound skips 0, gated 0, cross-checked 0/0, disagreeing 0, resets while paused 0, expected some (115 s)
+defect 2: anchor reset drops the raw increment                         ok  compared 677 (non-empty 666), failing 260, aborts in mining 0, bound skips 0, gated 0, cross-checked 0/0, disagreeing 0, resets while paused 0, expected some (117 s)
+defect 3: fresh candidates rebuilt from the increment only             ok  compared 677 (non-empty 666), failing 403, aborts in mining 0, bound skips 0, gated 0, cross-checked 0/0, disagreeing 0, resets while paused 0, expected some (115 s)
+defect 4: half-built candidates left in the tracked set                ok  compared 1354 (non-empty 1332), failing 10, aborts in mining 0, bound skips 0, gated 0, cross-checked 0/0, disagreeing 0, resets while paused 0, expected some (174 s)
+defect 5: aborted discovery skips the fallback re-mine                 ok  compared 2708 (non-empty 2664), failing 398, aborts in mining 127, bound skips 0, gated 0, cross-checked 0/0, disagreeing 0, resets while paused 0, expected some (24 s)
+defect 6: aborted discovery keeps candidates mid-rebuild               ok  compared 1354 (non-empty 1332), failing 3, aborts in mining 0, bound skips 0, gated 0, cross-checked 0/0, disagreeing 0, resets while paused 0, expected some (174 s)
+clean: hook-only aborts, bud and bud2                                  ok  compared 1354 (non-empty 1332), failing 0, aborts in mining 0, bound skips 0, gated 0, cross-checked 0/0, disagreeing 0, resets while paused 0, expected zero (173 s)
+defect 7: backoff answers from the stale set                           ok  compared 2708 (non-empty 2664), failing 438, aborts in mining 125, bound skips 0, gated 0, cross-checked 0/0, disagreeing 0, resets while paused 0, expected some (24 s)
+defect 8: whole-database index misses the last sequence                ok  compared 1354 (non-empty 1332), failing 345, aborts in mining 54, bound skips 0, gated 0, cross-checked 0/0, disagreeing 0, resets while paused 0, expected some (122 s)
+defect: dense build stores s-pairs backward                            ok  compared 3385 (non-empty 3330), failing 423, aborts in mining 125, bound skips 0, gated 0, cross-checked 0/0, disagreeing 0, resets while paused 0, expected some (140 s)
+defect: partitioned build loses a partition                            ok  compared 3385 (non-empty 3330), failing 2626, aborts in mining 52, bound skips 0, gated 0, cross-checked 0/0, disagreeing 0, resets while paused 0, expected some (135 s)
+defect: sketch estimate below the true value                           ok  compared 3385 (non-empty 3330), failing 556, aborts in mining 88, bound skips 0, gated 0, cross-checked 0/0, disagreeing 0, resets while paused 0, expected some (137 s)
+clean: seed fused into the first query (bud3fs)                        ok  compared 3385 (non-empty 3330), failing 0, aborts in mining 270, bound skips 0, gated 0, cross-checked 0/0, disagreeing 0, resets while paused 0, expected zero (143 s)
+defect 9: fused seed loses the batches before the first query          ok  compared 2708 (non-empty 2664), failing 2684, aborts in mining 217, bound skips 0, gated 0, cross-checked 0/0, disagreeing 0, resets while paused 0, expected some (29 s)
+clean: reserve gate (bud3rs), premium 0.1, 0 and 1e9                   ok  compared 4739 (non-empty 4662), failing 0, aborts in mining 255, bound skips 0, gated 0, cross-checked 0/0, disagreeing 0, resets while paused 0, expected zero (140 s)
+defect 10: a refused attempt answers from the stale set                ok  compared 1354 (non-empty 1332), failing 398, aborts in mining 90, bound skips 0, gated 0, cross-checked 0/0, disagreeing 0, resets while paused 0, expected some (10 s)
+clean: reserve budget (bud3rb), premium 0.1, 0 and 1e9                 ok  compared 4739 (non-empty 4662), failing 0, aborts in mining 172, bound skips 0, gated 0, cross-checked 0/0, disagreeing 0, resets while paused 0, expected zero (135 s)
+defect 10 under bud3rb: a refused attempt answers from the stale set   ok  compared 1354 (non-empty 1332), failing 492, aborts in mining 22, bound skips 0, gated 0, cross-checked 0/0, disagreeing 0, resets while paused 0, expected some (4 s)
+clean: bound selector (bud3rbx) skipping wherever a bound applies      ok  compared 3385 (non-empty 3330), failing 0, aborts in mining 41, bound skips 403, gated 0, cross-checked 0/0, disagreeing 0, resets while paused 0, expected zero+skips (124 s)
+clean: bound selector (bud3rbx) never skipping at a positive budget    ok  compared 2708 (non-empty 2664), failing 0, aborts in mining 76, bound skips 0, gated 0, cross-checked 0/0, disagreeing 0, resets while paused 0, expected zero+noskips (124 s)
+clean: window gate (bud3rbw) skipping wherever a bound applies         ok  compared 3385 (non-empty 3330), failing 0, aborts in mining 42, bound skips 406, gated 829, cross-checked 829/1162, disagreeing 0, resets while paused 86, expected zero+gate (124 s)
+clean: window gate (bud3rbw) never skipping at a positive budget       ok  compared 2708 (non-empty 2664), failing 0, aborts in mining 70, bound skips 0, gated 634, cross-checked 634/921, disagreeing 0, resets while paused 85, expected zero+gate+noskips (124 s)
+defect 17: the anchor reset leaves the selector bookkeeping paused     ok  exit 1, bud3rbw guard thrown, expected throws (1 s)
+clean: heap guard judged on the live heap (bud3live)                   ok  compared 3385 (non-empty 3330), failing 0, aborts in mining 131, bound skips 0, gated 0, cross-checked 0/0, disagreeing 0, resets while paused 0, expected zero (139 s)
+clean: heap guard breached at every attempt, bud3 and bud3live         ok  compared 2031 (non-empty 1998), failing 0, aborts in mining 490, bound skips 0, gated 0, cross-checked 0/0, disagreeing 0, resets while paused 0, expected zero+aborts (131 s)
+reserve: probe on SIGN, then the reserve check                         ok  probe compared 30 failing 0; reserve check 28 queries, 0 problems; 5 aborts, 14 refusals, 0 capped, 0 bounded, 0 gated by window, expected pass (20 s)
+defect 11: an aborted attempt is not charged to the reserve            ok  probe compared 30 failing 0; reserve check 28 queries, 9 problems; 8 aborts, 0 refusals, 0 capped, 0 bounded, 0 gated by window, expected fail (22 s)
+reserve budget (bud3rb): probe on SIGN, then the reserve check         ok  probe compared 15 failing 0; reserve check 14 queries, 0 problems; 2 aborts, 11 refusals, 1 capped, 0 bounded, 0 gated by window, expected pass (9 s)
+defect 12: the bud3rb budget ignores the reserve                       ok  probe compared 15 failing 0; reserve check 14 queries, 2 problems; 2 aborts, 11 refusals, 0 capped, 0 bounded, 0 gated by window, expected fail (9 s)
+defect 13: the bud3rb deadline keeps the full budget                   ok  probe compared 15 failing 0; reserve check 14 queries, 1 problems; 2 aborts, 11 refusals, 1 capped, 0 bounded, 0 gated by window, expected fail (9 s)
+bound selector (bud3rbx): probe on SIGN, then the reserve check        ok  probe compared 15 failing 0; reserve check 14 queries, 0 problems; 1 aborts, 11 refusals, 0 capped, 1 bounded, 0 gated by window, expected pass (9 s)
+defect 14: the bound selector never skips                              ok  probe compared 15 failing 0; reserve check 14 queries, 1 problems; 1 aborts, 13 refusals, 0 capped, 0 bounded, 0 gated by window, expected fail (9 s)
+defect 16: a bound skip is charged to the reserve                      ok  probe compared 15 failing 0; reserve check 14 queries, 3 problems; 0 aborts, 13 refusals, 0 capped, 1 bounded, 0 gated by window, expected fail (9 s)
+window gate (bud3rbw): probe on SIGN, then the reserve and gate check  ok  probe compared 15 failing 0; reserve check 14 queries, 0 problems; 1 aborts, 11 refusals, 0 capped, 1 bounded, 12 gated by window, expected pass (9 s)
+heavy-sequence bound: brute force per sequence and discovery engine per window ok  sequences 2935 (violations 0), windows 186 (violations 0, form a 146, form b 40), expected pass (0 s)
+defect 15: the heavy-sequence bound ignores repeated items             ok  sequences 2935 (violations 321), windows 186 (violations 0, form a 146, form b 40), expected fail (0 s)
+window gate: closed only where no bound exists, boundary n = 2B - 1    ok  windows 4000, violations 0, closed 1512, open with a bound 1515, boundary 1000 (form b 835), closed with a bound 0, expected pass (0 s)
+defect 18: the window gate closes one sequence early                   ok  windows 4000, violations 1294, closed 3341, open with a bound 221, boundary 1000 (form b 835), closed with a bound 0, expected fail (0 s)
+seed clock: no collection in the fused seed, -sgc control keeps it     ok  probe compared 45 failing 0; reserve check 28 queries, 0 problems; F collections 0; q0 nodes F 290672, seed 303688, control 303688, expected pass (12 s)
+defect 19: the fused seed collects garbage inside its clock            ok  probe compared 45 failing 0; reserve check 28 queries, 1 problems; F collections 0; q0 nodes F 290672, seed 303688, control 303688, expected fail (13 s)
+heap valve: raw and live modes on garbage and on live data             ok  tested 4 of 4, failing 0, expected pass (0 s)
+defect: live heap valve skips its collection                           ok  tested 4 of 4, failing 2, expected fail (0 s)
+defect: live heap valve never re-reads after collecting                ok  tested 4 of 4, failing 1, expected fail (0 s)
+
+59/59 tests as expected
