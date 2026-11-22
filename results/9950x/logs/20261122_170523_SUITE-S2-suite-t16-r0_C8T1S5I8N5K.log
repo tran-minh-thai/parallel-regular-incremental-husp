@@ -1,0 +1,19 @@
+# java -Xmx32g -Xss4m -Dsuite.threads=1,2,4,8,16 -Dsuite.out=results/9950x/suite -Dsuite.cell=SUITE-S2-suite-t16-r0-C8T1S5I8N5K -cp out test.ExperimentOfficial --absolute --only=C8T1S5I8N5K --scenarios=S2
+# commit 6951ca5ebea4a3604d756db25c297074630f02b5
+### --only: partial run of 1 dataset(s): [C8T1S5I8N5K] ###
+### RUN DIR -> results/9950x/suite/run_20261122_170523_SUITE-S2-suite-t16-r0-C8T1S5I8N5K_e99a69c4
+### PARALLEL EXPERIMENT | 1 datasets | fresh run | dir=results/9950x/suite/run_20261122_170523_SUITE-S2-suite-t16-r0-C8T1S5I8N5K_e99a69c4 ###
+### thread sweep (pinned) = [1, 2, 4, 8, 16] | best T = 16 ###
+   [stats C8T1S5I8N5K] N=47132 distinctItems=68240 avgLen=18.8 maxLen=94 avgEvents=2.4 maxEvents=10 totalUtil=47416411
+
+### ABSOLUTE maxReg: B = 2827 sequences (declared; constant at every batch) ###
+
+========== C8T1S5I8N5K | 47132 sequences | ?=0.0010 ?=0.06 | recall=SKIPPED (N>40000) | best T=16 (machine has 32) ==========
+-- S2 Comparison (distribution A, best T=16) --
+   [S2-compare      A-Uniform  P-RIncHUSP      T=16]    492 ms |  4046.3 MB | HS=5612 SHS=0
+   [S2-compare      A-Uniform  P-RIncHUSP-seq  T=1 ]    505 ms |   723.5 MB | HS=5612 SHS=0
+   [S2-compare      A-Uniform  RIncHusp-Fix0.4 T=1 ]  71976 ms |  6587.7 MB | HS=5612 SHS=14446
+   [S2-compare      A-Uniform  RIncHusp-Fix0.9 T=1 ]  50807 ms |   532.7 MB | HS=5555 SHS=1697
+   [S2-compare      A-Uniform  Remine-static   T=1 ] 685378 ms |   863.4 MB | HS=5612 SHS=0
+   [S2-compare      A-Uniform  ParRemine       T=16]    797 ms |  4397.5 MB | HS=5612 SHS=0
+### DONE. dir: results\9950x\suite\run_20261122_170523_SUITE-S2-suite-t16-r0-C8T1S5I8N5K_e99a69c4 ###
