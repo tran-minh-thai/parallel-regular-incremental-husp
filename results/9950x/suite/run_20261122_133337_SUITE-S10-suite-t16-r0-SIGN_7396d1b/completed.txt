@@ -1,0 +1,5 @@
+SIGN|S10-exactness|neither|P-RIncHUSP[-,-]|16
+SIGN|S10-exactness|reg-only|P-RIncHUSP[reg,-]|16
+SIGN|S10-exactness|disc-only|P-RIncHUSP[-,disc]|16
+SIGN|S10-exactness|both-EXACT|P-RIncHUSP[reg,disc]|16
+SIGN|S10-exactness|pre-fix|P-RIncHUSP-approx|16
