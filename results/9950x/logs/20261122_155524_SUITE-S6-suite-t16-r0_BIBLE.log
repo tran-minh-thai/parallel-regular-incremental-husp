@@ -1,0 +1,21 @@
+# java -Xmx32g -Xss4m -Dsuite.threads=1,2,4,8,16 -Dsuite.out=results/9950x/suite -Dsuite.cell=SUITE-S6-suite-t16-r0-BIBLE -cp out test.ExperimentOfficial --absolute --only=BIBLE --scenarios=S6
+# commit 6074e3330fc7eb5ee679899672f88917a4a0e144
+### --only: partial run of 1 dataset(s): [BIBLE] ###
+### RUN DIR -> results/9950x/suite/run_20261122_155524_SUITE-S6-suite-t16-r0-BIBLE_4df772fa
+### PARALLEL EXPERIMENT | 1 datasets | fresh run | dir=results/9950x/suite/run_20261122_155524_SUITE-S6-suite-t16-r0-BIBLE_4df772fa ###
+### thread sweep (pinned) = [1, 2, 4, 8, 16] | best T = 16 ###
+   [stats BIBLE] N=36369 distinctItems=13905 avgLen=21.6 maxLen=100 avgEvents=21.6 maxEvents=100 totalUtil=35550162
+
+### ABSOLUTE maxReg: B = 1091 sequences (declared; constant at every batch) ###
+
+========== BIBLE | 36369 sequences | ?=0.0050 ?=0.03 | oracle(RHusp)=2141 | best T=16 (machine has 32) ==========
+-- S6 ?-sensitivity sweep (distribution A, best T=16) --
+   [S6-deltasweep   d=0.0050   P-RIncHUSP      T=16]    737 ms |   826.4 MB | HS=2141 SHS=0 | recall=1.0000
+   [S6-deltasweep   d=0.0050   RIncHusp-Fix0.4 T=1 ]  37241 ms |   564.9 MB | HS=2141 SHS=2525 | recall=1.0000
+   [S6-deltasweep   d=0.0075   P-RIncHUSP      T=16]    512 ms |   512.4 MB | HS=1279 SHS=0 | recall=1.0000
+   [S6-deltasweep   d=0.0075   RIncHusp-Fix0.4 T=1 ]  29367 ms |   484.7 MB | HS=1279 SHS=2225 | recall=1.0000
+   [S6-deltasweep   d=0.0100   P-RIncHUSP      T=16]    404 ms |   290.6 MB | HS=890 SHS=0 | recall=1.0000
+   [S6-deltasweep   d=0.0100   RIncHusp-Fix0.4 T=1 ]  24555 ms |   396.2 MB | HS=890 SHS=1753 | recall=1.0000
+   [S6-deltasweep   d=0.0150   P-RIncHUSP      T=16]    274 ms |   286.6 MB | HS=417 SHS=0 | recall=1.0000
+   [S6-deltasweep   d=0.0150   RIncHusp-Fix0.4 T=1 ]  18343 ms |   384.9 MB | HS=417 SHS=1221 | recall=1.0000
+### DONE. dir: results\9950x\suite\run_20261122_155524_SUITE-S6-suite-t16-r0-BIBLE_4df772fa ###
