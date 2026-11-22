@@ -1,0 +1,29 @@
+# java -Xmx32g -Xss4m -Dsuite.threads=1,2,4,8,16 -Dsuite.out=results/9950x/suite -Dsuite.cell=SUITE-S11-suite-t16-r0-BIBLE -cp out test.ExperimentOfficial --absolute --only=BIBLE --scenarios=S11
+# commit 106994f66d784e756c3e1c0d2f43ebe185267a13
+### --only: partial run of 1 dataset(s): [BIBLE] ###
+### RUN DIR -> results/9950x/suite/run_20261122_144110_SUITE-S11-suite-t16-r0-BIBLE_78bc5112
+### PARALLEL EXPERIMENT | 1 datasets | fresh run | dir=results/9950x/suite/run_20261122_144110_SUITE-S11-suite-t16-r0-BIBLE_78bc5112 ###
+### thread sweep (pinned) = [1, 2, 4, 8, 16] | best T = 16 ###
+   [stats BIBLE] N=36369 distinctItems=13905 avgLen=21.6 maxLen=100 avgEvents=21.6 maxEvents=100 totalUtil=35550162
+
+### ABSOLUTE maxReg: B = 1091 sequences (declared; constant at every batch) ###
+
+========== BIBLE | 36369 sequences | ?=0.0050 ?=0.03 | oracle(RHusp)=2141 | best T=16 (machine has 32) ==========
+-- S11 baseline comparison across batch counts (best T=16) --
+   [S11-batchcompare B=4        P-RIncHUSP      T=16]    749 ms |   665.3 MB | HS=2141 SHS=0 | recall=1.0000
+   [S11-batchcompare B=4        P-RIncHUSP-seq  T=1 ]   7609 ms |   213.5 MB | HS=2141 SHS=0 | recall=1.0000
+   [S11-batchcompare B=4        RIncHusp-Fix0.4 T=1 ]  36742 ms |   596.7 MB | HS=2141 SHS=2525 | recall=1.0000
+   [S11-batchcompare B=4        RIncHusp-Fix0.9 T=1 ]  22709 ms |   477.5 MB | HS=2104 SHS=231 | recall=0.9827
+   [S11-batchcompare B=4        ParRemine       T=16]   8444 ms |   255.6 MB | HS=2141 SHS=0 | recall=1.0000
+   [S11-batchcompare B=4        Remine-static   T=1 ] 188954 ms |   581.6 MB | HS=2141 SHS=0 | recall=1.0000
+   [S11-batchcompare B=16       P-RIncHUSP      T=16]    799 ms |   720.3 MB | HS=2141 SHS=0 | recall=1.0000
+   [S11-batchcompare B=16       P-RIncHUSP-seq  T=1 ]   7609 ms |   233.2 MB | HS=2141 SHS=0 | recall=1.0000
+   [S11-batchcompare B=16       RIncHusp-Fix0.4 T=1 ]  36055 ms |   597.2 MB | HS=2141 SHS=2525 | recall=1.0000
+   [S11-batchcompare B=16       RIncHusp-Fix0.9 T=1 ]  22408 ms |   477.1 MB | HS=2104 SHS=231 | recall=0.9827
+   [S11-batchcompare B=16       ParRemine       T=16]  35772 ms |   380.8 MB | HS=2141 SHS=0 | recall=1.0000
+   [S11-batchcompare B=64       P-RIncHUSP      T=16]    922 ms |   608.4 MB | HS=2141 SHS=0 | recall=1.0000
+   [S11-batchcompare B=64       P-RIncHUSP-seq  T=1 ]   7523 ms |   311.1 MB | HS=2141 SHS=0 | recall=1.0000
+   [S11-batchcompare B=64       RIncHusp-Fix0.4 T=1 ]  37016 ms |   606.5 MB | HS=2141 SHS=2525 | recall=1.0000
+   [S11-batchcompare B=64       RIncHusp-Fix0.9 T=1 ]  22980 ms |   567.3 MB | HS=2104 SHS=231 | recall=0.9827
+   [S11-batchcompare B=64       ParRemine       T=16] 141888 ms |   390.9 MB | HS=2141 SHS=0 | recall=1.0000
+### DONE. dir: results\9950x\suite\run_20261122_144110_SUITE-S11-suite-t16-r0-BIBLE_78bc5112 ###
