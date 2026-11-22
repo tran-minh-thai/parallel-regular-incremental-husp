@@ -1,0 +1,25 @@
+# java -Xmx32g -Xss4m -Dsuite.threads=1,2,4,8,16 -Dsuite.out=results/9950x/suite -Dsuite.cell=SUITE-S1-suite-t16-r0-FIFA -cp out test.ExperimentOfficial --absolute --only=FIFA --scenarios=S1
+# commit 34523ae9411dc2c423f607914e49a49b3e84cefb
+### --only: partial run of 1 dataset(s): [FIFA] ###
+### RUN DIR -> results/9950x/suite/run_20261122_210140_SUITE-S1-suite-t16-r0-FIFA_d41a47b
+### PARALLEL EXPERIMENT | 1 datasets | fresh run | dir=results/9950x/suite/run_20261122_210140_SUITE-S1-suite-t16-r0-FIFA_d41a47b ###
+### thread sweep (pinned) = [1, 2, 4, 8, 16] | best T = 16 ###
+   [stats FIFA] N=20450 distinctItems=2990 avgLen=36.2 maxLen=100 avgEvents=36.2 maxEvents=100 totalUtil=42781841
+
+### ABSOLUTE maxReg: B = 6135 sequences (declared; constant at every batch) ###
+
+========== FIFA [S1 ONLY] | 20450 sequences | ?=0.0500 ?=0.30 | oracle(RHusp)=127 | best T=16 (machine has 32) ==========
+-- S1 Scalability (distribution A) --
+   [S1-scalability  A-Uniform  P-RIncHUSP      T=1 ]  61940 ms |   197.9 MB | HS=127 SHS=0 | recall=1.0000
+   [S1-scalability  A-Uniform  P-RIncHUSP      T=2 ]  31598 ms |   222.0 MB | HS=127 SHS=0 | recall=1.0000
+   [S1-scalability  A-Uniform  P-RIncHUSP      T=4 ]  16931 ms |   293.3 MB | HS=127 SHS=0 | recall=1.0000
+   [S1-scalability  A-Uniform  P-RIncHUSP      T=8 ]   8889 ms |   469.0 MB | HS=127 SHS=0 | recall=1.0000
+   [S1-scalability  A-Uniform  P-RIncHUSP      T=16]   4817 ms |   706.5 MB | HS=127 SHS=0 | recall=1.0000
+   ?? Speedup ??  T :  ms  | S(p) | E(p)
+                 1 :  61940 | 1.00 | 1.00
+                 2 :  31598 | 1.96 | 0.98
+                 4 :  16931 | 3.66 | 0.91
+                 8 :   8889 | 6.97 | 0.87
+                16 :   4817 | 12.86 | 0.80
+   S3 HS invariance across T: OK ([127, 127, 127, 127, 127])
+### DONE. dir: results\9950x\suite\run_20261122_210140_SUITE-S1-suite-t16-r0-FIFA_d41a47b ###
