@@ -1,0 +1,23 @@
+# java -Xmx32g -Xss4m -Dsuite.threads=1,2,4,8,16 -Dsuite.out=results/9950x/suite -Dsuite.cell=SUITE-RN-S7-suite-t16-r0-SIGN -cp out test.ExperimentOfficial --absolute --only=SIGN --scenarios=S7
+# commit 19f00609e53c40ea48b0d092e7a229f3ce9ede1c
+### --only: partial run of 1 dataset(s): [SIGN] ###
+### RUN DIR -> results/9950x/suite/run_20261123_182817_SUITE-RN-S7-suite-t16-r0-SIGN_d8847a04
+### PARALLEL EXPERIMENT | 1 datasets | fresh run | dir=results/9950x/suite/run_20261123_182817_SUITE-RN-S7-suite-t16-r0-SIGN_d8847a04 ###
+### thread sweep (pinned) = [1, 2, 4, 8, 16] | best T = 16 ###
+   [items SIGN] 267 distinct, largest id in file 310, renumbered to 1..267
+   [stats SIGN] N=730 distinctItems=267 avgLen=52.0 maxLen=94 avgEvents=52.0 maxEvents=94 totalUtil=1796483
+
+### ABSOLUTE maxReg: B = 21 sequences (declared; constant at every batch) ###
+
+========== SIGN | 730 sequences | ?=0.0050 ?=0.03 | oracle(RHusp)=820 | best T=16 (machine has 32) ==========
+-- S7 ?-sensitivity sweep (distribution A, best T=16) --
+   [S7-rhosweep     r=0.0150   P-RIncHUSP      T=16]     18 ms |    81.5 MB | HS=53 SHS=0 | recall=1.0000
+   [S7-rhosweep     r=0.0150   P-RIncHUSP-approx T=16]     13 ms |    24.9 MB | HS=53 SHS=9 | recall=1.0000
+   [S7-rhosweep     r=0.0150   RIncHusp-Fix0.4 T=1 ]    362 ms |   305.6 MB | HS=53 SHS=9 | recall=1.0000
+   [S7-rhosweep     r=0.0300   P-RIncHUSP      T=16]    140 ms |   615.4 MB | HS=820 SHS=0 | recall=1.0000
+   [S7-rhosweep     r=0.0300   P-RIncHUSP-approx T=16]    168 ms |   644.5 MB | HS=820 SHS=100 | recall=1.0000
+   [S7-rhosweep     r=0.0300   RIncHusp-Fix0.4 T=1 ]   3006 ms |   337.8 MB | HS=820 SHS=100 | recall=1.0000
+   [S7-rhosweep     r=0.0450   P-RIncHUSP      T=16]    569 ms |  1283.6 MB | HS=6101 SHS=0 | recall=1.0000
+   [S7-rhosweep     r=0.0450   P-RIncHUSP-approx T=16]    750 ms |  1478.1 MB | HS=6101 SHS=546 | recall=1.0000
+   [S7-rhosweep     r=0.0450   RIncHusp-Fix0.4 T=1 ]   7812 ms |   644.3 MB | HS=6101 SHS=546 | recall=1.0000
+### DONE. dir: results\9950x\suite\run_20261123_182817_SUITE-RN-S7-suite-t16-r0-SIGN_d8847a04 ###
