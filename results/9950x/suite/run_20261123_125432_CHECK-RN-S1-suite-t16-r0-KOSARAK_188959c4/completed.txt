@@ -1,0 +1,5 @@
+KOSARAK|S1-scalability|A-Uniform|P-RIncHUSP|1
+KOSARAK|S1-scalability|A-Uniform|P-RIncHUSP|2
+KOSARAK|S1-scalability|A-Uniform|P-RIncHUSP|4
+KOSARAK|S1-scalability|A-Uniform|P-RIncHUSP|8
+KOSARAK|S1-scalability|A-Uniform|P-RIncHUSP|16

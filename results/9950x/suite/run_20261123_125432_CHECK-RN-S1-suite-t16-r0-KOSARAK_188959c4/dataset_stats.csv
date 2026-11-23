@@ -1,0 +1,2 @@
+dataset,n_sequences,distinct_items,avg_len_items,max_len_items,avg_events,max_events,total_utility
+KOSARAK,990002,41270,8.10,2498,8.10,2498,385921994

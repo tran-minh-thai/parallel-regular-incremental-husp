@@ -1,0 +1,26 @@
+# java -Xmx32g -Xss4m -Dsuite.threads=1,2,4,8,16 -Dsuite.out=results/9950x/suite -Dsuite.cell=CHECK-RN-S1-suite-t16-r0-KOSARAK -cp out test.ExperimentOfficial --absolute --only=KOSARAK --scenarios=S1
+# commit fbe2d7ee9266030fb93f6139d4dd1575fd89a19a
+### --only: partial run of 1 dataset(s): [KOSARAK] ###
+### RUN DIR -> results/9950x/suite/run_20261123_125432_CHECK-RN-S1-suite-t16-r0-KOSARAK_188959c4
+### PARALLEL EXPERIMENT | 1 datasets | fresh run | dir=results/9950x/suite/run_20261123_125432_CHECK-RN-S1-suite-t16-r0-KOSARAK_188959c4 ###
+### thread sweep (pinned) = [1, 2, 4, 8, 16] | best T = 16 ###
+   [items KOSARAK] 41270 distinct, largest id in file 41270, already 1..n, kept
+   [stats KOSARAK] N=990002 distinctItems=41270 avgLen=8.1 maxLen=2498 avgEvents=8.1 maxEvents=2498 totalUtil=385921994
+
+### ABSOLUTE maxReg: B = 297000 sequences (declared; constant at every batch) ###
+
+========== KOSARAK [S1 ONLY] | 990002 sequences | ?=0.0150 ?=0.30 | recall=SKIPPED (N>40000) | best T=16 (machine has 32) ==========
+-- S1 Scalability (distribution A) --
+   [S1-scalability  A-Uniform  P-RIncHUSP      T=1 ]  24100 ms |  1698.1 MB | HS=27 SHS=0
+   [S1-scalability  A-Uniform  P-RIncHUSP      T=2 ]  13798 ms |  1826.8 MB | HS=27 SHS=0
+   [S1-scalability  A-Uniform  P-RIncHUSP      T=4 ]   7548 ms |  2023.7 MB | HS=27 SHS=0
+   [S1-scalability  A-Uniform  P-RIncHUSP      T=8 ]   4967 ms |  2229.7 MB | HS=27 SHS=0
+   [S1-scalability  A-Uniform  P-RIncHUSP      T=16]   3343 ms |  2994.9 MB | HS=27 SHS=0
+   ?? Speedup ??  T :  ms  | S(p) | E(p)
+                 1 :  24100 | 1.00 | 1.00
+                 2 :  13798 | 1.75 | 0.87
+                 4 :   7548 | 3.19 | 0.80
+                 8 :   4967 | 4.85 | 0.61
+                16 :   3343 | 7.21 | 0.45
+   S3 HS invariance across T: OK ([27, 27, 27, 27, 27])
+### DONE. dir: results\9950x\suite\run_20261123_125432_CHECK-RN-S1-suite-t16-r0-KOSARAK_188959c4 ###
