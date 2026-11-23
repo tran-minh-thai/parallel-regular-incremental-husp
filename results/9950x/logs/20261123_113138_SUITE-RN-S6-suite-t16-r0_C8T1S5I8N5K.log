@@ -1,0 +1,22 @@
+# java -Xmx32g -Xss4m -Dsuite.threads=1,2,4,8,16 -Dsuite.out=results/9950x/suite -Dsuite.cell=SUITE-RN-S6-suite-t16-r0-C8T1S5I8N5K -cp out test.ExperimentOfficial --absolute --only=C8T1S5I8N5K --scenarios=S6
+# commit d139997a969aa66af6bcf545539508922061c25b
+### --only: partial run of 1 dataset(s): [C8T1S5I8N5K] ###
+### RUN DIR -> results/9950x/suite/run_20261123_113139_SUITE-RN-S6-suite-t16-r0-C8T1S5I8N5K_76313233
+### PARALLEL EXPERIMENT | 1 datasets | fresh run | dir=results/9950x/suite/run_20261123_113139_SUITE-RN-S6-suite-t16-r0-C8T1S5I8N5K_76313233 ###
+### thread sweep (pinned) = [1, 2, 4, 8, 16] | best T = 16 ###
+   [items C8T1S5I8N5K] 68240 distinct, largest id in file 4999999, renumbered to 1..68240
+   [stats C8T1S5I8N5K] N=47132 distinctItems=68240 avgLen=18.8 maxLen=94 avgEvents=2.4 maxEvents=10 totalUtil=47416411
+
+### ABSOLUTE maxReg: B = 2827 sequences (declared; constant at every batch) ###
+
+========== C8T1S5I8N5K | 47132 sequences | ?=0.0010 ?=0.06 | recall=SKIPPED (N>40000) | best T=16 (machine has 32) ==========
+-- S6 ?-sensitivity sweep (distribution A, best T=16) --
+   [S6-deltasweep   d=0.0010   P-RIncHUSP      T=16]    137 ms |   325.7 MB | HS=5612 SHS=0
+   [S6-deltasweep   d=0.0010   RIncHusp-Fix0.4 T=1 ]  67046 ms |  6587.2 MB | HS=5612 SHS=14446
+   [S6-deltasweep   d=0.0015   P-RIncHUSP      T=16]     61 ms |   161.9 MB | HS=1 SHS=0
+   [S6-deltasweep   d=0.0015   RIncHusp-Fix0.4 T=1 ]  49752 ms |  1601.0 MB | HS=1 SHS=11531
+   [S6-deltasweep   d=0.0020   P-RIncHUSP      T=16]     46 ms |   206.6 MB | HS=1 SHS=0
+   [S6-deltasweep   d=0.0020   RIncHusp-Fix0.4 T=1 ]  47187 ms |   755.3 MB | HS=1 SHS=8550
+   [S6-deltasweep   d=0.0030   P-RIncHUSP      T=16]     42 ms |   152.6 MB | HS=1 SHS=0
+   [S6-deltasweep   d=0.0030   RIncHusp-Fix0.4 T=1 ]  45173 ms |   639.7 MB | HS=1 SHS=1785
+### DONE. dir: results\9950x\suite\run_20261123_113139_SUITE-RN-S6-suite-t16-r0-C8T1S5I8N5K_76313233 ###
