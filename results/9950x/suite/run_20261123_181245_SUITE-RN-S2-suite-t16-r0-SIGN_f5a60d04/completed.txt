@@ -1,0 +1,6 @@
+SIGN|S2-compare|A-Uniform|P-RIncHUSP|16
+SIGN|S2-compare|A-Uniform|P-RIncHUSP-seq|1
+SIGN|S2-compare|A-Uniform|RIncHusp-Fix0.4|1
+SIGN|S2-compare|A-Uniform|RIncHusp-Fix0.9|1
+SIGN|S2-compare|A-Uniform|Remine-static|1
+SIGN|S2-compare|A-Uniform|ParRemine|16
