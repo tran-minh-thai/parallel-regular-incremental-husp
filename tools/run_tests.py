@@ -159,6 +159,16 @@ SEED_CLOCK = [
     ("defect 19: the fused seed collects garbage inside its clock", ["-Dfault=19"], "fail"),
 ]
 
+# (name, dataset, delta, B, fault, expected) for test.RenumberCheck: "pass" = the renumbered database yields the same patterns
+# and values as the file's own ids, over at least one pattern; "fail" = a renumbering that merges two items, or a comparison
+# that skips the translation back, is caught. C8T1S5I8N5K is the data set whose ids are sparse (68,240 items, ids to 4,999,999).
+RENUMBER = [
+    ("item renumbering: same patterns on SIGN", "SIGN", "0.005", "21", "", "pass"),
+    ("item renumbering: same patterns on C8T1S5I8N5K", "C8T1S5I8N5K", "0.001", "2827", "", "pass"),
+    ("defect: renumbering merges two items", "SIGN", "0.005", "21", "collide", "fail"),
+    ("defect: comparison skips the translation back", "C8T1S5I8N5K", "0.001", "2827", "notranslate", "fail"),
+]
+
 HEAP_VALVE = [
     ("heap valve: raw and live modes on garbage and on live data", [], "pass"),
     ("defect: live heap valve skips its collection", ["-Dheapvalve.fault=1"], "fail"),
@@ -356,6 +366,27 @@ def main(argv=None):
         tested, failing = map(int, m.groups())
         ok = tested == 4 and ((failing == 0 and p.returncode == 0) if expected == "pass" else failing > 0)
         detail = "tested %d of 4, failing %d, expected %s (%.0f s)" % (tested, failing, expected, secs)
+        results.append((name, ok, detail))
+        print("%-70s %s  %s" % (name, "ok" if ok else "FAILED", detail), flush=True)
+
+    for name, ds, delta, b, fault, expected in RENUMBER:
+        if args.only and args.only not in name:
+            continue
+        p, secs = run(["java", "-Xmx8g", "-Xss4m", "-cp", "out", "test.RenumberCheck", "datasets/%s_seq.txt" % ds,
+                       "datasets/%s_eui.txt" % ds, delta, b, "4"] + ([fault] if fault else []))
+        m = re.search(r"patterns (\d+) \(file ids\) vs (\d+) \(renumbered\); equal (\d+), differing (\d+), extra (\d+)", p.stdout)
+        if not m:
+            results.append((name, False, "no summary line; exit %d; %s" % (p.returncode, (p.stderr or p.stdout)[-300:])))
+            print("%-70s FAILED (no summary)" % name, flush=True)
+            continue
+        nw, ng, eq, df, ex = map(int, m.groups())
+        renum = "renumbered;" in p.stdout
+        if expected == "pass":
+            ok = p.returncode == 0 and nw > 0 and eq == nw == ng and df == 0 and ex == 0 and (renum or ds != "C8T1S5I8N5K")
+        else:
+            ok = p.returncode != 0 and (df > 0 or ex > 0)
+        detail = "patterns %d vs %d, equal %d, differing %d, extra %d, renumbered %s, expected %s (%.0f s)" % (
+            nw, ng, eq, df, ex, renum, expected, secs)
         results.append((name, ok, detail))
         print("%-70s %s  %s" % (name, "ok" if ok else "FAILED", detail), flush=True)
     return report(results)

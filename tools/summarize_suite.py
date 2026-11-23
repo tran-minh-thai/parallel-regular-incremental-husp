@@ -19,7 +19,6 @@ A check over zero comparable cases prints "unverified" and fails. Exit status 1 
 Standard library only; runs on Windows and macOS.
 """
 import argparse
-import csv
 import json
 import re
 import shutil
@@ -63,8 +62,23 @@ def read_rows(run_dir):
     p = run_dir / "results.csv"
     if not p.exists():
         return None
-    with open(p, encoding="utf-8", newline="") as f:
-        return list(csv.DictReader(f))
+    # The runner writes the algorithm name unquoted, and names such as "P-RIncHUSP[-,disc]" contain a comma, so
+    # those rows carry more fields than the header and csv.DictReader shifts every later column by one. Column
+    # names carry no commas: fields before the algorithm are read from the start of the row, the rest from the end.
+    lines = p.read_text(encoding="utf-8").splitlines()
+    head = lines[0].split(",")
+    ai = head.index("algorithm")
+    after = len(head) - ai - 1
+    out = []
+    for n, line in enumerate(lines[1:], 2):
+        if not line.strip():
+            continue
+        f = line.split(",")
+        if len(f) < len(head):
+            raise ValueError("%s line %d: %d fields, header has %d" % (p, n, len(f), len(head)))
+        f = f[:ai] + [",".join(f[ai:len(f) - after])] + f[len(f) - after:]
+        out.append(dict(zip(head, f)))
+    return out
 
 
 def cell_id(c):
@@ -213,6 +227,7 @@ def self_test():
             "SUITE|A|S8|suite|t16|r0": [row("A", "S8-batchscale", "B=4", "P-RIncHUSP", 16, 10, 10, 10),
                                         row("A", "S8-batchscale", "B=4", "ParRemine", 16, 10, (9 if fault == 2 else 10), 10),
                                         row("A", "S8-batchscale", "B=4", "RIncHusp-Fix0.9", 1, 8, 8, 10),
+                                        row("A", "S8-batchscale", "B=4", "P-RIncHUSP[-,disc]", 16, 10, (9 if fault == 6 else 10), 10),
                                         row("A", "S8-batchscale", "B=64", "ParRemine", 16, -1, -1, 10, "TIMEOUT")],
             "SUITE-GC|A|S8|suite|t16|r0": [row("A", "S8-batchscale", "B=4", "ParRemine", 16, (11 if fault == 4 else 10), -1, -1)],
         }
@@ -235,9 +250,9 @@ def self_test():
     check(not fails, "clean table passes every check (%s)" % fails)
     check(any(l.startswith("U3 info: 1 ") for l in lines), "a TIMEOUT configuration is listed, not failed")
     t = (tmp / "s.tsv").read_text(encoding="utf-8").splitlines()
-    check(len(t) == 1 + 8 and all(len(x.split("\t")) == 10 for x in t), "TSV has one row per configuration and arm (%d)" % (len(t) - 1))
+    check(len(t) == 1 + 9 and all(len(x.split("\t")) == 10 for x in t), "TSV has one row per configuration and arm (%d)" % (len(t) - 1))
     shutil.rmtree(tmp, ignore_errors=True)
-    for f, tag in ((1, "U1"), (2, "U2"), (3, "U4"), (4, "U5"), (5, "U0")):
+    for f, tag in ((1, "U1"), (2, "U2"), (3, "U4"), (4, "U5"), (5, "U0"), (6, "U2")):
         tmp, cfg = build(f)
         _, fails = summarize(tmp, cfg)
         check(fails == [tag], "fault %d is caught by %s and nothing else (%s)" % (f, tag, fails))

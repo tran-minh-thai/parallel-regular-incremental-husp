@@ -1,0 +1,133 @@
+{
+  "about": "Re-measurement after the load-time item renumbering (ExpUtil.renumberItems): every scenario of C8T1S5I8N5K, whose item ids are sparse (68,240 items, ids up to 4,999,999), and its recall check; then a check run of S1 on the five other datasets of the suite. KOSARAK is already numbered 1..n, so its renumbering is the identity and its cell measures the session alone; SIGN, LEVIATHAN, BIBLE and FIFA have small gaps in their ids. Same machine, environment lock, datasets, output directory and ledger as the S1-S11 suite; summarize with --config of this file",
+  "out": "results/9950x",
+  "branch": "campaign-9950x",
+  "status_project": "07_RegIncHUSPM_Parallel",
+  "jvm": [
+    "-Xmx32g",
+    "-Xss4m"
+  ],
+  "threads": 16,
+  "datasets": {
+    "SIGN": {},
+    "LEVIATHAN": {},
+    "BIBLE": {},
+    "C8T1S5I8N5K": {},
+    "FIFA": {},
+    "KOSARAK": {}
+  },
+  "experiments": {
+    "SUITE-RN": {
+      "kind": "suite",
+      "pairs": [
+        [
+          "C8T1S5I8N5K",
+          "S1"
+        ],
+        [
+          "C8T1S5I8N5K",
+          "S2"
+        ],
+        [
+          "C8T1S5I8N5K",
+          "S11"
+        ],
+        [
+          "C8T1S5I8N5K",
+          "S4"
+        ],
+        [
+          "C8T1S5I8N5K",
+          "S5"
+        ],
+        [
+          "C8T1S5I8N5K",
+          "S6"
+        ],
+        [
+          "C8T1S5I8N5K",
+          "S7"
+        ],
+        [
+          "C8T1S5I8N5K",
+          "S8"
+        ],
+        [
+          "C8T1S5I8N5K",
+          "S9"
+        ],
+        [
+          "C8T1S5I8N5K",
+          "S10"
+        ]
+      ],
+      "policies": [
+        "suite"
+      ],
+      "limit_s": 21600,
+      "props": [
+        "-Dsuite.threads=1,2,4,8,16"
+      ],
+      "args": [
+        "--absolute"
+      ]
+    },
+    "RECALL-C8T1-RN": {
+      "kind": "java",
+      "main": "test.RecallProbe",
+      "pairs": [
+        [
+          "C8T1S5I8N5K",
+          "once"
+        ]
+      ],
+      "policies": [
+        "recall"
+      ],
+      "limit_s": 7200,
+      "args": [
+        "datasets/{dataset}_seq.txt",
+        "datasets/{dataset}_eui.txt",
+        "0.001",
+        "0.06",
+        "1,16"
+      ]
+    },
+    "CHECK-RN": {
+      "kind": "suite",
+      "pairs": [
+        [
+          "SIGN",
+          "S1"
+        ],
+        [
+          "LEVIATHAN",
+          "S1"
+        ],
+        [
+          "BIBLE",
+          "S1"
+        ],
+        [
+          "KOSARAK",
+          "S1"
+        ],
+        [
+          "FIFA",
+          "S1"
+        ]
+      ],
+      "policies": [
+        "suite"
+      ],
+      "limit_s": 21600,
+      "props": [
+        "-Dsuite.threads=1,2,4,8,16"
+      ],
+      "args": [
+        "--absolute"
+      ],
+      "about": "check run: S1 of the other datasets under the renumbering loader, compared with the SUITE cells"
+    }
+  }
+}
