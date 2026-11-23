@@ -1,0 +1,9 @@
+BIBLE|S7-rhosweep|r=0.0150|P-RIncHUSP|16
+BIBLE|S7-rhosweep|r=0.0150|P-RIncHUSP-approx|16
+BIBLE|S7-rhosweep|r=0.0150|RIncHusp-Fix0.4|1
+BIBLE|S7-rhosweep|r=0.0300|P-RIncHUSP|16
+BIBLE|S7-rhosweep|r=0.0300|P-RIncHUSP-approx|16
+BIBLE|S7-rhosweep|r=0.0300|RIncHusp-Fix0.4|1
+BIBLE|S7-rhosweep|r=0.0450|P-RIncHUSP|16
+BIBLE|S7-rhosweep|r=0.0450|P-RIncHUSP-approx|16
+BIBLE|S7-rhosweep|r=0.0450|RIncHusp-Fix0.4|1

@@ -1,0 +1,23 @@
+# java -Xmx32g -Xss4m -Dsuite.threads=1,2,4,8,16 -Dsuite.out=results/9950x/suite -Dsuite.cell=SUITE-RN-S7-suite-t16-r0-BIBLE -cp out test.ExperimentOfficial --absolute --only=BIBLE --scenarios=S7
+# commit 486ad0dfe46bccdebca9f499d00645e03f8c83fb
+### --only: partial run of 1 dataset(s): [BIBLE] ###
+### RUN DIR -> results/9950x/suite/run_20261123_211028_SUITE-RN-S7-suite-t16-r0-BIBLE_2e6ad205
+### PARALLEL EXPERIMENT | 1 datasets | fresh run | dir=results/9950x/suite/run_20261123_211028_SUITE-RN-S7-suite-t16-r0-BIBLE_2e6ad205 ###
+### thread sweep (pinned) = [1, 2, 4, 8, 16] | best T = 16 ###
+   [items BIBLE] 13905 distinct, largest id in file 14575, renumbered to 1..13905
+   [stats BIBLE] N=36369 distinctItems=13905 avgLen=21.6 maxLen=100 avgEvents=21.6 maxEvents=100 totalUtil=35550162
+
+### ABSOLUTE maxReg: B = 1091 sequences (declared; constant at every batch) ###
+
+========== BIBLE | 36369 sequences | ?=0.0050 ?=0.03 | oracle(RHusp)=2141 | best T=16 (machine has 32) ==========
+-- S7 ?-sensitivity sweep (distribution A, best T=16) --
+   [S7-rhosweep     r=0.0150   P-RIncHUSP      T=16]    385 ms |   597.0 MB | HS=709 SHS=0 | recall=1.0000
+   [S7-rhosweep     r=0.0150   P-RIncHUSP-approx T=16]    326 ms |   740.8 MB | HS=709 SHS=343 | recall=1.0000
+   [S7-rhosweep     r=0.0150   RIncHusp-Fix0.4 T=1 ]  21537 ms |   389.1 MB | HS=709 SHS=343 | recall=1.0000
+   [S7-rhosweep     r=0.0300   P-RIncHUSP      T=16]    707 ms |   432.9 MB | HS=2141 SHS=0 | recall=1.0000
+   [S7-rhosweep     r=0.0300   P-RIncHUSP-approx T=16]    916 ms |   773.8 MB | HS=2141 SHS=2525 | recall=1.0000
+   [S7-rhosweep     r=0.0300   RIncHusp-Fix0.4 T=1 ]  35025 ms |   692.7 MB | HS=2141 SHS=2525 | recall=1.0000
+   [S7-rhosweep     r=0.0450   P-RIncHUSP      T=16]    960 ms |   765.0 MB | HS=3646 SHS=0 | recall=1.0000
+   [S7-rhosweep     r=0.0450   P-RIncHUSP-approx T=16]   1769 ms |  1412.5 MB | HS=3646 SHS=6872 | recall=1.0000
+   [S7-rhosweep     r=0.0450   RIncHusp-Fix0.4 T=1 ]  52385 ms |  1056.9 MB | HS=3646 SHS=6872 | recall=1.0000
+### DONE. dir: results\9950x\suite\run_20261123_211028_SUITE-RN-S7-suite-t16-r0-BIBLE_2e6ad205 ###
