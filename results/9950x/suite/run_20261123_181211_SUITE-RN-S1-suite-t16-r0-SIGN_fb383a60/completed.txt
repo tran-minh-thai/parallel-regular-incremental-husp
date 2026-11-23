@@ -1,0 +1,5 @@
+SIGN|S1-scalability|A-Uniform|P-RIncHUSP|1
+SIGN|S1-scalability|A-Uniform|P-RIncHUSP|2
+SIGN|S1-scalability|A-Uniform|P-RIncHUSP|4
+SIGN|S1-scalability|A-Uniform|P-RIncHUSP|8
+SIGN|S1-scalability|A-Uniform|P-RIncHUSP|16
