@@ -1,0 +1,7 @@
+# java -Xmx32g -Xss4m -cp out test.RecallProbe datasets/C8T1S5I8N5K_seq.txt datasets/C8T1S5I8N5K_eui.txt 0.001 0.06 1,16
+# commit accc37599a4efa6625e7d15e2103447d11a0e1b0
+
+=== RecallProbe C8T1S5I8N5K | n=47132 delta=0.0010 rho=0.06 | prune=rho*N_final(sound) ===
+oracle HS=5612 (275054 ms)
+  T=1   | HS=5612 correct=5612 recall=100.00% (690 ms) | peak=260.0 MB
+  T=16  | HS=5612 correct=5612 recall=100.00% (287 ms) | peak=868.0 MB
