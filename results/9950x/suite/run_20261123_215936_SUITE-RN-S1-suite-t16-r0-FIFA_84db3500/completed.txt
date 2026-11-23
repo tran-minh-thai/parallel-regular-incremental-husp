@@ -1,0 +1,5 @@
+FIFA|S1-scalability|A-Uniform|P-RIncHUSP|1
+FIFA|S1-scalability|A-Uniform|P-RIncHUSP|2
+FIFA|S1-scalability|A-Uniform|P-RIncHUSP|4
+FIFA|S1-scalability|A-Uniform|P-RIncHUSP|8
+FIFA|S1-scalability|A-Uniform|P-RIncHUSP|16
