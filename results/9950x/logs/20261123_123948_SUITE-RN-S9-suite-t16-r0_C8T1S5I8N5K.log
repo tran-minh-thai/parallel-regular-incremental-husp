@@ -1,0 +1,20 @@
+# java -Xmx32g -Xss4m -Dsuite.threads=1,2,4,8,16 -Dsuite.out=results/9950x/suite -Dsuite.cell=SUITE-RN-S9-suite-t16-r0-C8T1S5I8N5K -cp out test.ExperimentOfficial --absolute --only=C8T1S5I8N5K --scenarios=S9
+# commit 485a82a9850077cb8a236a9fbd06b070cee3820c
+### --only: partial run of 1 dataset(s): [C8T1S5I8N5K] ###
+### RUN DIR -> results/9950x/suite/run_20261123_123948_SUITE-RN-S9-suite-t16-r0-C8T1S5I8N5K_74e02557
+### PARALLEL EXPERIMENT | 1 datasets | fresh run | dir=results/9950x/suite/run_20261123_123948_SUITE-RN-S9-suite-t16-r0-C8T1S5I8N5K_74e02557 ###
+### thread sweep (pinned) = [1, 2, 4, 8, 16] | best T = 16 ###
+   [items C8T1S5I8N5K] 68240 distinct, largest id in file 4999999, renumbered to 1..68240
+   [stats C8T1S5I8N5K] N=47132 distinctItems=68240 avgLen=18.8 maxLen=94 avgEvents=2.4 maxEvents=10 totalUtil=47416411
+
+### ABSOLUTE maxReg: B = 2827 sequences (declared; constant at every batch) ###
+
+========== C8T1S5I8N5K | 47132 sequences | ?=0.0010 ?=0.06 | recall=SKIPPED (N>40000) | best T=16 (machine has 32) ==========
+-- S9 ?? sweep (distribution A, best T=16) --
+   [S9-musweep      mu=0.4     P-RIncHUSP      T=16]   6107 ms |  5818.1 MB | HS=5612 SHS=14446
+   [S9-musweep      mu=0.7     P-RIncHUSP      T=16]    132 ms |   345.6 MB | HS=5612 SHS=3951
+   [S9-musweep      mu=1.0     P-RIncHUSP      T=16]    136 ms |   220.1 MB | HS=5612 SHS=0
+   [S9-musweep      mu=1.5     P-RIncHUSP      T=16]    115 ms |   374.6 MB | HS=5612 SHS=0
+   [S9-musweep      mu=2.0     P-RIncHUSP      T=16]    125 ms |   331.7 MB | HS=5612 SHS=0
+   [S9-musweep      mu=3.0     P-RIncHUSP      T=16]    187 ms |   290.8 MB | HS=5612 SHS=0
+### DONE. dir: results\9950x\suite\run_20261123_123948_SUITE-RN-S9-suite-t16-r0-C8T1S5I8N5K_74e02557 ###
