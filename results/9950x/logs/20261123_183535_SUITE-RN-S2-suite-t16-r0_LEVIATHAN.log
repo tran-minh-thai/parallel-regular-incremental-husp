@@ -1,0 +1,20 @@
+# java -Xmx32g -Xss4m -Dsuite.threads=1,2,4,8,16 -Dsuite.out=results/9950x/suite -Dsuite.cell=SUITE-RN-S2-suite-t16-r0-LEVIATHAN -cp out test.ExperimentOfficial --absolute --only=LEVIATHAN --scenarios=S2
+# commit b83433a7f5f3b44430d75540862083f8f890b372
+### --only: partial run of 1 dataset(s): [LEVIATHAN] ###
+### RUN DIR -> results/9950x/suite/run_20261123_183535_SUITE-RN-S2-suite-t16-r0-LEVIATHAN_b160577f
+### PARALLEL EXPERIMENT | 1 datasets | fresh run | dir=results/9950x/suite/run_20261123_183535_SUITE-RN-S2-suite-t16-r0-LEVIATHAN_b160577f ###
+### thread sweep (pinned) = [1, 2, 4, 8, 16] | best T = 16 ###
+   [items LEVIATHAN] 9025 distinct, largest id in file 9493, renumbered to 1..9025
+   [stats LEVIATHAN] N=5834 distinctItems=9025 avgLen=33.8 maxLen=100 avgEvents=33.8 maxEvents=100 totalUtil=10502159
+
+### ABSOLUTE maxReg: B = 175 sequences (declared; constant at every batch) ###
+
+========== LEVIATHAN | 5834 sequences | ?=0.0050 ?=0.03 | oracle(RHusp)=3340 | best T=16 (machine has 32) ==========
+-- S2 Comparison (distribution A, best T=16) --
+   [S2-compare      A-Uniform  P-RIncHUSP      T=16]    374 ms |   338.0 MB | HS=3340 SHS=0 | recall=1.0000
+   [S2-compare      A-Uniform  P-RIncHUSP-seq  T=1 ]   4829 ms |   339.4 MB | HS=3340 SHS=0 | recall=1.0000
+   [S2-compare      A-Uniform  RIncHusp-Fix0.4 T=1 ]   4544 ms |   338.9 MB | HS=3340 SHS=3049 | recall=1.0000
+   [S2-compare      A-Uniform  RIncHusp-Fix0.9 T=1 ]   2767 ms |   336.8 MB | HS=2620 SHS=160 | recall=0.7844
+   [S2-compare      A-Uniform  Remine-static   T=1 ]  30773 ms |   359.7 MB | HS=3340 SHS=0 | recall=1.0000
+   [S2-compare      A-Uniform  ParRemine       T=16]    674 ms |   331.9 MB | HS=3340 SHS=0 | recall=1.0000
+### DONE. dir: results\9950x\suite\run_20261123_183535_SUITE-RN-S2-suite-t16-r0-LEVIATHAN_b160577f ###
