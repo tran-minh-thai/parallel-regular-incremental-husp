@@ -1,0 +1,22 @@
+# java -Xmx32g -Xss4m -Dsuite.threads=1,2,4,8,16 -Dsuite.out=results/9950x/suite -Dsuite.cell=SUITE-RN-S6-suite-t16-r0-LEVIATHAN -cp out test.ExperimentOfficial --absolute --only=LEVIATHAN --scenarios=S6
+# commit be9f67ad91c562b1bc9cf8567c8aa016d1d61cee
+### --only: partial run of 1 dataset(s): [LEVIATHAN] ###
+### RUN DIR -> results/9950x/suite/run_20261123_185930_SUITE-RN-S6-suite-t16-r0-LEVIATHAN_ef1037db
+### PARALLEL EXPERIMENT | 1 datasets | fresh run | dir=results/9950x/suite/run_20261123_185930_SUITE-RN-S6-suite-t16-r0-LEVIATHAN_ef1037db ###
+### thread sweep (pinned) = [1, 2, 4, 8, 16] | best T = 16 ###
+   [items LEVIATHAN] 9025 distinct, largest id in file 9493, renumbered to 1..9025
+   [stats LEVIATHAN] N=5834 distinctItems=9025 avgLen=33.8 maxLen=100 avgEvents=33.8 maxEvents=100 totalUtil=10502159
+
+### ABSOLUTE maxReg: B = 175 sequences (declared; constant at every batch) ###
+
+========== LEVIATHAN | 5834 sequences | ?=0.0050 ?=0.03 | oracle(RHusp)=3340 | best T=16 (machine has 32) ==========
+-- S6 ?-sensitivity sweep (distribution A, best T=16) --
+   [S6-deltasweep   d=0.0050   P-RIncHUSP      T=16]    372 ms |   328.1 MB | HS=3340 SHS=0 | recall=1.0000
+   [S6-deltasweep   d=0.0050   RIncHusp-Fix0.4 T=1 ]   4463 ms |   338.5 MB | HS=3340 SHS=3049 | recall=1.0000
+   [S6-deltasweep   d=0.0075   P-RIncHUSP      T=16]    210 ms |   308.7 MB | HS=1310 SHS=0 | recall=1.0000
+   [S6-deltasweep   d=0.0075   RIncHusp-Fix0.4 T=1 ]   3492 ms |   339.3 MB | HS=1310 SHS=3765 | recall=1.0000
+   [S6-deltasweep   d=0.0100   P-RIncHUSP      T=16]    147 ms |   249.6 MB | HS=535 SHS=0 | recall=1.0000
+   [S6-deltasweep   d=0.0100   RIncHusp-Fix0.4 T=1 ]   2937 ms |   331.1 MB | HS=535 SHS=2923 | recall=1.0000
+   [S6-deltasweep   d=0.0150   P-RIncHUSP      T=16]     92 ms |   130.4 MB | HS=114 SHS=0 | recall=1.0000
+   [S6-deltasweep   d=0.0150   RIncHusp-Fix0.4 T=1 ]   2317 ms |   333.8 MB | HS=114 SHS=1312 | recall=1.0000
+### DONE. dir: results\9950x\suite\run_20261123_185930_SUITE-RN-S6-suite-t16-r0-LEVIATHAN_ef1037db ###
