@@ -1,0 +1,26 @@
+# java -Xmx32g -Xss4m -Dsuite.threads=1,2,4,8,16 -Dsuite.out=results/9950x/suite -Dsuite.cell=SUITE-RN-S8-suite-t16-r0-BIBLE -cp out test.ExperimentOfficial --absolute --only=BIBLE --scenarios=S8
+# commit a4d5d7bca3d45c25f4351226bf3f36ba426a616d
+### --only: partial run of 1 dataset(s): [BIBLE] ###
+### RUN DIR -> results/9950x/suite/run_20261123_212814_SUITE-RN-S8-suite-t16-r0-BIBLE_877eee1
+### PARALLEL EXPERIMENT | 1 datasets | fresh run | dir=results/9950x/suite/run_20261123_212814_SUITE-RN-S8-suite-t16-r0-BIBLE_877eee1 ###
+### thread sweep (pinned) = [1, 2, 4, 8, 16] | best T = 16 ###
+   [items BIBLE] 13905 distinct, largest id in file 14575, renumbered to 1..13905
+   [stats BIBLE] N=36369 distinctItems=13905 avgLen=21.6 maxLen=100 avgEvents=21.6 maxEvents=100 totalUtil=35550162
+
+### ABSOLUTE maxReg: B = 1091 sequences (declared; constant at every batch) ###
+
+========== BIBLE | 36369 sequences | ?=0.0050 ?=0.03 | oracle(RHusp)=2141 | best T=16 (machine has 32) ==========
+-- S8 batch-count scaling / crossover (best T=16) --
+   [S8-batchscale   B=2        P-RIncHUSP      T=16]    754 ms |   743.0 MB | HS=2141 SHS=0 | recall=1.0000
+   [S8-batchscale   B=2        ParRemine       T=16]   4058 ms |   360.0 MB | HS=2141 SHS=0 | recall=1.0000
+   [S8-batchscale   B=4        P-RIncHUSP      T=16]    728 ms |   768.8 MB | HS=2141 SHS=0 | recall=1.0000
+   [S8-batchscale   B=4        ParRemine       T=16]   8171 ms |   275.0 MB | HS=2141 SHS=0 | recall=1.0000
+   [S8-batchscale   B=8        P-RIncHUSP      T=16]    746 ms |   617.1 MB | HS=2141 SHS=0 | recall=1.0000
+   [S8-batchscale   B=8        ParRemine       T=16]  17110 ms |   261.7 MB | HS=2141 SHS=0 | recall=1.0000
+   [S8-batchscale   B=16       P-RIncHUSP      T=16]    784 ms |   838.4 MB | HS=2141 SHS=0 | recall=1.0000
+   [S8-batchscale   B=16       ParRemine       T=16]  33834 ms |   376.2 MB | HS=2141 SHS=0 | recall=1.0000
+   [S8-batchscale   B=32       P-RIncHUSP      T=16]    836 ms |   668.7 MB | HS=2141 SHS=0 | recall=1.0000
+   [S8-batchscale   B=32       ParRemine       T=16]  68706 ms |   383.1 MB | HS=2141 SHS=0 | recall=1.0000
+   [S8-batchscale   B=64       P-RIncHUSP      T=16]    902 ms |   684.4 MB | HS=2141 SHS=0 | recall=1.0000
+   [S8-batchscale   B=64       ParRemine       T=16] 137313 ms |   382.1 MB | HS=2141 SHS=0 | recall=1.0000
+### DONE. dir: results\9950x\suite\run_20261123_212814_SUITE-RN-S8-suite-t16-r0-BIBLE_877eee1 ###
