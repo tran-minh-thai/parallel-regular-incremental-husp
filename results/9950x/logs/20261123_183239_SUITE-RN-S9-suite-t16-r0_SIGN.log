@@ -1,0 +1,20 @@
+# java -Xmx32g -Xss4m -Dsuite.threads=1,2,4,8,16 -Dsuite.out=results/9950x/suite -Dsuite.cell=SUITE-RN-S9-suite-t16-r0-SIGN -cp out test.ExperimentOfficial --absolute --only=SIGN --scenarios=S9
+# commit 89497d16023121674807a8a6633e4ee4411a8789
+### --only: partial run of 1 dataset(s): [SIGN] ###
+### RUN DIR -> results/9950x/suite/run_20261123_183239_SUITE-RN-S9-suite-t16-r0-SIGN_3204e084
+### PARALLEL EXPERIMENT | 1 datasets | fresh run | dir=results/9950x/suite/run_20261123_183239_SUITE-RN-S9-suite-t16-r0-SIGN_3204e084 ###
+### thread sweep (pinned) = [1, 2, 4, 8, 16] | best T = 16 ###
+   [items SIGN] 267 distinct, largest id in file 310, renumbered to 1..267
+   [stats SIGN] N=730 distinctItems=267 avgLen=52.0 maxLen=94 avgEvents=52.0 maxEvents=94 totalUtil=1796483
+
+### ABSOLUTE maxReg: B = 21 sequences (declared; constant at every batch) ###
+
+========== SIGN | 730 sequences | ?=0.0050 ?=0.03 | oracle(RHusp)=820 | best T=16 (machine has 32) ==========
+-- S9 ?? sweep (distribution A, best T=16) --
+   [S9-musweep      mu=0.4     P-RIncHUSP      T=16]    200 ms |   557.6 MB | HS=820 SHS=100 | recall=1.0000
+   [S9-musweep      mu=0.7     P-RIncHUSP      T=16]    162 ms |   450.9 MB | HS=820 SHS=48 | recall=1.0000
+   [S9-musweep      mu=1.0     P-RIncHUSP      T=16]    138 ms |   610.4 MB | HS=820 SHS=0 | recall=1.0000
+   [S9-musweep      mu=1.5     P-RIncHUSP      T=16]    112 ms |   341.3 MB | HS=820 SHS=0 | recall=1.0000
+   [S9-musweep      mu=2.0     P-RIncHUSP      T=16]    107 ms |   273.0 MB | HS=820 SHS=0 | recall=1.0000
+   [S9-musweep      mu=3.0     P-RIncHUSP      T=16]     85 ms |   318.9 MB | HS=820 SHS=0 | recall=1.0000
+### DONE. dir: results\9950x\suite\run_20261123_183239_SUITE-RN-S9-suite-t16-r0-SIGN_3204e084 ###
