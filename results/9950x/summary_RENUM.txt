@@ -1,0 +1,7 @@
+U0 ok: 16 of 16 cells recorded, 16 OK
+U1 ok: 6 datasets, 30 (dataset, T) groups; differing: none
+U2 ok: 225 measured runs of exact methods compared with the oracle, 0 differ
+U3 info: 4 configuration(s) with a TIMEOUT or ERROR row: C8T1S5I8N5K|S4-distribution|B-Increasing|P-RIncHUSP|16|ERROR; C8T1S5I8N5K|S4-distribution|B-Increasing|RIncHusp-Fix0.4|1|ERROR; C8T1S5I8N5K|S7-rhosweep|r=0.0900|P-RIncHUSP-approx|16|ERROR; C8T1S5I8N5K|S7-rhosweep|r=0.0900|RIncHusp-Fix0.4|1|ERROR
+U4 ok: 2 (dataset, T) recall checks over 1 cell(s); all exact
+configurations: 103 (from 1145 measured rows)
+-> results/9950x/summary_RENUM.tsv
