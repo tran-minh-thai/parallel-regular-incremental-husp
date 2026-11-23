@@ -1,0 +1,22 @@
+# java -Xmx32g -Xss4m -Dsuite.threads=1,2,4,8,16 -Dsuite.out=results/9950x/suite -Dsuite.cell=SUITE-RN-S4-suite-t16-r0-SIGN -cp out test.ExperimentOfficial --absolute --only=SIGN --scenarios=S4
+# commit d801b296eb68c9c0a249adfde68909e4bb7d5dfc
+### --only: partial run of 1 dataset(s): [SIGN] ###
+### RUN DIR -> results/9950x/suite/run_20261123_182111_SUITE-RN-S4-suite-t16-r0-SIGN_d58023e0
+### PARALLEL EXPERIMENT | 1 datasets | fresh run | dir=results/9950x/suite/run_20261123_182111_SUITE-RN-S4-suite-t16-r0-SIGN_d58023e0 ###
+### thread sweep (pinned) = [1, 2, 4, 8, 16] | best T = 16 ###
+   [items SIGN] 267 distinct, largest id in file 310, renumbered to 1..267
+   [stats SIGN] N=730 distinctItems=267 avgLen=52.0 maxLen=94 avgEvents=52.0 maxEvents=94 totalUtil=1796483
+
+### ABSOLUTE maxReg: B = 21 sequences (declared; constant at every batch) ###
+
+========== SIGN | 730 sequences | ?=0.0050 ?=0.03 | oracle(RHusp)=820 | best T=16 (machine has 32) ==========
+-- S4 Distribution robustness (best T=16) --
+   [S4-distribution A-Uniform  P-RIncHUSP      T=16]    141 ms |   614.1 MB | HS=820 SHS=0 | recall=1.0000
+   [S4-distribution A-Uniform  RIncHusp-Fix0.4 T=1 ]   2991 ms |   331.2 MB | HS=820 SHS=100 | recall=1.0000
+   [S4-distribution B-Increasing P-RIncHUSP      T=16]   4087 ms |  4913.9 MB | HS=820 SHS=0 | recall=1.0000
+   [S4-distribution B-Increasing RIncHusp-Fix0.4 T=1 ]  14927 ms |  3875.6 MB | HS=820 SHS=99 | recall=1.0000
+   [S4-distribution C-Oscillating P-RIncHUSP      T=16]    101 ms |   304.6 MB | HS=820 SHS=0 | recall=1.0000
+   [S4-distribution C-Oscillating RIncHusp-Fix0.4 T=1 ]   2576 ms |   326.5 MB | HS=820 SHS=100 | recall=1.0000
+   [S4-distribution D-Decreasing P-RIncHUSP      T=16]     96 ms |   298.6 MB | HS=820 SHS=0 | recall=1.0000
+   [S4-distribution D-Decreasing RIncHusp-Fix0.4 T=1 ]   2558 ms |   327.4 MB | HS=820 SHS=100 | recall=1.0000
+### DONE. dir: results\9950x\suite\run_20261123_182111_SUITE-RN-S4-suite-t16-r0-SIGN_d58023e0 ###
