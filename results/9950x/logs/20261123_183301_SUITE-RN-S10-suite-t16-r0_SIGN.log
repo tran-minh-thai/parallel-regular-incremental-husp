@@ -1,0 +1,19 @@
+# java -Xmx32g -Xss4m -Dsuite.threads=1,2,4,8,16 -Dsuite.out=results/9950x/suite -Dsuite.cell=SUITE-RN-S10-suite-t16-r0-SIGN -cp out test.ExperimentOfficial --absolute --only=SIGN --scenarios=S10
+# commit c7c474e07399b3c7ffffd56e6853e2fa3202b103
+### --only: partial run of 1 dataset(s): [SIGN] ###
+### RUN DIR -> results/9950x/suite/run_20261123_183301_SUITE-RN-S10-suite-t16-r0-SIGN_df0b2060
+### PARALLEL EXPERIMENT | 1 datasets | fresh run | dir=results/9950x/suite/run_20261123_183301_SUITE-RN-S10-suite-t16-r0-SIGN_df0b2060 ###
+### thread sweep (pinned) = [1, 2, 4, 8, 16] | best T = 16 ###
+   [items SIGN] 267 distinct, largest id in file 310, renumbered to 1..267
+   [stats SIGN] N=730 distinctItems=267 avgLen=52.0 maxLen=94 avgEvents=52.0 maxEvents=94 totalUtil=1796483
+
+### ABSOLUTE maxReg: B = 21 sequences (declared; constant at every batch) ###
+
+========== SIGN | 730 sequences | ?=0.0050 ?=0.03 | oracle(RHusp)=820 | best T=16 (machine has 32) ==========
+-- S10 exactness ablation (distribution A, best T=16) --
+   [S10-exactness   neither    P-RIncHUSP[-,-] T=16]    115 ms |   534.2 MB | HS=805 SHS=0 | recall=0.9817
+   [S10-exactness   reg-only   P-RIncHUSP[reg,-] T=16]    111 ms |   669.2 MB | HS=805 SHS=0 | recall=0.9817
+   [S10-exactness   disc-only  P-RIncHUSP[-,disc] T=16]    141 ms |   617.4 MB | HS=820 SHS=0 | recall=1.0000
+   [S10-exactness   both-EXACT P-RIncHUSP[reg,disc] T=16]    139 ms |   262.7 MB | HS=820 SHS=0 | recall=1.0000
+   [S10-exactness   pre-fix    P-RIncHUSP-approx T=16]    168 ms |   311.9 MB | HS=820 SHS=100 | recall=1.0000
+### DONE. dir: results\9950x\suite\run_20261123_183301_SUITE-RN-S10-suite-t16-r0-SIGN_df0b2060 ###
