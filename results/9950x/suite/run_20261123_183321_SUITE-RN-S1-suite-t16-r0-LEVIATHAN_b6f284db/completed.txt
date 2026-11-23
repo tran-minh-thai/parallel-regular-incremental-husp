@@ -1,0 +1,5 @@
+LEVIATHAN|S1-scalability|A-Uniform|P-RIncHUSP|1
+LEVIATHAN|S1-scalability|A-Uniform|P-RIncHUSP|2
+LEVIATHAN|S1-scalability|A-Uniform|P-RIncHUSP|4
+LEVIATHAN|S1-scalability|A-Uniform|P-RIncHUSP|8
+LEVIATHAN|S1-scalability|A-Uniform|P-RIncHUSP|16
