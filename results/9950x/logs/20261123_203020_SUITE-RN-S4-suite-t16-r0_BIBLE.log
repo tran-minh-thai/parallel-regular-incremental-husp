@@ -1,0 +1,22 @@
+# java -Xmx32g -Xss4m -Dsuite.threads=1,2,4,8,16 -Dsuite.out=results/9950x/suite -Dsuite.cell=SUITE-RN-S4-suite-t16-r0-BIBLE -cp out test.ExperimentOfficial --absolute --only=BIBLE --scenarios=S4
+# commit 6a4ad2125e60558e21d3ab0493f59c0e8cc33693
+### --only: partial run of 1 dataset(s): [BIBLE] ###
+### RUN DIR -> results/9950x/suite/run_20261123_203020_SUITE-RN-S4-suite-t16-r0-BIBLE_2b667be1
+### PARALLEL EXPERIMENT | 1 datasets | fresh run | dir=results/9950x/suite/run_20261123_203020_SUITE-RN-S4-suite-t16-r0-BIBLE_2b667be1 ###
+### thread sweep (pinned) = [1, 2, 4, 8, 16] | best T = 16 ###
+   [items BIBLE] 13905 distinct, largest id in file 14575, renumbered to 1..13905
+   [stats BIBLE] N=36369 distinctItems=13905 avgLen=21.6 maxLen=100 avgEvents=21.6 maxEvents=100 totalUtil=35550162
+
+### ABSOLUTE maxReg: B = 1091 sequences (declared; constant at every batch) ###
+
+========== BIBLE | 36369 sequences | ?=0.0050 ?=0.03 | oracle(RHusp)=2141 | best T=16 (machine has 32) ==========
+-- S4 Distribution robustness (best T=16) --
+   [S4-distribution A-Uniform  P-RIncHUSP      T=16]    734 ms |   618.8 MB | HS=2141 SHS=0 | recall=1.0000
+   [S4-distribution A-Uniform  RIncHusp-Fix0.4 T=1 ]  35392 ms |   592.0 MB | HS=2141 SHS=2525 | recall=1.0000
+   [S4-distribution B-Increasing P-RIncHUSP      T=16]    645 ms |   639.7 MB | HS=2141 SHS=0 | recall=1.0000
+   [S4-distribution B-Increasing RIncHusp-Fix0.4 T=1 ]  12647 ms |   476.8 MB | HS=2138 SHS=2185 | recall=0.9986
+   [S4-distribution C-Oscillating P-RIncHUSP      T=16]    723 ms |   505.3 MB | HS=2141 SHS=0 | recall=1.0000
+   [S4-distribution C-Oscillating RIncHusp-Fix0.4 T=1 ]  47817 ms |   507.7 MB | HS=2141 SHS=2524 | recall=1.0000
+   [S4-distribution D-Decreasing P-RIncHUSP      T=16]    745 ms |   564.5 MB | HS=2141 SHS=0 | recall=1.0000
+   [S4-distribution D-Decreasing RIncHusp-Fix0.4 T=1 ]  48414 ms |   568.4 MB | HS=2141 SHS=2524 | recall=1.0000
+### DONE. dir: results\9950x\suite\run_20261123_203020_SUITE-RN-S4-suite-t16-r0-BIBLE_2b667be1 ###
