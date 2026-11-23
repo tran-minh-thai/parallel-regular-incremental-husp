@@ -1,0 +1,8 @@
+BIBLE|S6-deltasweep|d=0.0050|P-RIncHUSP|16
+BIBLE|S6-deltasweep|d=0.0050|RIncHusp-Fix0.4|1
+BIBLE|S6-deltasweep|d=0.0075|P-RIncHUSP|16
+BIBLE|S6-deltasweep|d=0.0075|RIncHusp-Fix0.4|1
+BIBLE|S6-deltasweep|d=0.0100|P-RIncHUSP|16
+BIBLE|S6-deltasweep|d=0.0100|RIncHusp-Fix0.4|1
+BIBLE|S6-deltasweep|d=0.0150|P-RIncHUSP|16
+BIBLE|S6-deltasweep|d=0.0150|RIncHusp-Fix0.4|1
