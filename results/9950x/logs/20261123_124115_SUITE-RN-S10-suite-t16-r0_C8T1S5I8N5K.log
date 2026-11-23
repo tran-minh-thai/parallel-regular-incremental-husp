@@ -1,0 +1,19 @@
+# java -Xmx32g -Xss4m -Dsuite.threads=1,2,4,8,16 -Dsuite.out=results/9950x/suite -Dsuite.cell=SUITE-RN-S10-suite-t16-r0-C8T1S5I8N5K -cp out test.ExperimentOfficial --absolute --only=C8T1S5I8N5K --scenarios=S10
+# commit a7b5ee9372828a1468f0b452cbca01a13451cc21
+### --only: partial run of 1 dataset(s): [C8T1S5I8N5K] ###
+### RUN DIR -> results/9950x/suite/run_20261123_124115_SUITE-RN-S10-suite-t16-r0-C8T1S5I8N5K_21e66533
+### PARALLEL EXPERIMENT | 1 datasets | fresh run | dir=results/9950x/suite/run_20261123_124115_SUITE-RN-S10-suite-t16-r0-C8T1S5I8N5K_21e66533 ###
+### thread sweep (pinned) = [1, 2, 4, 8, 16] | best T = 16 ###
+   [items C8T1S5I8N5K] 68240 distinct, largest id in file 4999999, renumbered to 1..68240
+   [stats C8T1S5I8N5K] N=47132 distinctItems=68240 avgLen=18.8 maxLen=94 avgEvents=2.4 maxEvents=10 totalUtil=47416411
+
+### ABSOLUTE maxReg: B = 2827 sequences (declared; constant at every batch) ###
+
+========== C8T1S5I8N5K | 47132 sequences | ?=0.0010 ?=0.06 | recall=SKIPPED (N>40000) | best T=16 (machine has 32) ==========
+-- S10 exactness ablation (distribution A, best T=16) --
+   [S10-exactness   neither    P-RIncHUSP[-,-] T=16]     87 ms |   167.7 MB | HS=5471 SHS=0
+   [S10-exactness   reg-only   P-RIncHUSP[reg,-] T=16]     73 ms |   223.4 MB | HS=5471 SHS=0
+   [S10-exactness   disc-only  P-RIncHUSP[-,disc] T=16]    128 ms |   341.3 MB | HS=5612 SHS=0
+   [S10-exactness   both-EXACT P-RIncHUSP[reg,disc] T=16]    127 ms |   328.7 MB | HS=5612 SHS=0
+   [S10-exactness   pre-fix    P-RIncHUSP-approx T=16]   6277 ms |  7322.8 MB | HS=5612 SHS=14446
+### DONE. dir: results\9950x\suite\run_20261123_124115_SUITE-RN-S10-suite-t16-r0-C8T1S5I8N5K_21e66533 ###
