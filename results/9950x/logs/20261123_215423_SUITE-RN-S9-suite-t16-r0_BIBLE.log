@@ -1,0 +1,20 @@
+# java -Xmx32g -Xss4m -Dsuite.threads=1,2,4,8,16 -Dsuite.out=results/9950x/suite -Dsuite.cell=SUITE-RN-S9-suite-t16-r0-BIBLE -cp out test.ExperimentOfficial --absolute --only=BIBLE --scenarios=S9
+# commit 0e54415442a192c6dcae8fc885b6ef4e7f9b0a39
+### --only: partial run of 1 dataset(s): [BIBLE] ###
+### RUN DIR -> results/9950x/suite/run_20261123_215423_SUITE-RN-S9-suite-t16-r0-BIBLE_87eb3885
+### PARALLEL EXPERIMENT | 1 datasets | fresh run | dir=results/9950x/suite/run_20261123_215423_SUITE-RN-S9-suite-t16-r0-BIBLE_87eb3885 ###
+### thread sweep (pinned) = [1, 2, 4, 8, 16] | best T = 16 ###
+   [items BIBLE] 13905 distinct, largest id in file 14575, renumbered to 1..13905
+   [stats BIBLE] N=36369 distinctItems=13905 avgLen=21.6 maxLen=100 avgEvents=21.6 maxEvents=100 totalUtil=35550162
+
+### ABSOLUTE maxReg: B = 1091 sequences (declared; constant at every batch) ###
+
+========== BIBLE | 36369 sequences | ?=0.0050 ?=0.03 | oracle(RHusp)=2141 | best T=16 (machine has 32) ==========
+-- S9 ?? sweep (distribution A, best T=16) --
+   [S9-musweep      mu=0.4     P-RIncHUSP      T=16]   1110 ms |  1075.4 MB | HS=2141 SHS=2525 | recall=1.0000
+   [S9-musweep      mu=0.7     P-RIncHUSP      T=16]    855 ms |   837.2 MB | HS=2141 SHS=911 | recall=1.0000
+   [S9-musweep      mu=1.0     P-RIncHUSP      T=16]    719 ms |   569.2 MB | HS=2141 SHS=0 | recall=1.0000
+   [S9-musweep      mu=1.5     P-RIncHUSP      T=16]    752 ms |   411.4 MB | HS=2141 SHS=0 | recall=1.0000
+   [S9-musweep      mu=2.0     P-RIncHUSP      T=16]    897 ms |   455.4 MB | HS=2141 SHS=0 | recall=1.0000
+   [S9-musweep      mu=3.0     P-RIncHUSP      T=16]   1304 ms |   408.5 MB | HS=2141 SHS=0 | recall=1.0000
+### DONE. dir: results\9950x\suite\run_20261123_215423_SUITE-RN-S9-suite-t16-r0-BIBLE_87eb3885 ###
