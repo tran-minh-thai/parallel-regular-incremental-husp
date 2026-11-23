@@ -1,0 +1,8 @@
+LEVIATHAN|S4-distribution|A-Uniform|P-RIncHUSP|16
+LEVIATHAN|S4-distribution|A-Uniform|RIncHusp-Fix0.4|1
+LEVIATHAN|S4-distribution|B-Increasing|P-RIncHUSP|16
+LEVIATHAN|S4-distribution|B-Increasing|RIncHusp-Fix0.4|1
+LEVIATHAN|S4-distribution|C-Oscillating|P-RIncHUSP|16
+LEVIATHAN|S4-distribution|C-Oscillating|RIncHusp-Fix0.4|1
+LEVIATHAN|S4-distribution|D-Decreasing|P-RIncHUSP|16
+LEVIATHAN|S4-distribution|D-Decreasing|RIncHusp-Fix0.4|1

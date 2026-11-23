@@ -1,0 +1,22 @@
+# java -Xmx32g -Xss4m -Dsuite.threads=1,2,4,8,16 -Dsuite.out=results/9950x/suite -Dsuite.cell=SUITE-RN-S4-suite-t16-r0-LEVIATHAN -cp out test.ExperimentOfficial --absolute --only=LEVIATHAN --scenarios=S4
+# commit 04d1c3fcf92bb47b3db3ce08720bfe01e6c972be
+### --only: partial run of 1 dataset(s): [LEVIATHAN] ###
+### RUN DIR -> results/9950x/suite/run_20261123_185322_SUITE-RN-S4-suite-t16-r0-LEVIATHAN_913a6e5b
+### PARALLEL EXPERIMENT | 1 datasets | fresh run | dir=results/9950x/suite/run_20261123_185322_SUITE-RN-S4-suite-t16-r0-LEVIATHAN_913a6e5b ###
+### thread sweep (pinned) = [1, 2, 4, 8, 16] | best T = 16 ###
+   [items LEVIATHAN] 9025 distinct, largest id in file 9493, renumbered to 1..9025
+   [stats LEVIATHAN] N=5834 distinctItems=9025 avgLen=33.8 maxLen=100 avgEvents=33.8 maxEvents=100 totalUtil=10502159
+
+### ABSOLUTE maxReg: B = 175 sequences (declared; constant at every batch) ###
+
+========== LEVIATHAN | 5834 sequences | ?=0.0050 ?=0.03 | oracle(RHusp)=3340 | best T=16 (machine has 32) ==========
+-- S4 Distribution robustness (best T=16) --
+   [S4-distribution A-Uniform  P-RIncHUSP      T=16]    376 ms |   331.1 MB | HS=3340 SHS=0 | recall=1.0000
+   [S4-distribution A-Uniform  RIncHusp-Fix0.4 T=1 ]   4469 ms |   338.3 MB | HS=3340 SHS=3049 | recall=1.0000
+   [S4-distribution B-Increasing P-RIncHUSP      T=16]    341 ms |   318.2 MB | HS=3340 SHS=0 | recall=1.0000
+   [S4-distribution B-Increasing RIncHusp-Fix0.4 T=1 ]   3344 ms |   439.1 MB | HS=3317 SHS=2711 | recall=0.9931
+   [S4-distribution C-Oscillating P-RIncHUSP      T=16]    352 ms |   319.8 MB | HS=3340 SHS=0 | recall=1.0000
+   [S4-distribution C-Oscillating RIncHusp-Fix0.4 T=1 ]   7027 ms |   337.5 MB | HS=3340 SHS=3235 | recall=1.0000
+   [S4-distribution D-Decreasing P-RIncHUSP      T=16]    356 ms |   317.8 MB | HS=3340 SHS=0 | recall=1.0000
+   [S4-distribution D-Decreasing RIncHusp-Fix0.4 T=1 ]   7026 ms |   342.2 MB | HS=3340 SHS=3235 | recall=1.0000
+### DONE. dir: results\9950x\suite\run_20261123_185322_SUITE-RN-S4-suite-t16-r0-LEVIATHAN_913a6e5b ###
