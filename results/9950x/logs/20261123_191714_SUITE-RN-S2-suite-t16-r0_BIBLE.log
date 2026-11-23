@@ -1,0 +1,20 @@
+# java -Xmx32g -Xss4m -Dsuite.threads=1,2,4,8,16 -Dsuite.out=results/9950x/suite -Dsuite.cell=SUITE-RN-S2-suite-t16-r0-BIBLE -cp out test.ExperimentOfficial --absolute --only=BIBLE --scenarios=S2
+# commit 6c5c7ecf7e2da3deae3df6533282b2a625b0a58b
+### --only: partial run of 1 dataset(s): [BIBLE] ###
+### RUN DIR -> results/9950x/suite/run_20261123_191714_SUITE-RN-S2-suite-t16-r0-BIBLE_4b8c6505
+### PARALLEL EXPERIMENT | 1 datasets | fresh run | dir=results/9950x/suite/run_20261123_191714_SUITE-RN-S2-suite-t16-r0-BIBLE_4b8c6505 ###
+### thread sweep (pinned) = [1, 2, 4, 8, 16] | best T = 16 ###
+   [items BIBLE] 13905 distinct, largest id in file 14575, renumbered to 1..13905
+   [stats BIBLE] N=36369 distinctItems=13905 avgLen=21.6 maxLen=100 avgEvents=21.6 maxEvents=100 totalUtil=35550162
+
+### ABSOLUTE maxReg: B = 1091 sequences (declared; constant at every batch) ###
+
+========== BIBLE | 36369 sequences | ?=0.0050 ?=0.03 | oracle(RHusp)=2141 | best T=16 (machine has 32) ==========
+-- S2 Comparison (distribution A, best T=16) --
+   [S2-compare      A-Uniform  P-RIncHUSP      T=16]    726 ms |   656.0 MB | HS=2141 SHS=0 | recall=1.0000
+   [S2-compare      A-Uniform  P-RIncHUSP-seq  T=1 ]   7409 ms |   430.9 MB | HS=2141 SHS=0 | recall=1.0000
+   [S2-compare      A-Uniform  RIncHusp-Fix0.4 T=1 ]  35714 ms |   711.4 MB | HS=2141 SHS=2525 | recall=1.0000
+   [S2-compare      A-Uniform  RIncHusp-Fix0.9 T=1 ]  21887 ms |   571.4 MB | HS=2104 SHS=231 | recall=0.9827
+   [S2-compare      A-Uniform  Remine-static   T=1 ] 182303 ms |   660.7 MB | HS=2141 SHS=0 | recall=1.0000
+   [S2-compare      A-Uniform  ParRemine       T=16]   8267 ms |   263.4 MB | HS=2141 SHS=0 | recall=1.0000
+### DONE. dir: results\9950x\suite\run_20261123_191714_SUITE-RN-S2-suite-t16-r0-BIBLE_4b8c6505 ###
