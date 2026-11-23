@@ -1,0 +1,16 @@
+SIGN|S11-batchcompare|B=4|P-RIncHUSP|16
+SIGN|S11-batchcompare|B=4|P-RIncHUSP-seq|1
+SIGN|S11-batchcompare|B=4|RIncHusp-Fix0.4|1
+SIGN|S11-batchcompare|B=4|RIncHusp-Fix0.9|1
+SIGN|S11-batchcompare|B=4|ParRemine|16
+SIGN|S11-batchcompare|B=4|Remine-static|1
+SIGN|S11-batchcompare|B=16|P-RIncHUSP|16
+SIGN|S11-batchcompare|B=16|P-RIncHUSP-seq|1
+SIGN|S11-batchcompare|B=16|RIncHusp-Fix0.4|1
+SIGN|S11-batchcompare|B=16|RIncHusp-Fix0.9|1
+SIGN|S11-batchcompare|B=16|ParRemine|16
+SIGN|S11-batchcompare|B=64|P-RIncHUSP|16
+SIGN|S11-batchcompare|B=64|P-RIncHUSP-seq|1
+SIGN|S11-batchcompare|B=64|RIncHusp-Fix0.4|1
+SIGN|S11-batchcompare|B=64|RIncHusp-Fix0.9|1
+SIGN|S11-batchcompare|B=64|ParRemine|16
