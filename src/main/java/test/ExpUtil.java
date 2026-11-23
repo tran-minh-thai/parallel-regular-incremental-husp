@@ -20,10 +20,53 @@ import java.util.TreeSet;
 public final class ExpUtil {
     private ExpUtil() {}
 
+    /** Renumber item ids at load time (default on; {@code -Dload.renumber=false} keeps the ids of the file). */
+    public static final boolean RENUMBER_ITEMS = !"false".equalsIgnoreCase(System.getProperty("load.renumber"));
+    /** What the last {@link #loadAll} did: {distinct items, largest id in the file, 1 if renumbered else 0}. */
+    public static int[] lastRenumber = {0, 0, 0};
+
     public static List<List<int[]>> loadAll(String seqFile, String euiFile) throws IOException {
         QSeqDatabase db = new QSeqDatabase();
         db.loadExternalUtility(euiFile);
-        return db.readSequences(seqFile);
+        List<List<int[]>> all = db.readSequences(seqFile);
+        lastRenumber = RENUMBER_ITEMS ? renumberItems(all) : idStats(all);
+        return all;
+    }
+
+    /**
+     * Order-preserving dense renumbering of item ids, in place: the i-th smallest id in the database becomes i
+     * (1-based). The miners size per-thread arrays by the largest id, so a file whose ids are sparse (one data set
+     * here has 68,240 distinct items with ids up to 4,999,999) pays for the id range, not for the items. The map is
+     * strictly increasing, so the order of items inside every event, every utility and every occurrence is
+     * unchanged and the mined pattern set is the same up to the renaming. A database already numbered 1..n is left
+     * untouched. Runs once at load, outside every timed region. Returns {distinct, largest id before, renumbered}.
+     */
+    public static int[] renumberItems(List<List<int[]>> all) {
+        int[] st = idStats(all);
+        int distinct = st[0], maxId = st[1];
+        if (distinct == 0 || (maxId == distinct && st[2] >= 1)) return new int[]{distinct, maxId, 0};
+        int[] map = new int[maxId + 1];
+        for (List<int[]> s : all) for (int[] e : s) for (int k = 0; k < e.length; k += 2) map[e[k]] = 1;
+        int next = 0;
+        for (int id = 0; id <= maxId; id++) if (map[id] != 0) map[id] = ++next;
+        for (List<int[]> s : all) for (int[] e : s) for (int k = 0; k < e.length; k += 2) e[k] = map[e[k]];
+        return new int[]{distinct, maxId, 1};
+    }
+
+    /** {distinct items, largest id, smallest id} of a loaded database (no renumbering). */
+    static int[] idStats(List<List<int[]>> all) {
+        int maxId = -1, minId = Integer.MAX_VALUE;
+        for (List<int[]> s : all) for (int[] e : s) for (int k = 0; k < e.length; k += 2) {
+            if (e[k] < 0) throw new IllegalStateException("negative item id " + e[k]);
+            if (e[k] > maxId) maxId = e[k];
+            if (e[k] < minId) minId = e[k];
+        }
+        if (maxId < 0) return new int[]{0, 0, 0};
+        boolean[] seen = new boolean[maxId + 1];
+        int distinct = 0;
+        for (List<int[]> s : all) for (int[] e : s) for (int k = 0; k < e.length; k += 2)
+            if (!seen[e[k]]) { seen[e[k]] = true; distinct++; }
+        return new int[]{distinct, maxId, minId};
     }
 
     /** Split {@code all} into batches by ratio (the last batch receives the remainder). */

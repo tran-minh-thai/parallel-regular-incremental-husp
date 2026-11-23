@@ -242,6 +242,9 @@ public class ExperimentOfficial {
         // The loader skips lines it cannot parse, so a damaged file reads as an empty database and every
         // scenario would then "succeed" on nothing; refuse it as a dataset error instead.
         if (all.isEmpty()) throw new IllegalStateException(seqFile + " holds no sequence the loader could read");
+        System.out.printf("   [items %s] %d distinct, largest id in file %d, %s%n", tg, ExpUtil.lastRenumber[0],
+                ExpUtil.lastRenumber[1], ExpUtil.lastRenumber[2] == 1 ? "renumbered to 1.." + ExpUtil.lastRenumber[0]
+                        : (ExpUtil.RENUMBER_ITEMS ? "already 1..n, kept" : "kept (renumbering off)"));
         writeDatasetStats(tg, all);                    // characteristics table (once per dataset)
         final int cores = ExpConfig.bestT();           // PINNED best-T (not availableProcessors); see ExpConfig
         Set<String> oracle = oracleOrNull(minUtilRatio, maxRegRatio);

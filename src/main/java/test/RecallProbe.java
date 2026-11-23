@@ -1,7 +1,6 @@
 package test;
 
 import algorithms.AlgoPRIncHUSP;
-import algorithms.QSeqDatabase;
 
 import java.util.List;
 import java.util.Map;
@@ -30,9 +29,7 @@ public class RecallProbe {
         double rho   = args.length > 3 ? Double.parseDouble(args[3]) : 0.30;
         int[] threadList = parseThreads(args.length > 4 ? args[4] : "4");
 
-        QSeqDatabase db = new QSeqDatabase();
-        db.loadExternalUtility(eui);
-        List<List<int[]>> all = db.readSequences(seq);
+        List<List<int[]>> all = ExpUtil.loadAll(seq, eui);   // same loader as the suite, item ids renumbered alike
         List<List<List<int[]>>> b = ExpUtil.split(all, ExpConfig.SCEN_A);
 
         long t0 = System.currentTimeMillis();

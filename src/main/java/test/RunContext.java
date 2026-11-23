@@ -177,6 +177,7 @@ public final class RunContext {
                 java.lang.management.ManagementFactory.getRuntimeMXBean().getInputArguments()));
         meta.setProperty("config.threadSweep", java.util.Arrays.toString(ExpConfig.THREAD_SWEEP));
         meta.setProperty("config.minerMemoryReset", Boolean.toString(ExpConfig.minerMemoryReset));
+        meta.setProperty("config.renumberItems", Boolean.toString(ExpUtil.RENUMBER_ITEMS));
         meta.setProperty("config.warmupRuns", Integer.toString(ExpConfig.warmupRuns));
         meta.setProperty("config.measuredRuns",
                 ExpConfig.fixedRepeatsForTest != null ? ExpConfig.fixedRepeatsForTest.toString()
@@ -294,7 +295,8 @@ public final class RunContext {
           .append(ExpConfig.runS7RhoSweep).append(ExpConfig.runS8BatchScaling)
           .append(ExpConfig.runS9MuSweep).append(ExpConfig.runS10Exactness)
           .append(ExpConfig.runS11BatchCompare ? "" : ";noS11")
-          .append(ExpConfig.minerMemoryReset ? "" : ";noMinerGc");
+          .append(ExpConfig.minerMemoryReset ? "" : ";noMinerGc")
+          .append(ExpUtil.RENUMBER_ITEMS ? ";renumber" : "");
         sb.append(";s5x=").append(ExpConfig.s5ExtraDatasets);
         sb.append(";s6=").append(java.util.Arrays.toString(ExpConfig.S6_DELTA_MULT));
         sb.append(";s7=").append(java.util.Arrays.toString(ExpConfig.S7_RHO_MULT));
