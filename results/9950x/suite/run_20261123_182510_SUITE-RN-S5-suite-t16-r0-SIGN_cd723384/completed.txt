@@ -1,0 +1,3 @@
+SIGN|S5-finebatch|F-Fine16|P-RIncHUSP|16
+SIGN|S5-finebatch|F-Fine16|P-RIncHUSP-invidx|16
+SIGN|S5-finebatch|F-Fine16|RIncHusp-Fix0.4|1

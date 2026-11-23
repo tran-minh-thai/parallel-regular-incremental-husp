@@ -1,0 +1,17 @@
+# java -Xmx32g -Xss4m -Dsuite.threads=1,2,4,8,16 -Dsuite.out=results/9950x/suite -Dsuite.cell=SUITE-RN-S5-suite-t16-r0-SIGN -cp out test.ExperimentOfficial --absolute --only=SIGN --scenarios=S5
+# commit 153be90eaae68dbfc78e12ba2b01ba3ef0d99194
+### --only: partial run of 1 dataset(s): [SIGN] ###
+### RUN DIR -> results/9950x/suite/run_20261123_182510_SUITE-RN-S5-suite-t16-r0-SIGN_cd723384
+### PARALLEL EXPERIMENT | 1 datasets | fresh run | dir=results/9950x/suite/run_20261123_182510_SUITE-RN-S5-suite-t16-r0-SIGN_cd723384 ###
+### thread sweep (pinned) = [1, 2, 4, 8, 16] | best T = 16 ###
+   [items SIGN] 267 distinct, largest id in file 310, renumbered to 1..267
+   [stats SIGN] N=730 distinctItems=267 avgLen=52.0 maxLen=94 avgEvents=52.0 maxEvents=94 totalUtil=1796483
+
+### ABSOLUTE maxReg: B = 21 sequences (declared; constant at every batch) ###
+
+========== SIGN | 730 sequences | ?=0.0050 ?=0.03 | oracle(RHusp)=820 | best T=16 (machine has 32) ==========
+-- S5 Fine-batch streaming (D_old 25% + 15 x 5% increments, best T=16) --
+   [S5-finebatch    F-Fine16   P-RIncHUSP      T=16]    147 ms |   492.7 MB | HS=820 SHS=0 | recall=1.0000
+   [S5-finebatch    F-Fine16   P-RIncHUSP-invidx T=16]    153 ms |   545.0 MB | HS=820 SHS=0 | recall=1.0000
+   [S5-finebatch    F-Fine16   RIncHusp-Fix0.4 T=1 ]   3053 ms |   326.4 MB | HS=820 SHS=100 | recall=1.0000
+### DONE. dir: results\9950x\suite\run_20261123_182510_SUITE-RN-S5-suite-t16-r0-SIGN_cd723384 ###
