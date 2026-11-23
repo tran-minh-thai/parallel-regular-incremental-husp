@@ -1,0 +1,20 @@
+# java -Xmx32g -Xss4m -Dsuite.threads=1,2,4,8,16 -Dsuite.out=results/9950x/suite -Dsuite.cell=SUITE-RN-S9-suite-t16-r0-LEVIATHAN -cp out test.ExperimentOfficial --absolute --only=LEVIATHAN --scenarios=S9
+# commit ec57325163239e0d04dc99f3b57c5ef9ed36c8cf
+### --only: partial run of 1 dataset(s): [LEVIATHAN] ###
+### RUN DIR -> results/9950x/suite/run_20261123_191100_SUITE-RN-S9-suite-t16-r0-LEVIATHAN_edbf2aff
+### PARALLEL EXPERIMENT | 1 datasets | fresh run | dir=results/9950x/suite/run_20261123_191100_SUITE-RN-S9-suite-t16-r0-LEVIATHAN_edbf2aff ###
+### thread sweep (pinned) = [1, 2, 4, 8, 16] | best T = 16 ###
+   [items LEVIATHAN] 9025 distinct, largest id in file 9493, renumbered to 1..9025
+   [stats LEVIATHAN] N=5834 distinctItems=9025 avgLen=33.8 maxLen=100 avgEvents=33.8 maxEvents=100 totalUtil=10502159
+
+### ABSOLUTE maxReg: B = 175 sequences (declared; constant at every batch) ###
+
+========== LEVIATHAN | 5834 sequences | ?=0.0050 ?=0.03 | oracle(RHusp)=3340 | best T=16 (machine has 32) ==========
+-- S9 ?? sweep (distribution A, best T=16) --
+   [S9-musweep      mu=0.4     P-RIncHUSP      T=16]    276 ms |   344.5 MB | HS=3340 SHS=3049 | recall=1.0000
+   [S9-musweep      mu=0.7     P-RIncHUSP      T=16]    262 ms |   287.3 MB | HS=3340 SHS=1020 | recall=1.0000
+   [S9-musweep      mu=1.0     P-RIncHUSP      T=16]    371 ms |   319.9 MB | HS=3340 SHS=0 | recall=1.0000
+   [S9-musweep      mu=1.5     P-RIncHUSP      T=16]    625 ms |   266.6 MB | HS=3340 SHS=0 | recall=1.0000
+   [S9-musweep      mu=2.0     P-RIncHUSP      T=16]    804 ms |   264.6 MB | HS=3340 SHS=0 | recall=1.0000
+   [S9-musweep      mu=3.0     P-RIncHUSP      T=16]    978 ms |   345.9 MB | HS=3340 SHS=0 | recall=1.0000
+### DONE. dir: results\9950x\suite\run_20261123_191100_SUITE-RN-S9-suite-t16-r0-LEVIATHAN_edbf2aff ###
