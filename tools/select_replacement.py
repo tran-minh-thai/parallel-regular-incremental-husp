@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Pick the replacement dataset by the rule declared before the measurement, from the regime cells of a campaign.
 
-    python3 tools/select_replacement.py --config experiments/campaign_9950x_dunnhumby.json [--write]
+    python3 tools/select_replacement.py --config experiments/campaign_9950x_replacement.json [--write]
     python3 tools/select_replacement.py --self-test
 
 The config's "replacement" entry names the regime experiment (one test.RemineTimer cell per candidate), the candidate
