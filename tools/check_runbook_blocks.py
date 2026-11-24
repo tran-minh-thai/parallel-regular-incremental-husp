@@ -2,7 +2,7 @@
 """Run the two measurement-machine blocks of a runbook verbatim under PowerShell, with fake tools, on throw-away
 git repositories, and check what they do.
 
-    python3 tools/check_runbook_blocks.py <runbook.txt> <run-status report.ps1> <scratch dir> [--only main|followup|resume2|reserve|budget|selector|gate|clock|suite|renumber]
+    python3 tools/check_runbook_blocks.py <runbook.txt> <run-status report.ps1> <scratch dir> [--only main|followup|resume2|reserve|budget|selector|gate|clock|suite|renumber|dunnhumby]
 
 The main block is the one whose header (within six lines above its "& {") names E2R; the follow-up block is the
 one whose header names E2G; the pinned resume block is the one whose header names the pinned code "src a7bc247"; the reserve block is the one
@@ -102,6 +102,15 @@ function py {
       Set-Content $(if ($ti -ge 0) { $rest[$ti + 1] } else { 'results/9950x/summary_SUITE.tsv' }) 'x'
       "U0 ok: 47 of 47 cells recorded"; $code = 1
     }
+    '*select_replacement.py' {
+      if ($env:FAIL_SELECT -eq '1') { "DUNNHUMBY-HW-SUB       median   1200 ms"; "no candidate reaches 2000 ms: nothing chosen"; $code = 1 }
+      else {
+        New-Item -ItemType Directory -Force results/9950x | Out-Null
+        Set-Content results/9950x/replacement_choice.txt "candidate`tmedian_ms`nDUNNHUMBY-HW-COMM`t4100`tCHOSEN"
+        Set-Content experiments/campaign_9950x_dunnhumby.json '{"experiments": {"REGIME-DH": {}, "E2C-DH": {}}}'
+        "DUNNHUMBY-HW-COMM      median   4100 ms"; "chosen: DUNNHUMBY-HW-COMM"
+      }
+    }
     '*summarize_gate.py' {
       New-Item -ItemType Directory -Force results/9950x | Out-Null
       Set-Content results/9950x/summary_E2W.tsv 'x'
@@ -133,7 +142,7 @@ def find_block(lines, marker):
 
 
 def seed_repos(T, report, followup, reserve=False, budget=False, selector=False, gate=False, clock=False, suite=False,
-               renumber=False):
+               renumber=False, dunnhumby=False):
     seed = T / "seed"
     seed.mkdir()
     files = {"src/main/java/A.java": "class A {}\n", "tools/stream_datasets/manifests/X.json": "{}\n", "tools/t.py": "\n",
@@ -168,6 +177,9 @@ def seed_repos(T, report, followup, reserve=False, budget=False, selector=False,
         if suite:
             (seed / "experiments/campaign_9950x_suite.json").write_text('{"experiments": {"SUITE": {}, "SUITE-GC": {}}}\n')
             (seed / "tools/summarize_suite.py").write_text("\n")
+        if dunnhumby:
+            (seed / "experiments/campaign_9950x_dunnhumby.json").write_text('{"experiments": {"REGIME-DH": {}}}\n')
+            (seed / "tools/select_replacement.py").write_text("\n")
         if renumber:
             (seed / "experiments/campaign_9950x_renumber.json").write_text(
                 '{"experiments": {"SUITE-RN": {}, "RECALL-C8T1-RN": {}, "CHECK-RN": {}}}\n')
@@ -196,7 +208,7 @@ def run_block(T, block, subs, env_extra):
     calls = T / "calls.txt"
     if calls.exists():
         calls.unlink()
-    env = dict(GENV, CALLS=str(calls), FAIL_TESTS="0", FAIL_EXP="", FAKE_JAVA="0", FAIL_CALIBRATION="0")
+    env = dict(GENV, CALLS=str(calls), FAIL_TESTS="0", FAIL_EXP="", FAKE_JAVA="0", FAIL_CALIBRATION="0", FAIL_SELECT="0")
     env.update(env_extra)
     r = subprocess.run(["pwsh", "-NoProfile", "-File", str(T / "block.ps1")], cwd=str(T), capture_output=True, text=True,
                        env=env, timeout=600)
@@ -532,12 +544,77 @@ def check_reserve_block(block, report, base, check, spec=RESERVE_SPEC):
         check(len(logs) == 1, "%s D: the test suite output is on campaign-9950x %s" % (tag, logs))
 
 
+def check_dunnhumby_block(block, report, base, check):
+    tag, cfg = "dunnhumby", "experiments/campaign_9950x_dunnhumby.json"
+
+    def fresh(name, product=True):
+        T = base / name
+        if T.exists():
+            shutil.rmtree(T)
+        T.mkdir(parents=True)
+        seed_repos(T, report, followup=True, reserve=True, suite=True, renumber=True, dunnhumby=True)
+        c = T / "work" / "parallel-regular-incremental-husp"
+        git("clone", "-q", "-b", "revision-apin", str(T / "remote.git"), str(c))
+        for d in (c, T / "rs"):
+            git("config", "user.name", "Test Operator", cwd=d)
+            git("config", "user.email", "operator@example.org", cwd=d)
+        (c / "results/9950x").mkdir(parents=True)
+        (c / "results/9950x/cells.tsv").write_text("key\nE2|x\n")
+        (c / "out").mkdir()
+        (c / "out/tests_ok.txt").write_text("key of the code before the merge\n")
+        git("add", "-A", cwd=c)
+        git("commit", "-q", "-m", "campaign results", cwd=c)
+        lib = T / "lib" / "01_BanLe_GioHang" / "dunnhumby-complete-journey"
+        lib.mkdir(parents=True)
+        if product:
+            (lib / "product.csv").write_text("PRODUCT_ID\n")
+        return T, c
+
+    subs = lambda T: reserve_subs(T) + [('"D:\\ThuVienDuLieu"', '"%s/lib"' % T)]
+    T, c = fresh(tag + "_A")
+    r, calls, log = run_block(T, block, subs(T), {})
+    check(ok_git("merge-base", "--is-ancestor", "origin/heap-guard-live", "HEAD", cwd=c), "%s A: heap-guard-live merged" % tag)
+    check(sum("run_tests.py" in l for l in calls) == 1, "%s A: tests run once on the merged code" % tag)
+    data = [l for l in calls if "build_all_datasets.py" in l]
+    check(data == ["py tools/build_all_datasets.py %s/lib --only DUNNHUMBY-HW-SUB,DUNNHUMBY-HW-COMM,DUNNHUMBY-H4W-SUB" % T],
+          "%s A: the three candidates built from the library %s" % (tag, data))
+    order = [l for l in calls if "campaign.py" in l or "select_replacement.py" in l]
+    check(order == ["py tools/campaign.py --config %s run --exp REGIME-DH" % cfg,
+                    "py tools/select_replacement.py --config %s --write" % cfg,
+                    "py tools/campaign.py --config %s run --exp E2C-DH" % cfg],
+          "%s A: regime cells, then the selection, then E2C of the chosen dataset %s" % (tag, order))
+    files = remote_files(T, "refs/heads/campaign-9950x")
+    check({cfg, "results/9950x/replacement_choice.txt"} <= files, "%s A: the choice and the generated experiment on campaign-9950x" % tag)
+    check(any("dunnhumby select: chosen: DUNNHUMBY-HW-COMM" in l for l in log) and any("dunnhumby finished" in l for l in log)
+          and not any("STOPPED" in l for l in log), "%s A: the choice reaches run-status, block finished" % tag)
+    check(AWAKE_OK in r.stdout, "%s A: keep-awake set then released" % tag)
+    check(git("status", "--porcelain", "--untracked-files=no", cwd=c, check=False) == "", "%s A: tracked tree clean" % tag)
+    n = git("rev-list", "--count", "HEAD", cwd=c)
+    r, calls, log = run_block(T, block, subs(T), {})
+    check(any("tests: passed before" in l for l in log) and any("data: built and verified before" in l for l in log)
+          and not any("run_tests" in l or "build_all" in l for l in calls) and not any("STOPPED" in l for l in log),
+          "%s B: second paste skips tests and data and finishes" % tag)
+    check(git("rev-list", "--count", "HEAD", cwd=c) == n, "%s B: no new commit" % tag)
+    T, c = fresh(tag + "_C")
+    r, calls, log = run_block(T, block, subs(T), {"FAIL_SELECT": "1"})
+    check(any("STOPPED at dunnhumby select" in l for l in log) and not any("E2C-DH" in l for l in calls) and AWAKE_OK in r.stdout,
+          "%s C: no candidate chosen stops before E2C, keep-awake released" % tag)
+    check("results/9950x/replacement_choice.txt" not in remote_files(T, "refs/heads/campaign-9950x"), "%s C: nothing committed as a choice" % tag)
+    T, c = fresh(tag + "_D", product=False)
+    r, calls, log = run_block(T, block, subs(T), {})
+    check(any("STOPPED at dunnhumby data" in l for l in log) and not any("campaign.py" in l for l in calls),
+          "%s D: a library without product.csv stops before any cell" % tag)
+    T, c = fresh(tag + "_E")
+    r, calls, log = run_block(T, block, subs(T), {"FAKE_JAVA": "1"})
+    check(any("STOPPED at dunnhumby setup" in l for l in log) and not calls, "%s E: running java stops it" % tag)
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("runbook")
     ap.add_argument("report")
     ap.add_argument("scratch")
-    ap.add_argument("--only", choices=("main", "followup", "resume2", "reserve", "budget", "selector", "gate", "clock", "suite", "renumber"))
+    ap.add_argument("--only", choices=("main", "followup", "resume2", "reserve", "budget", "selector", "gate", "clock", "suite", "renumber", "dunnhumby"))
     args = ap.parse_args(argv)
     lines = Path(args.runbook).read_text(encoding="utf-8").splitlines()
     base = Path(args.scratch).resolve()
@@ -565,6 +642,8 @@ def main(argv=None):
         check_reserve_block(find_block(lines, "bud3rbw-sgc"), Path(args.report), base, check, CLOCK_SPEC)
     if args.only in (None, "suite"):
         check_reserve_block(find_block(lines, "S1-S11 TR"), Path(args.report), base, check, SUITE_SPEC)
+    if args.only in (None, "dunnhumby"):
+        check_dunnhumby_block(find_block(lines, "dunnhumby: "), Path(args.report), base, check)
     if args.only in (None, "renumber"):
         check_reserve_block(find_block(lines, "renumber: C8T1"), Path(args.report), base, check, RENUMBER_SPEC)
     bad = [w for ok, w in results if not ok]

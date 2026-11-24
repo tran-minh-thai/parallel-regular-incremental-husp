@@ -33,6 +33,8 @@ RAW = {
                                                        "9e6412743b279180e025d0d4491033dc693867ae92a7851264ea2dbbf5568922"),
     "transaction_data.csv": ("01_BanLe_GioHang/dunnhumby-complete-journey",
                              "3a685c0729cef664d634486189f774518b84f53cde7cbf701a5963238692b476"),
+    "product.csv": ("01_BanLe_GioHang/dunnhumby-complete-journey",
+                    "7ecbcec41e0f1e5a51b43a359965cc50dc5586a2b900a378b64032750fedc949"),
     "online_retail_II.xlsx": ("01_BanLe_GioHang/online-retail",
                               "bcbe73b35f5b7babf197fb0cb983a11f5d9ff929078d4aa53d171b1f2df2e980"),
     "ta_feng_all_months_merged.csv": ("01_BanLe_GioHang/ta-feng",
@@ -49,6 +51,9 @@ BUILDS = [
     (["REES46-COSMETICS-CW"], ["rees46", "{raw:ecommerce-events-history-in-cosmetics-shop.zip}", "REES46-COSMETICS-CW"]),
     (["DUNNHUMBY-H"], ["dunnhumby", "{raw:transaction_data.csv}"]),
     (["DUNNHUMBY-HW"], ["dunnhumbyhw", "{raw:transaction_data.csv}"]),
+    (["DUNNHUMBY-HW-SUB"], ["dunnhumbygroup", "{raw:transaction_data.csv}", "{raw:product.csv}", "SUB", "1"]),
+    (["DUNNHUMBY-HW-COMM"], ["dunnhumbygroup", "{raw:transaction_data.csv}", "{raw:product.csv}", "COMM", "1"]),
+    (["DUNNHUMBY-H4W-SUB"], ["dunnhumbygroup", "{raw:transaction_data.csv}", "{raw:product.csv}", "SUB", "4"]),
     (["ONLINE-RETAIL-II-H"], ["retail", "{raw:online_retail_II.xlsx}"]),
     (["TAFENG-CW"], ["tafeng", "{raw:ta_feng_all_months_merged.csv}"]),
 ]

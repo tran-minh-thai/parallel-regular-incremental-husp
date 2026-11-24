@@ -1,0 +1,22 @@
+{
+  "name": "TAFENG-CW-SUB",
+  "builder": "tools/build_stream_datasets.py",
+  "builder_sha256": "286f64765121775965fd4fa6dbc49167157a354d7633b0591805a9be9c4f6e71",
+  "raw_file": "ta_feng_all_months_merged.csv",
+  "raw_sha256": "1d575e5d0b7207d7706d22ca56c7535886fff8175ca5537a310333a4ab7a7b67",
+  "roles": "sequence=(ISO week of TRANSACTION_DT, CUSTOMER_ID), ordered by week then customer id; event=one transaction day; item=PRODUCT_SUBCLASS; utility=SALES_PRICE (line total, New Taiwan dollars), summed per item and day",
+  "values": "measured",
+  "sequences": 99739,
+  "events": 119578,
+  "item_occurrences": 699799,
+  "distinct_items": 2012,
+  "total_utility": 107840076,
+  "counts": {
+    "rows": 817741,
+    "weeks": 18
+  },
+  "regularity_bound_rule": "2 weeks of sequences, ceil(2 * N / weeks)",
+  "regularity_bound_B": 11083,
+  "seq_sha256": "0e0d8e4ea495c36fba936830a6782b5ecc9489a14dcd7039f329c47a09f3e137",
+  "eui_sha256": "18bdc22619c27d8f4dfc023859386e7fad0e490fa5132bfdb117eb24ba239b29"
+}

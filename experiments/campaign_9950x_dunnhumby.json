@@ -1,0 +1,110 @@
+{
+  "about": "Replacement of the four Valued Shoppers datasets of the schedule comparison (licence). Three Dunnhumby re-roled candidates, delta from the declared rule (calibrated on the development machine); REGIME-DH times one full re-mine of each (warm-up, then three runs, 16 threads) to assign the regime before the comparison; tools/select_replacement.py then picks the first candidate in the declared order whose median is at least 2.0 s and writes experiment E2C-DH for it, run with the E2C policies. Same machine, environment lock and output directory as E2C",
+  "out": "results/9950x",
+  "branch": "campaign-9950x",
+  "status_project": "07_RegIncHUSPM_Parallel",
+  "jvm": [
+    "-Xmx32g",
+    "-Xss4m"
+  ],
+  "threads": 16,
+  "schedules": {
+    "S1": {
+      "dold": "0.5",
+      "batches": 21,
+      "every": "every"
+    },
+    "S2": {
+      "dold": "0.9",
+      "batches": 11,
+      "every": "every"
+    },
+    "S3": {
+      "dold": "0.5",
+      "batches": 21,
+      "every": "every:4"
+    }
+  },
+  "datasets": {
+    "DUNNHUMBY-HW-SUB": {
+      "delta": "0.001",
+      "B": 2430,
+      "role": "candidate"
+    },
+    "DUNNHUMBY-HW-COMM": {
+      "delta": "0.005",
+      "B": 2430,
+      "role": "candidate"
+    },
+    "DUNNHUMBY-H4W-SUB": {
+      "delta": "0.005",
+      "B": 3715,
+      "role": "candidate"
+    }
+  },
+  "experiments": {
+    "REGIME-DH": {
+      "kind": "java",
+      "main": "test.RemineTimer",
+      "pairs": [
+        [
+          "DUNNHUMBY-HW-SUB",
+          "regime"
+        ],
+        [
+          "DUNNHUMBY-HW-COMM",
+          "regime"
+        ],
+        [
+          "DUNNHUMBY-H4W-SUB",
+          "regime"
+        ]
+      ],
+      "policies": [
+        "timer"
+      ],
+      "limit_s": 3600,
+      "props": [
+        "-Dthreads=16"
+      ],
+      "args": [
+        "datasets/{dataset}_seq.txt",
+        "datasets/{dataset}_eui.txt",
+        "{B}",
+        "{delta}",
+        "3"
+      ]
+    }
+  },
+  "replacement": {
+    "experiment": "REGIME-DH",
+    "candidates": [
+      "DUNNHUMBY-HW-SUB",
+      "DUNNHUMBY-HW-COMM",
+      "DUNNHUMBY-H4W-SUB"
+    ],
+    "threshold_ms": 2000,
+    "target": "E2C-DH",
+    "schedules": [
+      "S1",
+      "S2",
+      "S3"
+    ],
+    "template": {
+      "about": "the chosen Dunnhumby replacement, three schedules, three runs, every policy once in every position; same policies and properties as E2C",
+      "policies": [
+        "remine-nogc",
+        "bud3rbw",
+        "bud3rbw-sgc"
+      ],
+      "reps": 3,
+      "rotate": true,
+      "oracle": "first",
+      "limit_s": 3600,
+      "props": [
+        "-Dwarmup=true",
+        "-DselectorRate=1e8"
+      ]
+    }
+  }
+}

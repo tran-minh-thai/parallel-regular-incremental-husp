@@ -1,0 +1,25 @@
+{
+  "name": "DUNNHUMBY-H4W-SUB",
+  "builder": "tools/build_stream_datasets.py",
+  "builder_sha256": "e1b7b5e186b13a5ec3c628e941a022677397a0a80ac21d3b399024f5590ad4a7",
+  "raw_file": "transaction_data.csv",
+  "raw_sha256": "3a685c0729cef664d634486189f774518b84f53cde7cbf701a5963238692b476",
+  "roles": "sequence=(4-week period of WEEK_NO, household_key), ordered by period then household; event=basket, ordered by (DAY, TRANS_TIME, BASKET_ID); item=SUB_COMMODITY_DESC of the product (product.csv); utility=round(SALES_VALUE*100), summed per item and basket",
+  "values": "measured",
+  "sequences": 48287,
+  "events": 275539,
+  "item_occurrences": 2190715,
+  "distinct_items": 2373,
+  "total_utility": 805744380,
+  "counts": {
+    "catalogue_file": "product.csv",
+    "catalogue_sha256": "7ecbcec41e0f1e5a51b43a359965cc50dc5586a2b900a378b64032750fedc949",
+    "rows": 2595732,
+    "dropped_nonpositive_quantity_or_value": 18917,
+    "periods": 26
+  },
+  "regularity_bound_rule": "2 periods of sequences, ceil(2 * N / periods)",
+  "regularity_bound_B": 3715,
+  "seq_sha256": "fbb69bed9ff40af31c5cdeab5371e4704e31e76de215cba5192ea434bc38007c",
+  "eui_sha256": "ca9747f164c8a254ad260d661bd8e248a33ea4a6e165ee8cdf5ea0bc1d343a95"
+}

@@ -108,9 +108,11 @@ def command(cfg, c):
                  "-cp", "out", "test.ExperimentOfficial"] + c.get("args", []) +
                 ["--only=%s" % c["dataset"], "--scenarios=%s" % c["schedule"]])
     if c.get("kind") == "java":
-        # Any other main class; {dataset} in its arguments names the cell's dataset. Its console log is the artifact.
+        # Any other main class; {dataset} in its arguments names the cell's dataset, and {delta} and {B} its thresholds
+        # from the datasets table (when it has them). Its console log is the artifact.
+        d = cfg.get("datasets", {}).get(c["dataset"], {})
         return (["java"] + cfg["jvm"] + c.get("props", []) + ["-cp", "out", c["main"]] +
-                [a.format(dataset=c["dataset"]) for a in c.get("args", [])])
+                [a.format(dataset=c["dataset"], delta=d.get("delta", "{delta}"), B=d.get("B", "{B}")) for a in c.get("args", [])])
     d = cfg["datasets"][c["dataset"]]
     s = cfg["schedules"][c["schedule"]]
     return (["java"] + cfg["jvm"] + c.get("props", []) +
@@ -644,6 +646,11 @@ def self_test():
                                 "limit_s": 60, "args": ["datasets/{dataset}_seq.txt", "1,16"]}}}
     check(command(jv, cells(jv)[0])[-4:] == ["out", "test.RecallProbe", "datasets/A_seq.txt", "1,16"],
           "a java cell runs its main class with the dataset filled into its arguments")
+    jv2 = {"datasets": {"A": {"delta": "0.005", "B": 2430}}, "threads": 16, "jvm": ["-Xmx1g"], "out": "results/x",
+           "experiments": {"T": {"kind": "java", "main": "test.RemineTimer", "pairs": [["A", "regime"]], "policies": ["timer"],
+                                 "limit_s": 60, "args": ["datasets/{dataset}_seq.txt", "{B}", "{delta}", "3"]}}}
+    check(command(jv2, cells(jv2)[0])[-5:] == ["test.RemineTimer", "datasets/A_seq.txt", "2430", "0.005", "3"],
+          "a java cell fills the dataset's delta and B from the datasets table")
     rot = {"datasets": {"A": {}}, "threads": 2, "experiments": {
         "R": {"datasets": ["A"], "schedules": ["S1"], "policies": ["f", "a", "b", "c"], "oracle": "first", "limit_s": 60,
               "reps": 4, "rotate": True},

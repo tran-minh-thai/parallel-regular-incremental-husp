@@ -207,7 +207,8 @@ def main(argv=None):
                       ("self-test: window gate summary", [sys.executable, "tools/summarize_gate.py", "--self-test"]),
                       ("self-test: seed clock summary", [sys.executable, "tools/summarize_clock.py", "--self-test"]),
                       ("self-test: S1-S11 suite summary", [sys.executable, "tools/summarize_suite.py", "--self-test"]),
-                      ("self-test: S1-S11 suite runner", [sys.executable, "tools/check_suite_runner.py"])):
+                      ("self-test: S1-S11 suite runner", [sys.executable, "tools/check_suite_runner.py"]),
+                      ("self-test: replacement selector", [sys.executable, "tools/select_replacement.py", "--self-test"])):
         if args.only and args.only not in name:
             continue
         p, secs = run(cmd)

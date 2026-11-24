@@ -36,6 +36,10 @@ Usage:
   python3 tools/build_stream_datasets.py dunnhumbyhw <transaction_data.csv>    <out-dir> <manifest-dir>
   python3 tools/build_stream_datasets.py tafeng     <ta_feng_all_months_merged.csv> <out-dir> <manifest-dir>
   python3 tools/build_stream_datasets.py rees46     <kaggle archive .zip>      <out-dir> <manifest-dir> <NAME>
+  python3 tools/build_stream_datasets.py dunnhumbygroup <transaction_data.csv> <out-dir> <manifest-dir> <product.csv> SUB|COMM <period_weeks>
+  python3 tools/build_stream_datasets.py tafengsub  <ta_feng_all_months_merged.csv> <out-dir> <manifest-dir>
+  python3 tools/build_stream_datasets.py rees46cat  <kaggle archive .zip>      <out-dir> <manifest-dir> <NAME>
+  python3 tools/build_stream_datasets.py retailcw   <online_retail_II.xlsx>    <out-dir> <manifest-dir>
 
   HM-CW               sequence = (customer, ISO week), ordered by week then customer id; event = one
                       purchase day; item = article_id; utility = round(price * 1e6) per row.
@@ -57,6 +61,17 @@ Usage:
   VS-CHAIN<c>-CW-NOACC  as VS-CHAIN<c>-CW without accounts that look like stores: a customer is removed
                       (every week of it) when some week of it holds more than max_weekly_items distinct items.
   For all four, the order of customers inside a week is arbitrary (by id) and B spans two weeks.
+
+  Re-roled databases (one role changed against the database named in brackets; the group of an item comes from the
+  source's own catalogue, and a row whose item has no group is dropped and counted):
+  DUNNHUMBY-HW-SUB    [DUNNHUMBY-HW] item = SUB_COMMODITY_DESC of the product (product.csv).
+  DUNNHUMBY-HW-COMM   [DUNNHUMBY-HW] item = COMMODITY_DESC of the product.
+  DUNNHUMBY-H4W-SUB   [DUNNHUMBY-HW-SUB] sequence = (4-week period (WEEK_NO-1)//4, household).
+  TAFENG-CW-SUB       [TAFENG-CW] item = PRODUCT_SUBCLASS.
+  REES46-MULTI-CW-CAT [REES46-MULTI-CW] item = category_id.
+  ONLINE-RETAIL-II-CW [ONLINE-RETAIL-II-H] sequence = (ISO week of the invoice, customer), ordered by week then
+                      customer; event = one invoice; lines without a customer id are dropped and counted.
+  B is two periods of sequences for each, ceil(2 * N / periods).
 
 Standard library only, so it runs unchanged on Windows.
 """
@@ -204,9 +219,9 @@ def excel_time(serial):
     return datetime.datetime(1899, 12, 30) + datetime.timedelta(days=float(serial))
 
 
-def build_retail(raw, out_dir, manifest_dir):
-    counts = defaultdict(int)
-    lines = []        # [time, invoice, code, qty, price, customer, alive]
+def retail_lines(raw, counts):
+    """Purchase lines of online_retail_II.xlsx after netting cancellations: [time, invoice, code, qty, price, customer, alive]."""
+    lines = []
     last_by_key = defaultdict(list)
     for r in xlsx_rows(raw):
         if r[0] == "Invoice":
@@ -229,6 +244,12 @@ def build_retail(raw, out_dir, manifest_dir):
             continue
         lines.append([t, invoice, code, qty, price, cust, True])
         last_by_key[(cust, code, qty)].append(len(lines) - 1)
+    return lines
+
+
+def build_retail(raw, out_dir, manifest_dir):
+    counts = defaultdict(int)
+    lines = retail_lines(raw, counts)
     slots = OrderedDict()
     for t, invoice, code, qty, price, cust, alive in sorted(lines, key=lambda x: (x[0], x[1])):
         if not alive:
@@ -438,7 +459,7 @@ def build_dunnhumby_hw(raw, out_dir, manifest_dir):
              "(DAY, TRANS_TIME, BASKET_ID); item=PRODUCT_ID; utility=round(SALES_VALUE*100)")
 
 
-def build_rees46(raw, out_dir, manifest_dir, name):
+def build_rees46(raw, out_dir, manifest_dir, name, item_col=2):
     """Kaggle archive of REES46 monthly CSVs (event_time,event_type,product_id,category_id,category_code,brand,
     price,user_id,user_session); members are read in calendar order straight from the zip."""
     import io
@@ -475,7 +496,10 @@ def build_rees46(raw, out_dir, manifest_dir, name):
                     fk = (wk, row[7], row[8])
                     if fk not in first:
                         first[fk] = t
-                    add(rows[(wk, row[7])][(first[fk], row[8])], row[2], u)
+                    if not row[item_col]:
+                        counts["dropped_item_without_group"] += 1
+                        continue
+                    add(rows[(wk, row[7])][(first[fk], row[8])], row[item_col], u)
     seen = None
     keys = sorted(rows, key=lambda k: (k[0], int(k[1])))
     seqs = [[rows[k][e] for e in sorted(rows[k])] for k in keys]
@@ -485,8 +509,10 @@ def build_rees46(raw, out_dir, manifest_dir, name):
     write_db(name, seqs, out_dir, manifest_dir, raw, counts,
              "2 weeks of sequences, ceil(2 * N / weeks)", b,
              "purchase events only; sequence=(user_id, ISO week of event_time), ordered by week then user id; "
-             "event=one user_session (one order), ordered by its first purchase time; item=product_id; "
-             "utility=round(price*100), summed per product and order; exact repeated rows kept")
+             "event=one user_session (one order), ordered by its first purchase time; "
+             + ("item=product_id; utility=round(price*100), summed per product and order; " if item_col == 2 else
+                "item=category_id; utility=round(price*100), summed per category and order; ")
+             + "exact repeated rows kept")
 
 
 def build_tafeng(raw, out_dir, manifest_dir):
@@ -513,6 +539,105 @@ def build_tafeng(raw, out_dir, manifest_dir):
              "transaction day; item=PRODUCT_ID; utility=SALES_PRICE (line total, New Taiwan dollars)")
 
 
+def build_retail_cw(raw, out_dir, manifest_dir):
+    counts = defaultdict(int)
+    lines = retail_lines(raw, counts)
+    rows = defaultdict(OrderedDict)                          # (week, customer) -> invoice -> event
+    for t, invoice, code, qty, price, cust, alive in sorted(lines, key=lambda x: (x[0], x[1])):
+        if not alive:
+            counts["purchase_lines_removed_by_cancellation"] += 1
+            continue
+        if qty <= 0 or price <= 0:
+            counts["dropped_nonpositive_price_or_quantity"] += 1
+            continue
+        if cust in (None, "", "nan"):
+            counts["dropped_no_customer"] += 1
+            continue
+        u = int(round(qty * price * 100))
+        if u <= 0:
+            counts["dropped_zero_value"] += 1
+            continue
+        add(rows[(iso_week(t.strftime("%Y-%m-%d")), str(cust))].setdefault(invoice, OrderedDict()), code, u)
+    keys = sorted(rows, key=lambda k: (k[0], k[1]))
+    seqs = [list(rows[k].values()) for k in keys]
+    weeks = len({k[0] for k in keys})
+    counts["weeks"] = weeks
+    b = math.ceil(2 * len(seqs) / weeks)
+    write_db("ONLINE-RETAIL-II-CW", seqs, out_dir, manifest_dir, raw, counts,
+             "2 weeks of sequences, ceil(2 * N / weeks)", b,
+             "sequence=(ISO week of the invoice, customer), ordered by week then customer; event=invoice, by invoice time; "
+             "item=StockCode; utility=round(quantity*price*100); cancellations netted as in ONLINE-RETAIL-II-H; lines "
+             "without a customer id dropped")
+
+
+def build_dunnhumby_group(raw, out_dir, manifest_dir, products, level, period_weeks):
+    col = {"SUB": "SUB_COMMODITY_DESC", "COMM": "COMMODITY_DESC"}[level]
+    group = {}
+    with open(products, newline="") as f:
+        for row in csv.DictReader(f):
+            group[row["PRODUCT_ID"]] = row[col]
+    counts = defaultdict(int)
+    counts["catalogue_file"] = os.path.basename(products)    # the grouping depends on it, so its bytes are recorded too
+    counts["catalogue_sha256"] = sha256(products)
+    rows = defaultdict(lambda: defaultdict(OrderedDict))     # (period, household) -> (day, time, basket) -> event
+    with open(raw, newline="") as f:
+        for row in csv.DictReader(f):
+            counts["rows"] += 1
+            qty = int(row["QUANTITY"]); value = float(row["SALES_VALUE"])
+            if qty <= 0 or value <= 0:
+                counts["dropped_nonpositive_quantity_or_value"] += 1
+                continue
+            u = int(round(value * 100))
+            if u <= 0:
+                counts["dropped_zero_value"] += 1
+                continue
+            g = group.get(row["PRODUCT_ID"])
+            if not g:
+                counts["dropped_product_without_group"] += 1
+                continue
+            key = ((int(row["WEEK_NO"]) - 1) // period_weeks, int(row["household_key"]))
+            add(rows[key][(int(row["DAY"]), int(row["TRANS_TIME"]), row["BASKET_ID"])], g, u)
+    keys = sorted(rows)
+    seqs = [[rows[k][e] for e in sorted(rows[k])] for k in keys]
+    periods = len({k[0] for k in keys})
+    counts["periods"] = periods
+    b = math.ceil(2 * len(seqs) / periods)
+    name = "DUNNHUMBY-%s-%s" % ("HW" if period_weeks == 1 else "H%dW" % period_weeks, level)
+    write_db(name, seqs, out_dir, manifest_dir, raw, counts,
+             "2 periods of sequences, ceil(2 * N / periods)", b,
+             "sequence=(%d-week period of WEEK_NO, household_key), ordered by period then household; event=basket, ordered "
+             "by (DAY, TRANS_TIME, BASKET_ID); item=%s of the product (product.csv); utility=round(SALES_VALUE*100), summed "
+             "per item and basket" % (period_weeks, col))
+
+
+def build_tafeng_sub(raw, out_dir, manifest_dir):
+    counts = defaultdict(int)
+    rows = defaultdict(lambda: defaultdict(OrderedDict))     # (week, customer) -> day -> event
+    with open(raw, newline="", encoding="utf-8-sig") as f:
+        for row in csv.DictReader(f):
+            counts["rows"] += 1
+            m, d, y = map(int, row["TRANSACTION_DT"].split("/"))
+            day = "%04d-%02d-%02d" % (y, m, d)
+            qty, price = int(row["AMOUNT"]), int(row["SALES_PRICE"])
+            if qty <= 0 or price <= 0:
+                counts["dropped_nonpositive_amount_or_price"] += 1
+                continue
+            if not row["PRODUCT_SUBCLASS"]:
+                counts["dropped_product_without_group"] += 1
+                continue
+            add(rows[(iso_week(day), row["CUSTOMER_ID"])][day], row["PRODUCT_SUBCLASS"], price)
+    keys = sorted(rows)
+    seqs = [[rows[k][d] for d in sorted(rows[k])] for k in keys]
+    weeks = len({k[0] for k in keys})
+    counts["weeks"] = weeks
+    b = math.ceil(2 * len(seqs) / weeks)
+    write_db("TAFENG-CW-SUB", seqs, out_dir, manifest_dir, raw, counts,
+             "2 weeks of sequences, ceil(2 * N / weeks)", b,
+             "sequence=(ISO week of TRANSACTION_DT, CUSTOMER_ID), ordered by week then customer id; event=one "
+             "transaction day; item=PRODUCT_SUBCLASS; utility=SALES_PRICE (line total, New Taiwan dollars), summed per "
+             "item and day")
+
+
 if __name__ == "__main__":
     if len(sys.argv) < 5:
         sys.exit(__doc__)
@@ -522,6 +647,14 @@ if __name__ == "__main__":
         build_hm(raw, out_dir, manifest_dir, int(extra[0]) if extra else 0)
     elif kind == "rees46":
         build_rees46(raw, out_dir, manifest_dir, extra[0])
+    elif kind == "rees46cat":
+        build_rees46(raw, out_dir, manifest_dir, extra[0], item_col=3)
+    elif kind == "dunnhumbygroup":
+        build_dunnhumby_group(raw, out_dir, manifest_dir, extra[0], extra[1], int(extra[2]))
+    elif kind == "tafengsub":
+        build_tafeng_sub(raw, out_dir, manifest_dir)
+    elif kind == "retailcw":
+        build_retail_cw(raw, out_dir, manifest_dir)
     elif kind == "hmtype":
         build_hm(raw, out_dir, manifest_dir, int(extra[1]) if len(extra) > 1 else 0, articles=extra[0])
     elif kind == "vs":
