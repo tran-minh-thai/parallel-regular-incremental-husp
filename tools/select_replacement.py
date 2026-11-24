@@ -4,12 +4,13 @@
     python3 tools/select_replacement.py --config experiments/campaign_9950x_dunnhumby.json [--write]
     python3 tools/select_replacement.py --self-test
 
-The config's "replacement" entry names the regime experiment (one test.RemineTimer cell per candidate), the candidates in
-their declared order, the threshold in ms and the experiment to generate. The rule: the first candidate, in the declared
-order, whose median full re-mine is at least the threshold. Every candidate must have a recorded OK cell whose log
-carries a "median ms=" line, otherwise nothing is chosen (exit 2). No candidate at or above the threshold: exit 1.
-With --write, the chosen dataset's pairs (one per schedule of the template) are written into the config as the generated
-experiment, and <out>/replacement_choice.txt records every median and the decision. Standard library only.
+The config's "replacement" entry names the regime experiment (one test.RemineTimer cell per candidate), the candidate
+groups (one group per source, candidates in their declared order), the threshold in ms and the experiment to generate.
+The rule, per group: the first candidate, in the declared order, whose median full re-mine is at least the threshold; a
+group with none chooses nothing. Every candidate must have a recorded OK cell whose log carries a "median ms=" line,
+otherwise nothing is chosen (exit 2). No group choosing anything: exit 1. With --write, the pairs of every chosen dataset
+(one per schedule of the template) are written into the config as the generated experiment, and
+<out>/replacement_choice.txt records every median and the decision. Standard library only.
 """
 import argparse
 import importlib.util
@@ -55,27 +56,37 @@ def decide(root, cfg, camp):
             problems.append("%s: no log with a median line" % c["key"])
             continue
         medians[c["dataset"]] = (int(m.group(1)), int(m.group(2)))
-    missing = [d for d in rep["candidates"] if d not in medians]
+    every = [d for g in groups(rep) for d in g["candidates"]]
+    missing = [d for d in every if d not in medians]
     if problems or missing:
         return None, medians, problems + ["no regime measurement for %s" % d for d in missing]
-    for d in rep["candidates"]:
-        if medians[d][0] >= rep["threshold_ms"]:
-            return d, medians, []
-    return "", medians, []
+    chosen = []
+    for g in groups(rep):
+        for d in g["candidates"]:
+            if medians[d][0] >= rep["threshold_ms"]:
+                chosen.append(d)
+                break
+    return chosen, medians, []
+
+
+def groups(rep):
+    return rep.get("groups") or [{"name": "candidates", "candidates": rep["candidates"]}]
 
 
 def write(root, cfg_path, cfg, chosen, medians):
     rep = cfg["replacement"]
     spec = dict(rep["template"])
-    spec["pairs"] = [[chosen, s] for s in rep["schedules"]]
+    spec["pairs"] = [[d, s] for d in chosen for s in rep["schedules"]]
     cfg["experiments"][rep["target"]] = spec
     cfg_path.write_text(json.dumps(cfg, indent=2) + "\n", encoding="utf-8")
-    lines = ["candidate\tmedian_ms\tpatterns\tdecision"]
-    for d in rep["candidates"]:
-        ms, pc = medians[d]
-        lines.append("%s\t%d\t%d\t%s" % (d, ms, pc, "CHOSEN" if d == chosen else
-                                         ("below threshold" if ms < rep["threshold_ms"] else "not reached (an earlier candidate passed)")))
-    lines.append("# rule: first candidate in the declared order whose median full re-mine is >= %d ms" % rep["threshold_ms"])
+    lines = ["group\tcandidate\tmedian_ms\tpatterns\tdecision"]
+    for g in groups(rep):
+        for d in g["candidates"]:
+            ms, pc = medians[d]
+            lines.append("%s\t%s\t%d\t%d\t%s" % (g["name"], d, ms, pc, "CHOSEN" if d in chosen else
+                                                 ("below threshold" if ms < rep["threshold_ms"] else
+                                                  "not reached (an earlier candidate of the group passed)")))
+    lines.append("# rule, per group: first candidate in the declared order whose median full re-mine is >= %d ms" % rep["threshold_ms"])
     out = root / cfg["out"]
     out.mkdir(parents=True, exist_ok=True)
     (out / "replacement_choice.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -92,16 +103,17 @@ def main(argv=None):
     cfg_path = ROOT / a.config
     cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
     chosen, medians, problems = decide(ROOT, cfg, campaign_module())
-    for d in cfg["replacement"]["candidates"]:
-        if d in medians:
-            print("%-22s median %6d ms, %d patterns" % (d, medians[d][0], medians[d][1]))
+    for g in groups(cfg["replacement"]):
+        for d in g["candidates"]:
+            if d in medians:
+                print("%-22s median %6d ms, %d patterns" % (d, medians[d][0], medians[d][1]))
     if problems:
         print("REFUSED: " + "; ".join(problems))
         return 2
     if not chosen:
         print("no candidate reaches %d ms: nothing chosen" % cfg["replacement"]["threshold_ms"])
         return 1
-    print("chosen: %s" % chosen)
+    print("chosen: %s" % ", ".join(chosen))
     if a.write:
         write(ROOT, cfg_path, cfg, chosen, medians)
         print("wrote experiment %s into %s" % (cfg["replacement"]["target"], a.config))
@@ -134,9 +146,9 @@ def self_test():
         cp.write_text(json.dumps(cfg), encoding="utf-8")
         return tmp, cfg, cp
 
-    for meds, want, msg in (([1200, 4000, 11000], "B", "the first candidate at or above the threshold is chosen, not the slowest"),
-                            ([2000, 4000, 11000], "A", "a median equal to the threshold passes"),
-                            ([1999, 1500, 1200], "", "no candidate above the threshold chooses nothing")):
+    for meds, want, msg in (([1200, 4000, 11000], ["B"], "the first candidate at or above the threshold is chosen, not the slowest"),
+                            ([2000, 4000, 11000], ["A"], "a median equal to the threshold passes"),
+                            ([1999, 1500, 1200], [], "no candidate above the threshold chooses nothing")):
         tmp, cfg, cp = build(meds)
         got, _, prob = decide(tmp, cfg, camp)
         res.append((got == want and not prob, "%s (%r)" % (msg, got)))
@@ -153,6 +165,13 @@ def self_test():
                 and (tmp / "results/x/replacement_choice.txt").read_text().count("CHOSEN") == 1,
                 "--write adds the generated experiment for the chosen dataset and records the decision"))
     shutil.rmtree(tmp, ignore_errors=True)
+    for meds, want, msg in (([1200, 4000, 3000], ["B", "C"], "each group chooses its own first candidate at or above the threshold"),
+                            ([1200, 1500, 3000], ["C"], "a group with no candidate above the threshold chooses nothing, the other still does")):
+        tmp, cfg, cp = build(meds)
+        cfg["replacement"]["groups"] = [{"name": "g1", "candidates": ["A", "B"]}, {"name": "g2", "candidates": ["C"]}]
+        got, _, prob = decide(tmp, cfg, camp)
+        res.append((got == want and not prob, "%s (%r)" % (msg, got)))
+        shutil.rmtree(tmp, ignore_errors=True)
     bad = [m for ok, m in res if not ok]
     print("select_replacement self-test: %d/%d checks passed%s" % (len(res) - len(bad), len(res), "" if not bad else "; FAILED: " + " | ".join(bad)))
     return 1 if bad else 0

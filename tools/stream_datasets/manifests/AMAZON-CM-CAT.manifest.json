@@ -1,0 +1,23 @@
+{
+  "name": "AMAZON-CM-CAT",
+  "builder": "tools/build_stream_datasets.py",
+  "builder_sha256": "d34d462ca881367d18b26cc9997b0de9f7f6a52ee7a6d399225f9d9fb7d689a6",
+  "raw_file": "amazon-purchases.csv",
+  "raw_sha256": "6efb098a6e01a9acb6e215402a450f4a848ed1b102ca016f9be6c4f03c585e1e",
+  "roles": "sequence=(calendar month of Order Date, Survey ResponseID), ordered by period then customer; event=one order date; item=Category; utility=round(Purchase Price Per Unit*Quantity*100), summed per item and day; rows without a category dropped",
+  "values": "measured",
+  "sequences": 197162,
+  "events": 798089,
+  "item_occurrences": 1535326,
+  "distinct_items": 1871,
+  "total_utility": 4173037306,
+  "counts": {
+    "rows": 1850717,
+    "dropped_no_category": 89458,
+    "periods": 68
+  },
+  "regularity_bound_rule": "2 periods of sequences, ceil(2 * N / periods)",
+  "regularity_bound_B": 5799,
+  "seq_sha256": "a03127f9385f186c35a97c700667a8cc50177c3d83865131de29be5374e129fc",
+  "eui_sha256": "080a952b07507c876f9036b180dbad9aafb8eccc6eec7ded80aad9d3b5b8b5af"
+}

@@ -40,6 +40,7 @@ Usage:
   python3 tools/build_stream_datasets.py tafengsub  <ta_feng_all_months_merged.csv> <out-dir> <manifest-dir>
   python3 tools/build_stream_datasets.py rees46cat  <kaggle archive .zip>      <out-dir> <manifest-dir> <NAME>
   python3 tools/build_stream_datasets.py retailcw   <online_retail_II.xlsx>    <out-dir> <manifest-dir>
+  python3 tools/build_stream_datasets.py amazon     <amazon-purchases.csv>     <out-dir> <manifest-dir> W|M|Q
 
   HM-CW               sequence = (customer, ISO week), ordered by week then customer id; event = one
                       purchase day; item = article_id; utility = round(price * 1e6) per row.
@@ -71,6 +72,12 @@ Usage:
   REES46-MULTI-CW-CAT [REES46-MULTI-CW] item = category_id.
   ONLINE-RETAIL-II-CW [ONLINE-RETAIL-II-H] sequence = (ISO week of the invoice, customer), ordered by week then
                       customer; event = one invoice; lines without a customer id are dropped and counted.
+  AMAZON-CW-CAT       Open e-commerce 1.0 (Amazon purchase histories, CC0): sequence = (ISO week of Order Date, Survey
+                      ResponseID), ordered by week then customer; event = one order date; item = Category;
+                      utility = round(Purchase Price Per Unit * Quantity * 100), summed per item and day; rows without a
+                      category are dropped and counted.
+  AMAZON-CM-CAT       as AMAZON-CW-CAT with sequence = (calendar month, customer).
+  AMAZON-CQ-CAT       as AMAZON-CW-CAT with sequence = (calendar quarter, customer).
   B is two periods of sequences for each, ceil(2 * N / periods).
 
 Standard library only, so it runs unchanged on Windows.
@@ -638,6 +645,46 @@ def build_tafeng_sub(raw, out_dir, manifest_dir):
              "item and day")
 
 
+def build_amazon(raw, out_dir, manifest_dir, period):
+    counts = defaultdict(int)
+    rows = defaultdict(lambda: defaultdict(OrderedDict))     # (period, customer) -> day -> event
+    with open(raw, newline="", encoding="utf-8") as f:
+        for row in csv.DictReader(f):
+            counts["rows"] += 1
+            try:
+                price, qty = float(row["Purchase Price Per Unit"]), float(row["Quantity"])
+            except ValueError:
+                counts["dropped_unparsable_price_or_quantity"] += 1
+                continue
+            u = int(round(price * qty * 100))
+            if price <= 0 or qty <= 0 or u <= 0:
+                counts["dropped_nonpositive_value"] += 1
+                continue
+            cat = row["Category"]
+            if not cat:
+                counts["dropped_no_category"] += 1
+                continue
+            day = row["Order Date"][:10]
+            if period == "W":
+                key = iso_week(day)
+            elif period == "M":
+                key = day[:7]
+            else:
+                key = "%s-Q%d" % (day[:4], (int(day[5:7]) - 1) // 3 + 1)
+            add(rows[(key, row["Survey ResponseID"])][day], cat, u)
+    keys = sorted(rows)
+    seqs = [[rows[k][d] for d in sorted(rows[k])] for k in keys]
+    periods = len({k[0] for k in keys})
+    counts["periods"] = periods
+    b = math.ceil(2 * len(seqs) / periods)
+    name = "AMAZON-C%s-CAT" % period
+    write_db(name, seqs, out_dir, manifest_dir, raw, counts,
+             "2 periods of sequences, ceil(2 * N / periods)", b,
+             "sequence=(%s of Order Date, Survey ResponseID), ordered by period then customer; event=one order date; "
+             "item=Category; utility=round(Purchase Price Per Unit*Quantity*100), summed per item and day; rows without a "
+             "category dropped" % {"W": "ISO week", "M": "calendar month", "Q": "calendar quarter"}[period])
+
+
 if __name__ == "__main__":
     if len(sys.argv) < 5:
         sys.exit(__doc__)
@@ -655,6 +702,8 @@ if __name__ == "__main__":
         build_tafeng_sub(raw, out_dir, manifest_dir)
     elif kind == "retailcw":
         build_retail_cw(raw, out_dir, manifest_dir)
+    elif kind == "amazon":
+        build_amazon(raw, out_dir, manifest_dir, extra[0])
     elif kind == "hmtype":
         build_hm(raw, out_dir, manifest_dir, int(extra[1]) if len(extra) > 1 else 0, articles=extra[0])
     elif kind == "vs":
